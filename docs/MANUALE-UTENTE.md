@@ -59,6 +59,9 @@ prossimi giorni, se cambia qualcosa.
 - **Filtri** (sotto le zone, si aprono a richiesta): distanza massima, tipo di bosco, affidabilità
   minima dei dati. Se nessuna zona rispetta i filtri, l'app te lo dice invece di mostrarti
   qualcosa che non hai chiesto.
+- **Aree escluse**: le zone che i filtri tolgono di mezzo non spariscono e basta. Sotto la lista
+  trovi "N aree escluse dai filtri" — apri per vedere quali e perché (es. "Amiata: a 910 m, sotto
+  la quota minima di 1000 m").
 
 ## La mappa
 
@@ -112,6 +115,10 @@ telefono o computer.
   esplicitamente "coordinate esatte" per quella voce invece della sfocatura predefinita.
 - Dalla scheda Account puoi anche scaricare una copia dei tuoi dati o cancellare l'account: la
   cancellazione toglie tutto dal server e non è recuperabile.
+- **Telefono o computer condiviso**: se accedi con un account diverso da quello con cui questo
+  dispositivo ha già sincronizzato, l'app non invia il diario in automatico — potrebbe essere
+  quello di chi lo ha usato prima di te. Te lo dice chiaramente e chiede conferma prima di fare
+  qualunque cosa.
 
 ## In tre frasi, se non leggi il resto
 
