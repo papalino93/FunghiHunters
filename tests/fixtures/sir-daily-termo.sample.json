@@ -1,0 +1,159 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-4093",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1639475.51610378,
+     4888107.62624831
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 72,
+    "idstazione": "TOS02000359",
+    "nome": "Melo",
+    "t_max": 22.4,
+    "t_min": 12.7,
+    "t_med": 17.6,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-3fe6",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1717391.84451609,
+     4751284.42636962
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 245,
+    "idstazione": "TOS11000114",
+    "nome": "Abbadia S. S. - Laghetto Verde",
+    "t_max": 25.9,
+    "t_min": 12.8,
+    "t_med": 19.4,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-4092",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1642551.6109133,
+     4887858.55129338
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 73,
+    "idstazione": "TOS02000372",
+    "nome": "Croce Arcana",
+    "t_max": null,
+    "t_min": null,
+    "t_med": null,
+    "dataora": null,
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-3ffd",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1720020.02692535,
+     4827684.25499876
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 222,
+    "idstazione": "TOS11000078",
+    "nome": "Pratomagno",
+    "t_max": null,
+    "t_min": null,
+    "t_med": null,
+    "dataora": null,
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-40da",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1590470.3202311,
+     4881813.36668258
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 1,
+    "idstazione": "TOS01000025",
+    "nome": "Vara",
+    "t_max": 26.1,
+    "t_min": 20.1,
+    "t_med": 23.1,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-40d9",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1596701.75375376,
+     4878930.97263446
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 2,
+    "idstazione": "TOS01000056",
+    "nome": "Pian della Fioba",
+    "t_max": 24,
+    "t_min": 16.3,
+    "t_med": 20.2,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_termometri_valori_ieri_pubblico.fid--1d58fc68_1a0aef7ad17_-40d8",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1613783.50773167,
+     4840778.76145831
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 3,
+    "idstazione": "TOS01000544",
+    "nome": "Pisa (Fac. Agraria)",
+    "t_max": 28.9,
+    "t_min": 17.7,
+    "t_med": 23.3,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.600Z"
+   }
+  }
+ ]
+}

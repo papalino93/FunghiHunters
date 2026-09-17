@@ -1,0 +1,627 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.8248743918,
+     43.1462951306
+    ]
+   },
+   "properties": {
+    "Codice": "TOS10000710",
+    "Nome": "Abbadia di Montepulciano",
+    "Comune": "Montepulciano",
+    "Provincia": "SI",
+    "Quota mslm": "264.74",
+    "Consistenza": {
+     "PLUVIOMETRIA - Aggregazione a 24 ore (9-9)": {
+      "Anni": [
+       [
+        "1961",
+        "1962",
+        "1963",
+        "1964",
+        "1965",
+        "1966",
+        "1967",
+        "1968",
+        "1969",
+        "1970",
+        "1971",
+        "1972",
+        "1973",
+        "1974",
+        "1975",
+        "1976",
+        "1977",
+        "1978",
+        "1979",
+        "1980",
+        "1981",
+        "1982",
+        "1983",
+        "1984",
+        "1985",
+        "1986",
+        "1987",
+        "1988",
+        "1989",
+        "1990",
+        "1991",
+        "1992",
+        "1993",
+        "1994",
+        "1995",
+        "1996",
+        "1997",
+        "1998",
+        "1999",
+        "2000",
+        "2001"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio&D=json&IDS=TOS10000710"
+     },
+     "TERMOMETRIA - Massima giornaliera": {
+      "Anni": [
+       [
+        "1991",
+        "1992"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_max&D=json&IDS=TOS10000710"
+     },
+     "TERMOMETRIA - Minima giornaliera": {
+      "Anni": [
+       [
+        "1991",
+        "1992"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_min&D=json&IDS=TOS10000710"
+     }
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.6616225242615,
+     42.8831027447861
+    ]
+   },
+   "properties": {
+    "Codice": "TOS11000114",
+    "Nome": "Abbadia S. S. - Laghetto Verde",
+    "Comune": "Abbadia San Salvatore",
+    "Provincia": "SI",
+    "Quota mslm": "910.00",
+    "Consistenza": {
+     "PLUVIOMETRIA - Aggregazione a 24 ore (9-9)": {
+      "Anni": [
+       [
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio&D=json&IDS=TOS11000114"
+     },
+     "PLUVIOMETRIA - Aggregazione a 24 ore (0-24)": {
+      "Anni": [
+       [
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio0_24&D=json&IDS=TOS11000114"
+     },
+     "TERMOMETRIA - Massima giornaliera": {
+      "Anni": [
+       [
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_max&D=json&IDS=TOS11000114"
+     },
+     "TERMOMETRIA - Minima giornaliera": {
+      "Anni": [
+       [
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_min&D=json&IDS=TOS11000114"
+     },
+     "ANEMOMERIA - Velocita Media Giornaliera": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=anemo_vel&D=json&IDS=TOS11000114"
+     },
+     "ANEMOMERIA - Direzione Media Giornaliera": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=anemo_dir&D=json&IDS=TOS11000114"
+     },
+     "ANEMOMERIA - Velocita Raffica Giornaliera": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=anemo_raf&D=json&IDS=TOS11000114"
+     },
+     "IGROMETRIA - Media giornaliera (0-24)": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=igro0_24&D=json&IDS=TOS11000114"
+     }
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.6693687438965,
+     42.8943436457514
+    ]
+   },
+   "properties": {
+    "Codice": "TOS07000001",
+    "Nome": "Abbadia S. Salvatore",
+    "Comune": "Abbadia San Salvatore",
+    "Provincia": "SI",
+    "Quota mslm": "855.00",
+    "Consistenza": {
+     "PLUVIOMETRIA - Aggregazione a 24 ore (9-9)": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio&D=json&IDS=TOS07000001"
+     },
+     "PLUVIOMETRIA - Aggregazione a 24 ore (0-24)": {
+      "Anni": [
+       [
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio0_24&D=json&IDS=TOS07000001"
+     },
+     "TERMOMETRIA - Massima giornaliera": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_max&D=json&IDS=TOS07000001"
+     },
+     "TERMOMETRIA - Minima giornaliera": {
+      "Anni": [
+       [
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_min&D=json&IDS=TOS07000001"
+     }
+    }
+   }
+  },
+  {
+   "type": "Feature",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     11.2808454036713,
+     44.0796316157846
+    ]
+   },
+   "properties": {
+    "Codice": "TOS01000916",
+    "Nome": "Monte di FÃ²",
+    "Comune": "Barberino di Mugello",
+    "Provincia": "FI",
+    "Quota mslm": "820.00",
+    "Consistenza": {
+     "PLUVIOMETRIA - Aggregazione a 24 ore (9-9)": {
+      "Anni": [
+       [
+        "1991",
+        "1992",
+        "1993",
+        "1994",
+        "1995",
+        "1996",
+        "1997",
+        "1998",
+        "1999",
+        "2000",
+        "2001",
+        "2002",
+        "2003",
+        "2004",
+        "2005",
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio&D=json&IDS=TOS01000916"
+     },
+     "PLUVIOMETRIA - Aggregazione a 24 ore (0-24)": {
+      "Anni": [
+       [
+        "2004",
+        "2005",
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=pluvio0_24&D=json&IDS=TOS01000916"
+     },
+     "TERMOMETRIA - Massima giornaliera": {
+      "Anni": [
+       [
+        "1992",
+        "1993",
+        "1994",
+        "1995",
+        "1996",
+        "1997",
+        "1998",
+        "1999",
+        "2000",
+        "2001",
+        "2002",
+        "2003",
+        "2004",
+        "2005",
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_max&D=json&IDS=TOS01000916"
+     },
+     "TERMOMETRIA - Minima giornaliera": {
+      "Anni": [
+       [
+        "1992",
+        "1993",
+        "1994",
+        "1995",
+        "1996",
+        "1997",
+        "1998",
+        "1999",
+        "2000",
+        "2001",
+        "2002",
+        "2003",
+        "2004",
+        "2005",
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=termo_min&D=json&IDS=TOS01000916"
+     },
+     "IGROMETRIA - Media giornaliera (0-24)": {
+      "Anni": [
+       [
+        "2000",
+        "2001",
+        "2002",
+        "2003",
+        "2004",
+        "2005",
+        "2006",
+        "2007",
+        "2008",
+        "2009",
+        "2010",
+        "2011",
+        "2012",
+        "2013",
+        "2014",
+        "2015",
+        "2016",
+        "2017",
+        "2018",
+        "2019",
+        "2020",
+        "2021",
+        "2022",
+        "2023",
+        "2024",
+        "2025",
+        "2026"
+       ]
+      ],
+      "SorgenteDati": "https://www.sir.toscana.it/archivio/dati.php?IDST=igro0_24&D=json&IDS=TOS01000916"
+     }
+    }
+   }
+  }
+ ]
+}

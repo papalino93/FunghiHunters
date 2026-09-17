@@ -1,0 +1,165 @@
+{
+ "type": "FeatureCollection",
+ "features": [
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-4274",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1731477.50808214,
+     4853054.1444355
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 9,
+    "idstazione": "TOS01000621",
+    "nome": "Badia Prataglia",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-41f2",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1639475.51610378,
+     4888107.62624831
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 139,
+    "idstazione": "TOS02000359",
+    "nome": "Melo",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-40f8",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1717391.84451609,
+     4751284.42636962
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 389,
+    "idstazione": "TOS11000114",
+    "nome": "Abbadia S. S. - Laghetto Verde",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-427c",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1590470.3202311,
+     4881813.36668258
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 1,
+    "idstazione": "TOS01000025",
+    "nome": "Vara",
+    "valore": null,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-4174",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1599310.8092081,
+     4866073.51326789
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 265,
+    "idstazione": "TOS10000090",
+    "nome": "Pietrasanta",
+    "valore": null,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-427b",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1596701.75375376,
+     4878930.97263446
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 2,
+    "idstazione": "TOS01000056",
+    "nome": "Pian della Fioba",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-427a",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1613783.50773167,
+     4840778.76145831
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 3,
+    "idstazione": "TOS01000544",
+    "nome": "Pisa (Fac. Agraria)",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  },
+  {
+   "type": "Feature",
+   "id": "sir_pluviometri_valori_ieri9_pubblico.fid--1d58fc68_1a0aef7ad17_-4279",
+   "geometry": {
+    "type": "Point",
+    "coordinates": [
+     1713659.51600246,
+     4857775.55302266
+    ]
+   },
+   "geometry_name": "geom",
+   "properties": {
+    "gid": 4,
+    "idstazione": "TOS01000571",
+    "nome": "Vallucciole",
+    "valore": 0,
+    "dataora": "2026-09-16T07:00:00Z",
+    "data_aggiornamento": "2026-09-17T10:30:03.568Z"
+   }
+  }
+ ]
+}
