@@ -1,26 +1,147 @@
 @import "tailwindcss";
 
+/*
+ * FungiCast — sistema cromatico.
+ *
+ * Scuro per default, perche' e' una mappa e una mappa scura non abbaglia sotto il sole e non
+ * acceca al buio del bosco. Il chiaro esiste e funziona, ma non e' il caso d'uso principale.
+ *
+ * I colori di superficie sono grigi bluastri, freddi, in modo che la scala dell'MPI — che e'
+ * l'unica cosa satura nell'interfaccia — risalti senza competere con nulla.
+ */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --surface-0: #0b0e16;
+  --surface-1: #121724;
+  --surface-2: #1a2132;
+  --surface-3: #242d42;
+  --border: #2c3650;
+  --border-strong: #3d4a68;
+
+  --text-primary: #eef1f8;
+  --text-secondary: #a3adc4;
+  --text-muted: #6b7690;
+
+  --accent: #4dd4ac;
+  --warn: #f2b134;
+  --danger: #e2685f;
+
+  --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+  --font-mono: var(--font-mono-stack), ui-monospace, "SF Mono", Menlo, monospace;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme="dark"]) {
+    --surface-0: #f5f7fb;
+    --surface-1: #ffffff;
+    --surface-2: #eef1f7;
+    --surface-3: #e2e7f0;
+    --border: #d5dbe7;
+    --border-strong: #b9c2d4;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --text-primary: #131826;
+    --text-secondary: #4c5670;
+    --text-muted: #79839c;
   }
 }
 
+:root[data-theme="light"] {
+  --surface-0: #f5f7fb;
+  --surface-1: #ffffff;
+  --surface-2: #eef1f7;
+  --surface-3: #e2e7f0;
+  --border: #d5dbe7;
+  --border-strong: #b9c2d4;
+
+  --text-primary: #131826;
+  --text-secondary: #4c5670;
+  --text-muted: #79839c;
+}
+
+@theme inline {
+  --color-surface-0: var(--surface-0);
+  --color-surface-1: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-edge: var(--border);
+  --color-edge-strong: var(--border-strong);
+  --color-ink: var(--text-primary);
+  --color-ink-dim: var(--text-secondary);
+  --color-ink-faint: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+html,
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  height: 100%;
+}
+
+body {
+  background: var(--surface-0);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  /* Niente rimbalzo elastico: sotto c'e' una mappa, non una pagina. */
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* I numeri incolonnati si leggono solo se hanno larghezza fissa. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+  font-family: var(--font-mono);
+}
+
+/*
+ * Retino per la bassa confidence.
+ * Il riempimento non e' pieno: si vede che la stima e' incerta senza leggere una cifra.
+ */
+.hatched {
+  background-image: repeating-linear-gradient(
+    45deg,
+    transparent,
+    transparent 3px,
+    rgba(0, 0, 0, 0.35) 3px,
+    rgba(0, 0, 0, 0.35) 6px
+  );
+}
+
+/* MapLibre: il suo CSS di base con i colori nostri. */
+.maplibregl-ctrl-attrib {
+  background: color-mix(in srgb, var(--surface-1) 85%, transparent) !important;
+  color: var(--text-muted) !important;
+  font-size: 10px !important;
+}
+
+.maplibregl-ctrl-attrib a {
+  color: var(--text-secondary) !important;
+}
+
+.maplibregl-ctrl-group {
+  background: var(--surface-1) !important;
+  border: 1px solid var(--border) !important;
+}
+
+.maplibregl-ctrl-group button + button {
+  border-top: 1px solid var(--border) !important;
+}
+
+.maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: invert(0.85);
+}
+
+:root[data-theme="light"] .maplibregl-ctrl-group button .maplibregl-ctrl-icon {
+  filter: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
 }

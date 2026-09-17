@@ -35,11 +35,11 @@ export interface PotentialWindow {
 
 const DAY_NAMES = [
   'domenica',
-  'lunedi',
-  'martedi',
-  'mercoledi',
-  'giovedi',
-  'venerdi',
+  'lunedì',
+  'martedì',
+  'mercoledì',
+  'giovedì',
+  'venerdì',
   'sabato',
 ] as const
 
@@ -125,7 +125,7 @@ function compose(
         `diventano ${mpiQualifier(peak.mpi)}`,
     )
   } else if (peak.date === current.date) {
-    parts.push(`Il momento migliore dell'orizzonte disponibile e' oggi, con condizioni ${mpiQualifier(current.mpi)}`)
+    parts.push(`Il momento migliore dell'orizzonte disponibile è oggi, con condizioni ${mpiQualifier(current.mpi)}`)
   } else {
     parts.push(`Le condizioni restano ${mpiQualifier(peak.mpi)} e senza un picco marcato`)
   }
@@ -162,11 +162,11 @@ function compose(
   if (horizonDays >= 2) {
     sentence +=
       horizonDays > 5
-        ? ` Parliamo pero' di una previsione a ${horizonDays} giorni, quindi con incertezza rilevante.`
-        : ` L'incertezza cresce con i giorni: il picco e' una previsione a ${horizonDays} giorni.`
+        ? ` Parliamo però di una previsione a ${horizonDays} giorni, quindi con incertezza rilevante.`
+        : ` L'incertezza cresce con i giorni: il picco è una previsione a ${horizonDays} giorni.`
   } else if (current.confidence < 50) {
     sentence +=
-      ' La stima e\' poco solida anche per oggi: su questa zona i dati osservati sono pochi.'
+      ' La stima è poco solida anche per oggi: su questa zona i dati osservati sono pochi.'
   }
 
   return sentence

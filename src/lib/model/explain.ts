@@ -100,9 +100,9 @@ export function explainScore(
       value:
         features.tMeanWindow === null
           ? 'media termica non disponibile'
-          : `${features.tMeanWindow.toFixed(1)} C di media su ` +
+          : `${features.tMeanWindow.toFixed(1)} °C di media su ` +
             `${config.thermal.airWindowDays.value} giorni, contro un ottimo di ` +
-            `${c.thermal.optimumC.toFixed(1)} C`,
+            `${c.thermal.optimumC.toFixed(1)} °C`,
       ...provenanceOf(config.thermal.optAutumnC),
     },
     {
@@ -111,7 +111,7 @@ export function explainScore(
       contribution: result.mpi - withoutPhenology,
       value:
         c.blend.autumnality > 0.6
-          ? 'regime autunnale d\'alta quota'
+          ? 'regime autunnale d’alta quota'
           : c.blend.autumnality < 0.4
             ? 'regime estivo di bassa quota'
             : 'fra regime estivo e autunnale',
@@ -188,7 +188,7 @@ function limitingFactorOf(
     { key: 'Acqua disponibile nel suolo', gap: neutralised.withoutWater - mpi },
     { key: 'Temperatura', gap: neutralised.withoutThermal - mpi },
     { key: 'Stagione e quota', gap: neutralised.withoutPhenology - mpi },
-    { key: 'Penalita meteorologiche', gap: neutralised.withoutPenalties - mpi },
+    { key: 'Penalità meteorologiche', gap: neutralised.withoutPenalties - mpi },
   ] as const
   const worst = gaps.reduce((acc, g) => (g.gap > acc.gap ? g : acc), gaps[0])
   return worst.gap > 1 ? worst.key : null

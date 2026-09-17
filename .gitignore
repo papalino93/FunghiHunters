@@ -45,3 +45,6 @@ next-env.d.ts
 /data/cache/
 *.local.json
 .DS_Store
+
+# asset vendor copiati a ogni build
+/public/maplibre/

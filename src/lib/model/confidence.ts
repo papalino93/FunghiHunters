@@ -217,7 +217,7 @@ function describeVariable(variable: Variable): string {
     case 'temperature_min':
       return 'Temperatura minima'
     case 'soil_moisture':
-      return 'Umidita del suolo'
+      return 'Umidità del suolo'
     case 'et0':
       return 'Evapotraspirazione'
     case 'wind_speed_mean':

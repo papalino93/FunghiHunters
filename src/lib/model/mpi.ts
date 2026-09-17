@@ -175,7 +175,7 @@ export function computePenalties(
     detail:
       tMin === null
         ? 'minima non disponibile'
-        : `minima nella finestra ${tMin.toFixed(1)} C, soglia ${p.frost.threshold.value} C`,
+        : `minima nella finestra ${tMin.toFixed(1)} °C, soglia ${p.frost.threshold.value} °C`,
   })
 
   // Caldo: contano i giorni sopra soglia, non il picco isolato.
@@ -185,7 +185,7 @@ export function computePenalties(
     severity: heatSeverity,
     factor: withWeight(heatSeverity, p.heat.floor.value, p.heat.weight.value),
     applied: p.heat.weight.value > 0,
-    detail: `${features.heatDays} giorni sopra ${p.heat.threshold.value} C nella finestra`,
+    detail: `${features.heatDays} giorni sopra ${p.heat.threshold.value} °C nella finestra`,
   })
 
   const vpd = features.vpdMean7d
@@ -222,7 +222,7 @@ export function computePenalties(
     detail:
       drop === null
         ? 'andamento termico non disponibile'
-        : `calo massimo su tre giorni ${drop.toFixed(1)} C` +
+        : `calo massimo su tre giorni ${drop.toFixed(1)} °C` +
           (p.thermalShock.weight.value === 0 ? ' (fattore disattivato, da validare)' : ''),
   })
 

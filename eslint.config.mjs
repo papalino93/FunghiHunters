@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Bundle di MapLibre copiati fra gli asset statici prima di ogni build: non sono codice
+    // nostro e analizzarli produce oltre mille segnalazioni che nascondono le nostre.
+    "public/maplibre/**",
   ]),
 ]);
 
