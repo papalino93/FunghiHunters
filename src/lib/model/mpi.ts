@@ -316,3 +316,14 @@ export function mpiLabel(mpi: number): string {
   }
   return MPI_LABELS[MPI_LABELS.length - 1]?.label ?? 'condizioni sfavorevoli'
 }
+
+/**
+ * Solo la parte aggettivale dell'etichetta, per le frasi che hanno gia' il soggetto.
+ *
+ * Serve per non scrivere "le condizioni diventano condizioni poco favorevoli". Deriva
+ * dall'etichetta invece di duplicarla, cosi' la scala resta definita in un posto solo e il
+ * vincolo semantico non puo' essere aggirato passando da qui.
+ */
+export function mpiQualifier(mpi: number): string {
+  return mpiLabel(mpi).replace(/^condizioni\s+/, '')
+}
