@@ -8,8 +8,14 @@ Web app mobile-first che calcola, per ogni zona della Toscana, un **Mushroom Pot
 
 ## Stato
 
-**Fase 1 — Discovery & Architecture.** Nessun codice applicativo ancora.
-Vedi [`docs/DISCOVERY-AND-ARCHITECTURE.md`](docs/DISCOVERY-AND-ARCHITECTURE.md).
+**Fase 1 completata.** Discovery, verifica delle fonti e architettura approvate; le otto
+decisioni aperte sono chiuse. Nessun codice applicativo ancora scritto.
+
+- [`docs/DISCOVERY-AND-ARCHITECTURE.md`](docs/DISCOVERY-AND-ARCHITECTURE.md) — fonti, licenze,
+  limiti verificati, schema DB, MPI v1, confidence, costi
+- [`docs/DECISIONS.md`](docs/DECISIONS.md) — le decisioni vincolanti per l'implementazione
+
+Ambito della v1: **solo porcino**, un unico indice, sulle sette zone di taratura.
 
 ## Stack
 
