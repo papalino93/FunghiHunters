@@ -7,10 +7,11 @@ import type { Snapshot } from '@/lib/snapshot/types'
 import {
   availableForestTypes,
   rankZones,
-  suggestedTiming,
   type Suggestion,
   type UserPosition,
 } from '@/lib/recommend/rank'
+import { buildVerdict } from '@/lib/recommend/verdict'
+import { VerdictCard } from '@/components/today/VerdictCard'
 import { SuggestionCard } from '@/components/today/SuggestionCard'
 import { LocationPrompt } from '@/components/today/LocationPrompt'
 import { FilterBar, type Filters } from '@/components/today/FilterBar'
@@ -96,38 +97,29 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
 
   const top = suggestions.slice(0, 5)
   const best = top[0]
+  const verdict = buildVerdict({ zones: snapshot.zones, suggestions, date, today, formatDate })
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
-      <header className="mb-4">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">Dove vado oggi?</h1>
-        <p className="mt-1 text-sm leading-snug text-ink-dim">
-          Aree ordinate per potenziale, affidabilità e distanza.{' '}
-          <strong className="font-medium text-ink">
-            È una stima ambientale, non una conferma di presenza.
-          </strong>
-        </p>
-      </header>
+      <h1 className="sr-only">Dove vado oggi</h1>
 
       <DayPicker dates={dates} selected={date} today={today} onSelect={setDate} />
+
+      <div className="mt-3">
+        <VerdictCard verdict={verdict} />
+      </div>
 
       {best === undefined ? (
         <NoResults onReset={() => { setFilters({ maxDistanceKm: null, forestTypes: [], minDataQuality: null }) }} />
       ) : (
         <>
-          <p className="mb-2 mt-4 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-            {position === null ? 'Migliori aree' : 'Migliori aree raggiungibili'} ·{' '}
-            {formatDate(date)}
+          <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            {position === null ? 'Le aree, dalla migliore' : 'Le aree raggiungibili, dalla migliore'}
           </p>
           <ol className="space-y-3">
-            {top.map((suggestion, index) => (
+            {top.map((suggestion) => (
               <li key={suggestion.zone.code}>
-                <SuggestionCard
-                  suggestion={suggestion}
-                  rank={index + 1}
-                  today={today}
-                  timing={suggestedTiming(suggestion.bestDay, today, formatDate)}
-                />
+                <SuggestionCard suggestion={suggestion} today={today} />
               </li>
             ))}
           </ol>

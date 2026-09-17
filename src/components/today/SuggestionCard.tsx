@@ -3,119 +3,110 @@
 import Link from 'next/link'
 
 import type { Suggestion } from '@/lib/recommend/rank'
-import { confidenceOpacity, formatDate, isLowConfidence, mpiColor, readableTextOn } from '@/lib/ui/scale'
+import { zoneFacts } from '@/lib/recommend/verdict'
+import { PotentialBar } from '@/components/today/PotentialBar'
+import { formatDate } from '@/lib/ui/scale'
 
 /**
- * Una proposta, leggibile in due secondi.
+ * Una zona, leggibile senza interpretare numeri.
  *
- * La gerarchia è: quanto vale, dov'è, cosa la frena, quando conviene. In quest'ordine perché è
- * l'ordine in cui si decide. I fattori stanno in chiaro e non dietro un tocco: se l'utente deve
- * aprire un pannello per sapere perché, la scheda non ha fatto il suo lavoro.
+ * La versione precedente metteva sei numeri su una scheda — punteggio, affidabilità, qualità
+ * dati, certezza previsione, tendenza, ottimo termico — e lasciava all'utente il lavoro di capire
+ * quali contassero. Era una dashboard, non uno strumento.
+ *
+ * Qui restano: dove, quanto (sulla scala, non come cifra isolata), cosa funziona, cosa manca,
+ * quando conviene. Il resto è nel dettaglio, per chi lo cerca.
  */
 export function SuggestionCard({
   suggestion,
-  rank,
   today,
-  timing,
 }: {
   suggestion: Suggestion
-  rank: number
   today: string
-  timing: string
 }) {
-  const { zone, mpi, distanceKm, trend72h, bestDay } = suggestion
-  const point = zone.series.find((p) => p.date === today)
-  const low = isLowConfidence(suggestion.confidence)
+  const { zone, mpi, distanceKm, bestDay } = suggestion
+  const facts = zoneFacts(zone)
+  const betterLater = bestDay !== null && bestDay.date !== today && bestDay.mpi > mpi + 3
 
   return (
-    <article className="rounded-xl border border-edge bg-surface-1 p-3">
-      <div className="flex items-start gap-3">
-        <div
-          className={`grid h-16 w-16 shrink-0 place-items-center rounded-xl border ${low ? 'hatched' : ''}`}
-          style={{
-            backgroundColor: mpiColor(mpi),
-            color: readableTextOn(mpi),
-            opacity: confidenceOpacity(suggestion.confidence),
-            borderColor: low ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)',
-            borderStyle: low ? 'dashed' : 'solid',
-          }}
-        >
-          <span className="tabular text-2xl font-semibold leading-none">{mpi.toFixed(0)}</span>
-        </div>
+    <article className="rounded-xl border border-edge bg-surface-1 p-3.5">
+      <div className="flex items-baseline justify-between gap-2">
+        <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
+        <span className="shrink-0 text-xs text-ink-faint">
+          {distanceKm !== null && <>{distanceKm.toFixed(0)} km · </>}
+          {zone.elevationM} m
+        </span>
+      </div>
+      <p className="mt-0.5 truncate text-xs text-ink-faint">{zone.forest.join(', ')}</p>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-baseline gap-2">
-            <span className="tabular text-[11px] font-semibold text-ink-faint">{rank}</span>
-            <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
-          </div>
-          <p className="mt-0.5 truncate text-xs text-ink-dim">
-            {distanceKm !== null && <>{distanceKm.toFixed(0)} km · </>}
-            {zone.elevationM} m · {zone.forest.join(', ')}
-          </p>
-          <p className="mt-1 text-sm font-medium text-ink">{zone.label}</p>
-        </div>
+      <div className="mt-2.5">
+        <PotentialBar mpi={mpi} />
       </div>
 
-      <dl className="mt-3 grid grid-cols-3 gap-1.5 text-center">
-        <Metric
-          label="Dati"
-          value={`${zone.dataQuality.toFixed(0)}`}
-          hint="osservazioni"
-        />
-        <Metric
-          label="Previsione"
-          value={`${(point?.forecastCertainty ?? zone.forecastCertainty).toFixed(0)}`}
-          hint="del giorno"
-        />
-        <Metric
-          label="72 ore"
-          value={formatTrend(trend72h)}
-          hint="andamento"
-        />
-      </dl>
-
-      <ul className="mt-2.5 space-y-1">
-        {suggestion.reasons.slice(0, 3).map((reason) => (
-          <li key={reason} className="flex gap-1.5 text-xs leading-snug text-ink-dim">
-            <span aria-hidden="true" className="text-ink-faint">
-              ·
-            </span>
-            {reason}
+      <ul className="mt-2.5 space-y-1.5">
+        {facts.good !== null && (
+          <li className="flex gap-2 text-xs leading-snug text-ink-dim">
+            <Mark kind="good" />
+            {facts.good}
           </li>
-        ))}
+        )}
+        {facts.bad !== null && (
+          <li className="flex gap-2 text-xs leading-snug text-ink-dim">
+            <Mark kind="bad" />
+            {facts.bad}
+          </li>
+        )}
       </ul>
 
-      <p className="mt-2.5 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-dim">
-        {timing}
-        {bestDay !== null && bestDay.date !== today && (
-          <> Il massimo previsto è {bestDay.mpi.toFixed(0)} il {formatDate(bestDay.date)}.</>
+      <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-dim">
+        {betterLater ? (
+          <span>
+            Meglio <strong className="font-medium text-ink">{formatDate(bestDay.date)}</strong>
+          </span>
+        ) : (
+          <span>Nessun giorno migliore in vista</span>
         )}
+        <span aria-hidden="true" className="text-ink-faint">
+          ·
+        </span>
+        <Reliability dataQuality={zone.dataQuality} />
       </p>
 
       <Link
         href={`/mappa?zona=${zone.code}`}
-        className="mt-2.5 flex min-h-11 items-center justify-center rounded-lg border border-edge
+        className="mt-3 flex min-h-11 items-center justify-center rounded-lg border border-edge
                    bg-surface-2 text-sm font-medium text-ink transition-colors hover:bg-surface-3
                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
       >
-        Vedi sulla mappa e perché
+        Dettaglio e mappa
       </Link>
     </article>
   )
 }
 
-/** Una variazione sotto il mezzo punto è rumore, e va detta come tale invece che arrotondata a "-0". */
-function formatTrend(value: number): string {
-  if (Math.abs(value) < 0.5) return 'stabile'
-  return `${value > 0 ? '+' : ''}${value.toFixed(0)}`
+/**
+ * L'affidabilità dei dati in parole.
+ * «79» non dice a nessuno se fidarsi; «stima solida» sì, e il numero resta nel dettaglio.
+ */
+function Reliability({ dataQuality }: { dataQuality: number }) {
+  const label =
+    dataQuality >= 70 ? 'stima solida' : dataQuality >= 50 ? 'stima discreta' : 'stima incerta'
+  const colour =
+    dataQuality >= 70 ? 'text-accent' : dataQuality >= 50 ? 'text-ink-dim' : 'text-warn'
+  return <span className={colour}>{label}</span>
 }
 
-function Metric({ label, value, hint }: { label: string; value: string; hint: string }) {
+function Mark({ kind }: { kind: 'good' | 'bad' }) {
   return (
-    <div className="rounded-lg bg-surface-2 px-1.5 py-1.5">
-      <dt className="text-[10px] uppercase tracking-wide text-ink-faint">{label}</dt>
-      <dd className="tabular mt-0.5 text-sm font-semibold text-ink">{value}</dd>
-      <p className="truncate text-[10px] text-ink-faint">{hint}</p>
-    </div>
+    <svg
+      width="14" height="14" viewBox="0 0 14 14" aria-hidden="true"
+      className={`mt-0.5 shrink-0 ${kind === 'good' ? 'text-accent' : 'text-warn'}`}
+    >
+      {kind === 'good' ? (
+        <path d="M3 7.5l2.8 2.8L11 4.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+      ) : (
+        <path d="M7 3v5M7 10.5v.5" stroke="currentColor" strokeWidth="1.8" fill="none" strokeLinecap="round" />
+      )}
+    </svg>
   )
 }

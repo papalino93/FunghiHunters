@@ -3,18 +3,10 @@
 import { useState } from 'react'
 
 import type { SnapshotFactor, SnapshotZone } from '@/lib/snapshot/types'
-// Le etichette vengono dal motore e da nessun altro posto: il vincolo semantico e' verificato
-// da un test su MPI_LABELS, e duplicarle qui lo aggirerebbe in silenzio.
-import { mpiLabel } from '@/lib/model/mpi'
 import { Sparkline } from '@/components/Sparkline'
-import {
-  formatDate,
-  formatValue,
-  isLowConfidence,
-  mpiColor,
-  provenanceLabel,
-  readableTextOn,
-} from '@/lib/ui/scale'
+import { PotentialBar } from '@/components/today/PotentialBar'
+import { zoneFacts } from '@/lib/recommend/verdict'
+import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
@@ -49,6 +41,7 @@ export function ZoneSheet({
   if (point === undefined) return null
 
   const isToday = selectedDate === todayDate
+  const facts = zoneFacts(zone)
 
   return (
     <section
@@ -57,48 +50,65 @@ export function ZoneSheet({
                  backdrop-blur-xl"
       aria-label={`Dettaglio ${zone.name}`}
     >
-      <header className="flex items-start gap-3 border-b border-edge px-4 pb-3 pt-3">
-        <ScoreBadge mpi={point.mpi} confidence={point.confidence} />
+      <header className="border-b border-edge px-4 pb-3 pt-3">
+        <div className="flex items-start gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
+            <p className="truncate text-xs text-ink-dim">
+              {zone.reference} · {zone.province} · {zone.elevationM} m · {zone.forest.join(', ')}
+            </p>
+          </div>
 
-        <div className="min-w-0 flex-1">
-          <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
-          <p className="truncate text-xs text-ink-dim">
-            {zone.reference} · {zone.province} · {zone.elevationM} m · {zone.forest.join(', ')}
-          </p>
-          <p className="mt-1 text-sm font-medium text-ink">
-            {mpiLabel(point.mpi)}
-            {!isToday && (
-              <span className="ml-1 text-xs font-normal text-ink-faint">
-                · {formatDate(selectedDate)}
-              </span>
-            )}
-          </p>
-          {/* Provenienza del dato di questo giorno: misura, modello o previsione. */}
-          <p className="mt-0.5 text-[11px] text-ink-faint">
-            dato {provenanceLabel(point.provenance)}
-            {point.rainMm !== null && ` · pioggia ${point.rainMm.toFixed(1)} mm`}
-            {point.tMinC !== null &&
-              point.tMaxC !== null &&
-              ` · ${point.tMinC.toFixed(0)}–${point.tMaxC.toFixed(0)} °C`}
-          </p>
-        </div>
-
-        <button
+          <button
           type="button"
           onClick={onClose}
           aria-label="Chiudi"
           className="-mr-1 -mt-1 rounded-lg p-2 text-ink-faint transition-colors hover:bg-surface-2
                      hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-            <path
-              d="M4 4l8 8M12 4l-8 8"
-              stroke="currentColor"
-              strokeWidth="1.6"
-              strokeLinecap="round"
-            />
-          </svg>
-        </button>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M4 4l8 8M12 4l-8 8"
+                stroke="currentColor"
+                strokeWidth="1.6"
+                strokeLinecap="round"
+              />
+            </svg>
+          </button>
+        </div>
+
+        {/* La scala invece del numero isolato: si capisce dove cade senza sapere cosa sia un 24. */}
+        <div className="mt-2.5">
+          <PotentialBar mpi={point.mpi} />
+        </div>
+
+        {!isToday && (
+          <p className="mt-1 text-[11px] text-ink-faint">{formatDate(selectedDate)}</p>
+        )}
+
+        <ul className="mt-2 space-y-1">
+          {facts.good !== null && (
+            <li className="text-xs leading-snug text-ink-dim">
+              <span className="text-accent" aria-hidden="true">✓ </span>
+              {facts.good}
+            </li>
+          )}
+          {facts.bad !== null && (
+            <li className="text-xs leading-snug text-ink-dim">
+              <span className="text-warn" aria-hidden="true">! </span>
+              {facts.bad}
+            </li>
+          )}
+        </ul>
+
+        {/* Provenienza del dato di questo giorno: misura, modello o previsione. */}
+        <p className="mt-1.5 text-[11px] text-ink-faint">
+          dato {provenanceLabel(point.provenance)}
+          {point.rainMm !== null && ` · pioggia ${point.rainMm.toFixed(1)} mm`}
+          {point.tMinC !== null &&
+            point.tMaxC !== null &&
+            ` · ${point.tMinC.toFixed(0)}–${point.tMaxC.toFixed(0)} °C`}
+        </p>
       </header>
 
       <nav className="flex gap-1 border-b border-edge px-2 py-1.5" aria-label="Sezioni">
@@ -138,27 +148,6 @@ export function ZoneSheet({
   )
 }
 
-function ScoreBadge({ mpi, confidence }: { mpi: number; confidence: number }) {
-  const low = isLowConfidence(confidence)
-  return (
-    <div className="shrink-0">
-      <div
-        className={`grid h-14 w-14 place-items-center rounded-xl border ${low ? 'hatched' : ''}`}
-        style={{
-          backgroundColor: mpiColor(mpi),
-          color: readableTextOn(mpi),
-          borderColor: low ? 'rgba(255,255,255,0.5)' : 'rgba(255,255,255,0.25)',
-          borderStyle: low ? 'dashed' : 'solid',
-        }}
-      >
-        <span className="tabular text-xl font-semibold leading-none">{mpi.toFixed(0)}</span>
-      </div>
-      <p className="mt-1 text-center text-[10px] uppercase tracking-wide text-ink-faint">
-        aff. {confidence.toFixed(0)}
-      </p>
-    </div>
-  )
-}
 
 function Summary({
   zone,
