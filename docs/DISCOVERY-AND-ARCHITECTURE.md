@@ -1291,3 +1291,63 @@ in ogni schermata che parli di specie.
 
 **Fine del report. In attesa di approvazione e delle risposte alle 8 domande aperte
 prima di procedere all'implementazione.**
+
+---
+
+## APPENDICE B — correzioni emerse implementando (aggiornata al 2026-09-17)
+
+Cose scoperte scrivendo gli adapter e facendoli girare sul dato vero, che correggono o precisano
+il corpo del report. Le lascio qui invece di riscrivere sopra, perche' come si e' arrivati a un
+numero conta quanto il numero.
+
+**B.1 — Lo sfasamento 9-9 e' evitabile per la pioggia, non per la temperatura.**
+Il §0.1 dice che il problema "non esiste piu'". Vale per la pioggia, che ha la variante
+`pluvio0_24`. Le temperature **non ce l'hanno**: `termo_max` e `termo_min` hanno tutte le
+etichette alle 09:00 e non esiste un `IDST` 0-24. Verificato ispezionando gli orari distinti
+degli ultimi 400 record.
+
+Il confronto con Open-Meteo alla stessa quota su 70 giorni dice pero' che **nessuna serie va
+spostata**: l'errore medio assoluto e' minimo a sfasamento zero per tutte.
+
+| serie | shift -1 | shift 0 | shift +1 |
+|---|---|---|---|
+| pioggia 0-24 | 1.98 mm | **1.01 mm** | 1.63 mm |
+| pioggia 9-9 | 1.47 mm | **1.17 mm** | 2.02 mm |
+| Tmax | 1.61 °C | **0.95 °C** | 1.70 °C |
+| Tmin | 3.20 °C | 3.14 °C | 3.11 °C |
+
+**B.2 — La Tmin di stazione ha un bias di 3 gradi, e cambia la penalita' da gelata.**
+Sulla Tmin il test sopra non discrimina, perche' l'errore non e' sfasamento ma **bias di sito**:
+la differenza media stazione meno modello e' **−3.14 °C** (sd 1.22), e rimuovendola l'errore
+residuo scende a 0.99 °C, lo stesso della Tmax. Non e' rumore. La stazione "Laghetto Verde" sta
+in una conca e accumula aria fredda di notte, cosa che un modello a 9 km non puo' vedere.
+
+Conseguenza operativa: **la penalita' da gelata e ogni soglia notturna vanno valutate sulla Tmin
+osservata, non su quella modellata.** Con il modello si perderebbero tre gradi di raffreddamento
+proprio dove contano. E' anche la giustificazione quantitativa della correzione del bias per
+variabile e per stazione, che sale da "nice to have di Phase 2" a requisito.
+
+**B.3 — TOS07000001 misura la pioggia.** Il prompt di progetto la dava come stazione che porta la
+minima termometrica "ma non la pioggia". Verificato: misura pioggia in entrambe le finestre fino
+al 2026. La sparsita' per grandezza resta vera — quella stazione non ha ne' anemometria ne'
+igrometria, che il Laghetto Verde ha — ma l'esempio specifico del prompt non regge piu'.
+
+**B.4 — Le due serie di pioggia non sono interscambiabili giorno per giorno.** Sull'anno
+coincidono entro lo 0.1 % (2018: 1936.4 contro 1936.4; 2025: 1371.4 contro 1371.4), ma su una
+finestra di 43 giorni differiscono del 7 %, perche' la ri-affettatura ridistribuisce i singoli
+eventi. Ed e' il giorno per giorno ad alimentare il modello.
+
+**B.5 — Sette stazioni espongono `Consistenza` come array vuoto** invece che come oggetto: e' il
+comportamento di `json_encode` in PHP con un array associativo vuoto. Sono stazioni senza alcuna
+misura, fra cui — con una certa ironia — quella chiamata "Monte Amiata". Rifiutarle faceva
+fallire l'intera ingestione.
+
+**B.6 — Il criterio statistico da solo produce falsi positivi.** Alla prima esecuzione sul dato
+reale il controllo sull'outlier spaziale ha segnalato due stazioni con uno scarto di **2.4 °C**,
+a 10.6 deviazioni robuste, perche' in una giornata termicamente uniforme le vicine si stringono e
+il MAD diventa piccolissimo. Ma 2.4 °C fra fondovalle e versante sono meteorologia. Ora serve che
+il valore sia anomalo **e** lontano in unita' fisiche.
+
+**B.7 — `dataora` puo' essere nulla.** Per le stazioni che non hanno trasmesso, il GeoServer
+annulla anche il timestamp, non solo il valore. Le conserviamo datate al giorno del layer: "muta
+oggi" e' informazione per il controllo qualita', non un record da scartare.
