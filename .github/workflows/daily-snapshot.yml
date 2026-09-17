@@ -1,0 +1,59 @@
+# Ricalcolo giornaliero dell'MPI.
+#
+# Gira qui e non su Vercel per due motivi misurati, non per gusto:
+# il piano Hobby di Vercel consente un solo cron al giorno con precisione di un'ora, e le sue
+# funzioni si fermano a 300 secondi, mentre questo job scarica quaranta serie storiche dal SIR.
+# GitHub Actions su repository pubblico ha minuti illimitati e sette ore per job.
+#
+# Il cron di GitHub e' best-effort e puo' ritardare di mezz'ora nelle ore di punta. Per un
+# processo con latenza biologica di settimane e' irrilevante.
+
+name: Snapshot giornaliero
+
+on:
+  schedule:
+    # 11:40 UTC: il SIR aggiorna i suoi layer verso le 10:30 UTC, quindi troviamo il dato fresco.
+    - cron: '40 11 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      # Il motore deve essere verde prima di produrre numeri che finiscono in mappa.
+      - run: npm run typecheck
+      - run: npm run test
+
+      - name: Calcola lo snapshot
+        run: npx tsx scripts/build-snapshot.ts --stations 45
+
+      - name: Commit se qualcosa e' cambiato
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add public/data/snapshot.json
+          # Senza questo controllo il job fallirebbe nei giorni in cui nulla cambia.
+          if git diff --staged --quiet; then
+            echo "Nessuna variazione: niente da committare."
+          else
+            git commit -m "Snapshot $(date -u +%Y-%m-%d)"
+            git push
+          fi
