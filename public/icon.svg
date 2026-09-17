@@ -1,8 +1,8 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FungiCast">
-  <rect width="512" height="512" rx="112" fill="#0b0e16"/>
-  <!-- Una curva di livello e il gradiente del potenziale: cartografia, non un fungo stilizzato. -->
-  <path d="M96 344c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#2b7983" stroke-width="18" stroke-linecap="round"/>
-  <path d="M96 288c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#3ba070" stroke-width="18" stroke-linecap="round" opacity=".85"/>
-  <path d="M96 232c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#8dc34c" stroke-width="18" stroke-linecap="round" opacity=".7"/>
-  <circle cx="256" cy="392" r="26" fill="#f3d83f"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" role="img" aria-label="FungiCast">
+  <rect width="340" height="340" rx="74" fill="#0b0e16"/>
+  <!-- Porcino stilizzato: l'icona deve farsi riconoscere in un istante, il resto dell'app resta senza illustrazioni di funghi. -->
+  <path d="M144 190h52l10 108a26 26 0 0 1-26 28h-20a26 26 0 0 1-26-28z" fill="#efe3c8"/>
+  <path d="M170 42c-84 0-134 56-134 104 0 20 16 34 36 34h196c20 0 36-14 36-34 0-48-50-104-134-104z" fill="#b5793a"/>
+  <path d="M170 42c-84 0-134 56-134 104 0 10 4 18 10 24 18-58 68-98 124-98s106 40 124 98c6-6 10-14 10-24 0-48-50-104-134-104z" fill="#c98f4c"/>
+  <rect x="60" y="176" width="220" height="10" rx="5" fill="#0b0e16" opacity="0.25"/>
 </svg>
