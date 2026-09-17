@@ -1,0 +1,231 @@
+/**
+ * explainScore(): nessuna scatola nera.
+ *
+ * Il contributo di ogni fattore e' calcolato come **differenza rispetto al modello con quel
+ * fattore neutralizzato**. In un modello moltiplicativo e' l'unica decomposizione onesta: dire
+ * "l'acqua vale il 40 % del punteggio" sarebbe una ripartizione inventata, mentre "senza il
+ * limite idrico saresti a 71 invece che a 43" e' una frase verificabile.
+ *
+ * Ogni fattore dichiara anche da dove viene il numero e quale fonte lo giustifica. Un parametro
+ * senza fonte e' visibilmente marcato come da calibrare: e' la stessa disciplina che impedisce
+ * di inventare soglie biologiche.
+ */
+
+import { ALGORITHM_V1, type AlgorithmConfig, type Param } from '@/lib/config/algorithm'
+import type { CellFeatures } from '@/lib/model/features'
+import { mpiLabel, type MpiResult } from '@/lib/model/mpi'
+
+export interface Factor {
+  readonly key: string
+  readonly label: string
+  /** Punti di MPI guadagnati (positivo) o persi (negativo) rispetto al fattore neutro. */
+  readonly contribution: number
+  /** Il valore misurato che ha prodotto il contributo. */
+  readonly value: string
+  readonly provenance: 'sourced' | 'calibrate'
+  readonly source?: string
+}
+
+export interface ConfidenceFactor {
+  readonly key: string
+  readonly label: string
+  readonly value: string
+  readonly impact: number
+}
+
+export interface MpiExplanation {
+  readonly mpi: number
+  readonly confidence: number
+  readonly algorithmVersion: string
+  readonly label: string
+  readonly positiveFactors: readonly Factor[]
+  readonly negativeFactors: readonly Factor[]
+  readonly neutralFactors: readonly Factor[]
+  readonly confidenceFactors: readonly ConfidenceFactor[]
+  /** Il singolo fattore che sta abbassando di piu' il punteggio. */
+  readonly limitingFactor: string | null
+}
+
+const POSITIVE_THRESHOLD = 2
+const NEGATIVE_THRESHOLD = -2
+
+function provenanceOf(param: Param): { provenance: 'sourced' | 'calibrate'; source?: string } {
+  return param.source === undefined
+    ? { provenance: param.provenance }
+    : { provenance: param.provenance, source: param.source }
+}
+
+/**
+ * Decompone un punteggio gia' calcolato.
+ *
+ * @param result output di `computeMpi`
+ * @param features le stesse feature usate per calcolarlo
+ * @param confidence confidence 0-100 gia' calcolata
+ */
+export function explainScore(
+  result: MpiResult,
+  features: CellFeatures,
+  confidence: number,
+  confidenceFactors: readonly ConfidenceFactor[] = [],
+  config: AlgorithmConfig = ALGORITHM_V1,
+): MpiExplanation {
+  const c = result.components
+  const penaltyProduct = c.penalties.reduce((acc, p) => acc * p.factor, 1)
+  const clamped = Math.min(1, Math.max(0, c.core))
+
+  // Punteggio che si otterrebbe neutralizzando un singolo fattore, tenendo fermi gli altri.
+  const withoutWater = 100 * Math.min(1, c.thermal.score * c.phenology) * penaltyProduct
+  const withoutThermal = 100 * Math.min(1, c.water * c.phenology) * penaltyProduct
+  const withoutPhenology = 100 * Math.min(1, c.water * c.thermal.score) * penaltyProduct
+  const withoutPenalties = 100 * clamped
+
+  const factors: Factor[] = [
+    {
+      key: 'water',
+      label: 'Acqua disponibile nel suolo',
+      contribution: result.mpi - withoutWater,
+      value:
+        `${features.water.effectiveMm.toFixed(0)} mm efficaci su ` +
+        `${features.water.rawMm.toFixed(0)} mm caduti in ${config.water.windowDays.value} giorni` +
+        (features.water.initialDeficitMm > 1
+          ? `; il terreno partiva secco, quindi il fabbisogno sale a ` +
+            `${(config.water.referenceMm.value + features.water.initialDeficitMm).toFixed(0)} mm`
+          : ''),
+      ...provenanceOf(config.water.windowDays),
+    },
+    {
+      key: 'thermal',
+      label: 'Temperatura',
+      contribution: result.mpi - withoutThermal,
+      value:
+        features.tMeanWindow === null
+          ? 'media termica non disponibile'
+          : `${features.tMeanWindow.toFixed(1)} C di media su ` +
+            `${config.thermal.airWindowDays.value} giorni, contro un ottimo di ` +
+            `${c.thermal.optimumC.toFixed(1)} C`,
+      ...provenanceOf(config.thermal.optAutumnC),
+    },
+    {
+      key: 'phenology',
+      label: 'Stagione e quota',
+      contribution: result.mpi - withoutPhenology,
+      value:
+        c.blend.autumnality > 0.6
+          ? 'regime autunnale d\'alta quota'
+          : c.blend.autumnality < 0.4
+            ? 'regime estivo di bassa quota'
+            : 'fra regime estivo e autunnale',
+      ...provenanceOf(config.phenology.autumnPeakDay),
+    },
+  ]
+
+  for (const penalty of c.penalties) {
+    if (!penalty.applied) continue
+    const others = c.penalties.reduce((acc, p) => (p.key === penalty.key ? acc : acc * p.factor), 1)
+    const without = 100 * clamped * others
+    factors.push({
+      key: `penalty.${penalty.key}`,
+      label: penaltyLabel(penalty.key),
+      contribution: result.mpi - without,
+      value: penalty.detail,
+      ...provenanceOf(penaltyParam(penalty.key, config)),
+    })
+  }
+
+  // Le penalita' disattivate si mostrano come neutre e dichiarate tali: nascondere un fattore
+  // che il modello calcola ma non applica sarebbe meno onesto che mostrarlo a zero.
+  for (const penalty of c.penalties) {
+    if (penalty.applied) continue
+    factors.push({
+      key: `penalty.${penalty.key}`,
+      label: `${penaltyLabel(penalty.key)} (non applicato)`,
+      contribution: 0,
+      value: penalty.detail,
+      ...provenanceOf(penaltyParam(penalty.key, config)),
+    })
+  }
+
+  const positive = factors
+    .filter((f) => f.contribution > POSITIVE_THRESHOLD)
+    .sort((a, b) => b.contribution - a.contribution)
+  const negative = factors
+    .filter((f) => f.contribution < NEGATIVE_THRESHOLD)
+    .sort((a, b) => a.contribution - b.contribution)
+  const neutral = factors.filter(
+    (f) => f.contribution >= NEGATIVE_THRESHOLD && f.contribution <= POSITIVE_THRESHOLD,
+  )
+
+  return {
+    mpi: result.mpi,
+    confidence,
+    algorithmVersion: result.algorithmVersion,
+    label: mpiLabel(result.mpi),
+    positiveFactors: positive,
+    negativeFactors: negative,
+    neutralFactors: neutral,
+    confidenceFactors,
+    limitingFactor: limitingFactorOf(
+      { withoutWater, withoutThermal, withoutPhenology, withoutPenalties },
+      result.mpi,
+    ),
+  }
+}
+
+/**
+ * Il fattore che, se fosse ideale, farebbe salire di piu' il punteggio.
+ * E' cio' che l'utente vuole sapere davvero: non "quanto vale l'acqua", ma "cosa mi manca".
+ */
+function limitingFactorOf(
+  neutralised: {
+    withoutWater: number
+    withoutThermal: number
+    withoutPhenology: number
+    withoutPenalties: number
+  },
+  mpi: number,
+): string | null {
+  const gaps = [
+    { key: 'Acqua disponibile nel suolo', gap: neutralised.withoutWater - mpi },
+    { key: 'Temperatura', gap: neutralised.withoutThermal - mpi },
+    { key: 'Stagione e quota', gap: neutralised.withoutPhenology - mpi },
+    { key: 'Penalita meteorologiche', gap: neutralised.withoutPenalties - mpi },
+  ] as const
+  const worst = gaps.reduce((acc, g) => (g.gap > acc.gap ? g : acc), gaps[0])
+  return worst.gap > 1 ? worst.key : null
+}
+
+function penaltyLabel(key: string): string {
+  switch (key) {
+    case 'frost':
+      return 'Gelata'
+    case 'heat':
+      return 'Stress da caldo'
+    case 'vpd':
+      return 'Aria secca (VPD)'
+    case 'wind':
+      return 'Vento'
+    case 'thermalShock':
+      return 'Shock termico'
+    default:
+      return key
+  }
+}
+
+function penaltyParam(key: string, config: AlgorithmConfig): Param {
+  const penalties = config.penalties
+  switch (key) {
+    case 'frost':
+      return penalties.frost.threshold
+    case 'heat':
+      return penalties.heat.threshold
+    case 'vpd':
+      return penalties.vpd.threshold
+    case 'wind':
+      return penalties.wind.threshold
+    case 'thermalShock':
+      return penalties.thermalShock.weight
+    default:
+      return penalties.frost.threshold
+  }
+}
+
