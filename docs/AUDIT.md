@@ -1,5 +1,29 @@
 # Audit — FungiCast Toscana
 
+## Aggiornamento — audit tecnico v1.1.0 (17 settembre 2026, sessione successiva)
+
+Verifica puntuale delle sei affermazioni con cui è stata aperta questa sessione, come richiesto
+("non dare nulla per scontato: conferma o correggi"). Metodo: lettura del codice, esecuzione di
+`npm run check` e `npm run build` da zero (`.next` cancellato prima), `ps aux` per processi
+residui.
+
+| Affermazione | Verifica |
+|---|---|
+| Modello alla versione 1.1.0 | **Confermato.** `src/lib/config/algorithm.ts:300`, `version: '1.1.0-porcino'`. |
+| "più parametri documentati e test di dominio" | **Confermato.** 11 parametri con fonte su 69 dichiarati (vedi commit `2eefe0e`), distinti per livello di revisione. |
+| 258 test di logica, non 232 | **Corretto.** `npm run test` → 258/258. Il numero 232 è quello prima della sessione precedente (login/sync + tombstone), che ha aggiunto 26 test. Nessuna discrepanza reale: sono stati contati in un momento diverso. |
+| Solo 2 fonti runtime attive (SIR, Open-Meteo) | **Confermato.** `src/lib/sources/`: `sir-geoserver.ts` + `sir-archive.ts` + `sir-measures.ts` sono tre file per **una** fonte (SIR), più `open-meteo.ts`. Due fonti distinte, non tre o quattro. |
+| Previsione aggregata in 7 macro-zone | **Confermato.** `src/lib/config/zones.ts`: esattamente 7 (`amiata`, `casentino`, `pratomagno`, `garfagnana`, `pistoiese`, `mugello`, `metallifere`). |
+| "Non esistono ancora login, sincronizzazione cloud o Google Auth funzionanti" | **Da correggere, con una distinzione importante.** Il codice esiste, è reale (non un mock lasciato a metà) e passa 26 test automatici: `src/lib/auth/`, `src/lib/sync/`, schermata `/account`, rotta `/api/account/delete`. **Non è però mai stato verificato contro un progetto Supabase vero**, perché questo ambiente non può crearne uno (credenziali di terze parti). "Funzionante" è ambiguo: il codice funziona contro backend finti, **non è dimostrato che funzioni contro Supabase reale**. Trattalo come "pronto ma non verificato dal vivo", non come "assente" né come "verificato". Vedi `docs/SYNC.md` per la checklist di verifica manuale, non ancora eseguita da nessuno. |
+| Build di produzione con processo bloccato | **Non riprodotto.** `rm -rf .next && npm run build`: completa in 17.3 secondi, nessun processo residuo prima o dopo (`ps aux` pulito). Non posso escludere che fosse un problema specifico dell'ambiente di chi ha eseguito il build la volta precedente (lockfile, watcher rimasto attivo, memoria); qui non si è ripresentato. |
+
+**Le due citazioni nuove**, verificate per link forniti dall'utente: un preprint bioRxiv (non
+peer-reviewed, in revisione) e uno studio su Boletus edulis in Italian Journal of Mycology
+(peer-reviewed, ma su un singolo sito, il Monte Amiata). Il punto sollevato dall'utente è corretto
+e viene affrontato sistematicamente nell'Obiettivo 1 qui sotto: **nessuna fonte, per quanto buona,
+diventa automaticamente valida per tutta la Toscana solo perché citata**. Va dichiarata la
+trasferibilità, non la sola esistenza della fonte.
+
 ## Aggiornamento — sessione account e sincronizzazione (17 settembre 2026)
 
 L'audit originale qui sotto è del commit `f204931`. Da allora sono stati corretti B1, B2, M3, ed

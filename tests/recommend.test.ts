@@ -54,6 +54,7 @@ function zone(
     name: code,
     reference: code,
     province: 'LU',
+    municipality: null,
     latitude: overrides.lat ?? 44,
     longitude: overrides.lon ?? 10.4,
     elevationM: overrides.elevationM ?? 1000,

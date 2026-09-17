@@ -55,7 +55,10 @@ export function ZoneSheet({
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
             <p className="truncate text-xs text-ink-dim">
-              {zone.reference} · {zone.province} · {zone.elevationM} m · {zone.forest.join(', ')}
+              {zone.municipality !== null && zone.municipality !== undefined
+                ? `${zone.municipality} (${zone.province})`
+                : zone.reference} ·{' '}
+              {zone.elevationM} m · {zone.forest.join(', ')}
             </p>
           </div>
 
@@ -308,9 +311,16 @@ function FactorList({
             {factor.provenance === 'calibrate' ? (
               <p className="mt-1 text-[10px] uppercase tracking-wide text-warn">da calibrare</p>
             ) : (
-              <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-ink-faint">
-                fonte: {factor.source}
-              </p>
+              <>
+                <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-ink-faint">
+                  fonte: {factor.source}
+                </p>
+                {factor.transferabilityCaution !== undefined && (
+                  <p className="mt-1 text-[10px] leading-snug text-warn">
+                    ⚠ studiato altrove o su altro habitat: {factor.transferabilityCaution}
+                  </p>
+                )}
+              </>
             )}
           </li>
         ))}

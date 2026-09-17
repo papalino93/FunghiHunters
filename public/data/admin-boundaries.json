@@ -1,0 +1,64 @@
+{
+  "source": "Confini amministrativi ISTAT (comuni), via guglielmo/geojson-italy",
+  "sourceUrl": "https://raw.githubusercontent.com/guglielmo/geojson-italy/main/geojson/limits_R_9_municipalities.geojson",
+  "license": "CC-BY (ISTAT, via guglielmo/geojson-italy)",
+  "fetchedAt": "2026-09-17T18:23:45.110Z",
+  "zones": [
+    {
+      "zoneCode": "amiata",
+      "municipality": "Abbadia San Salvatore",
+      "province": "Siena",
+      "provinceAcronym": "SI",
+      "istatCode": "052001",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "casentino",
+      "municipality": "Bibbiena",
+      "province": "Arezzo",
+      "provinceAcronym": "AR",
+      "istatCode": "051004",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "pratomagno",
+      "municipality": "Loro Ciuffenna",
+      "province": "Arezzo",
+      "provinceAcronym": "AR",
+      "istatCode": "051020",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "garfagnana",
+      "municipality": "Villa Collemandina",
+      "province": "Lucca",
+      "provinceAcronym": "LU",
+      "istatCode": "046035",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "pistoiese",
+      "municipality": "Abetone Cutigliano",
+      "province": "Pistoia",
+      "provinceAcronym": "PT",
+      "istatCode": "047023",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "mugello",
+      "municipality": "Firenzuola",
+      "province": "Firenze",
+      "provinceAcronym": "FI",
+      "istatCode": "048018",
+      "matchType": "exact"
+    },
+    {
+      "zoneCode": "metallifere",
+      "municipality": "Montieri",
+      "province": "Grosseto",
+      "provinceAcronym": "GR",
+      "istatCode": "053017",
+      "matchType": "exact"
+    }
+  ]
+}

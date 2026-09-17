@@ -96,4 +96,10 @@ export const LICENSES = {
     url: 'https://open-meteo.com/en/terms',
     attribution: 'Open-Meteo.com, su dati ECMWF IFS, DWD ICON, NOAA GFS ed ERA5',
   },
+  istatBoundaries: {
+    code: 'CC-BY',
+    name: 'Creative Commons Attribuzione',
+    url: 'https://github.com/guglielmo/geojson-italy',
+    attribution: 'ISTAT (confini comunali), via guglielmo/geojson-italy',
+  },
 } as const satisfies Record<string, SourceLicense>

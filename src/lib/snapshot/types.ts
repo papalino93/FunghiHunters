@@ -16,6 +16,8 @@ export interface SnapshotFactor {
   readonly value: string
   readonly provenance: 'sourced' | 'calibrate'
   readonly source?: string
+  /** Perché la fonte non è (o non è del tutto) una misura toscana, quando è il caso. */
+  readonly transferabilityCaution?: string
 }
 
 export interface SnapshotSeriesPoint {
@@ -67,6 +69,13 @@ export interface SnapshotZone {
   readonly name: string
   readonly reference: string
   readonly province: string
+  /**
+   * Comune reale che contiene il centro della zona, verificato contro i confini ISTAT
+   * (`src/lib/sources/istat-boundaries.ts`). `null` solo se `public/data/admin-boundaries.json`
+   * non è stato generato (`npx tsx scripts/ingest-admin-boundaries.ts`) — non dovrebbe succedere
+   * in un deploy normale, ma lo snapshot non deve rompersi se succede.
+   */
+  readonly municipality: string | null
   readonly latitude: number
   readonly longitude: number
   readonly elevationM: number

@@ -22,8 +22,38 @@ export type ParamProvenance = 'sourced' | 'calibrate'
  * Non tutte le citazioni valgono uguale, e fingere il contrario sarebbe come non citarle. Uno
  * studio sottoposto a revisione fatto sull'Amiata vale piu' di un preprint tedesco, che vale piu'
  * di una guida naturalistica. L'utente vede il livello accanto al parametro.
+ *
+ *   peer-reviewed  = pubblicato e sottoposto a revisione paritaria
+ *   preprint       = pubblicato, non ancora revisionato
+ *   institutional  = ente pubblico o istituzionale (dato ufficiale, non letteratura scientifica)
+ *   local-data     = misurato da noi, sui nostri dati, sulle nostre zone (es. cross-validation
+ *                    dell'interpolazione): non e' letteratura, ma e' evidenza empirica reale e va
+ *                    trattata come tale, non confusa con un parametro indovinato
+ *   grey           = letteratura divulgativa o manualistica, non verificabile con un DOI
  */
-export type SourceTier = 'peer-reviewed' | 'preprint' | 'grey'
+export type SourceTier = 'peer-reviewed' | 'preprint' | 'institutional' | 'local-data' | 'grey'
+
+/**
+ * Quanto un risultato misurato altrove vale per il porcino in Toscana.
+ *
+ * Il punto sollevato piu' volte su questo progetto e' semplice e giusto: un risultato osservato
+ * in una faggeta tedesca, o in un singolo sito toscano, non diventa automaticamente una regola
+ * valida per tutta la regione solo perche' e' citato. Questa struttura costringe a dichiararlo
+ * per ogni fonte, non solo per le due o tre piu' citate nei commenti.
+ */
+export interface EvidenceAssessment {
+  /** Specie effettivamente studiata, non quella che vorremmo. */
+  readonly speciesStudied: string
+  readonly habitatStudied: string
+  readonly geographicArea: string
+  readonly observationPeriod: string
+  /** Cosa e' stato davvero misurato, e cosa il risultato dimostra — non l'interpretazione. */
+  readonly demonstratedVariable: string
+  readonly demonstratedResult: string
+  /** Perche' vale (o non vale, o vale con cautela) per il porcino in Toscana. */
+  readonly transferability: string
+  readonly status: 'applicable' | 'applicable-with-caution' | 'not-applicable-without-calibration'
+}
 
 export interface Param {
   readonly value: number
@@ -71,7 +101,144 @@ export const REFERENCES = {
     'Karavani A. et al. (2018), Effect of climatic and soil moisture conditions on mushroom ' +
     'productivity and related ecosystem services in Mediterranean pine stands facing climate ' +
     'change. Agricultural and Forest Meteorology 248: 432-440',
+  /**
+   * Non letteratura: e' la nostra cross-validation, sui nostri dati, sulle sette zone.
+   * Leave-one-out su 50 stazioni SIR (134-1716 m, distanza media dalla piu' vicina 6.0 km),
+   * 40 giorni dal 2026-08-08 al 2026-09-16. Confrontata con "prendi la stazione piu' vicina in
+   * distanza efficace" — il paragone piu' severo, perche' gia' corregge la quota.
+   * Numeri completi in docs/DISCOVERY-AND-ARCHITECTURE.md, Appendice C.
+   */
+  sirCrossValidation2026:
+    'FungiCast Toscana (2026), leave-one-out cross-validation dell\'interpolazione su 50 stazioni ' +
+    'SIR attorno alle sette zone di taratura, 2026-08-08/2026-09-16. Non pubblicata, riproducibile ' +
+    'con scripts/validate-interpolation.ts. MAE: pioggia 2.37 mm (+9.7% sulla stazione piu\' ' +
+    'vicina), massima 0.96 C (+56.9%), minima 1.50 C (+16.6%). Dettaglio in ' +
+    'docs/DISCOVERY-AND-ARCHITECTURE.md, Appendice C.',
 } as const
+
+/**
+ * Valutazione dell'evidenza per ciascun riferimento, secondo lo schema richiesto: specie e
+ * habitat studiati, area geografica, periodo, cosa e' stato dimostrato davvero, e se e quanto e'
+ * trasferibile al porcino in Toscana. Una chiave per ogni voce di `REFERENCES`: nessuna citazione
+ * entra nel modello senza passare da questa valutazione esplicita.
+ */
+export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessment>> = {
+  salerni2023: {
+    speciesStudied: 'Boletus edulis',
+    habitatStudied: 'Faggeta appenninica di gestione forestale nota (diradata vs. non diradata)',
+    geographicArea: 'Monte Amiata, Abbadia San Salvatore (SI), 1050 m — una delle sette zone del modello',
+    observationPeriod: '2000-2002, monitoraggio con raccolta giornaliera durante la stagione',
+    demonstratedVariable:
+      'Relazione fra eventi di pioggia intensa (R20 ETCCDI), ritardo di fruttificazione, e ' +
+      'impennate della temperatura massima rispetto alla media del periodo',
+    demonstratedResult:
+      'Effetto positivo della pioggia intensa massimo a 12 giorni dall\'evento; impennate di ' +
+      'temperatura massima di circa 8 C sopra la media del periodo inibiscono la produzione, con ' +
+      'correlazioni negative a 4, 14 e 19 giorni',
+    transferability:
+      'La fonte piu\' forte del progetto: stessa specie, stessa regione, una delle sette zone di ' +
+      'taratura, stessi dati SIR che l\'app usa in produzione. Resta un singolo sito e tre anni: ' +
+      'non dimostra che valga identico su Casentino o Garfagnana, ma e\' la base toscana che prima ' +
+      'mancava del tutto.',
+    status: 'applicable',
+  },
+  salerni2002: {
+    speciesStudied: 'Macrofunghi in generale (non solo Boletus edulis)',
+    habitatStudied: 'Querceti (Quercus spp.)',
+    geographicArea: 'Toscana meridionale',
+    observationPeriod: 'Non riportato nei parametri usati qui (citazione di corroborazione)',
+    demonstratedVariable: 'Ritardo fra evento di pioggia e picco di specie fruttificanti',
+    demonstratedResult: 'Massimo numero di specie fruttificanti a circa 10 giorni dalla pioggia',
+    transferability:
+      'Area toscana, ma specie e habitat diversi (macrofunghi generici in querceto, non porcino in ' +
+      'faggeta). Usata solo come corroborazione indipendente del ritardo di 12 giorni misurato da ' +
+      'Salerni 2023 sull\'Amiata, non come fonte primaria di nessun parametro.',
+    status: 'applicable-with-caution',
+  },
+  habitatItalia: {
+    speciesStudied: 'Boletus edulis (porcino estivo e autunnale, distinzione tradizionale)',
+    habitatStudied: 'Faggeta (autunnale, 900-1400 m); querceto/castagneto di bassa quota (estivo)',
+    geographicArea: 'Italia, generico — non un sito o studio specifico',
+    observationPeriod: 'Non applicabile: sintesi di conoscenza tradizionale/divulgativa, non uno studio',
+    demonstratedVariable: 'Fascia altimetrica e finestra stagionale di fruttificazione osservata',
+    demonstratedResult:
+      'Consenso qualitativo su dove e quando si trova il porcino in Italia, incluso lo spostamento ' +
+      'in quota di 200-300 m osservato negli ultimi decenni',
+    transferability:
+      'Utile per fissare l\'ordine di grandezza (quota, mese) quando non esiste altro, ma non e\' ' +
+      'uno studio quantitativo: nessun numero qui ha un margine d\'errore dichiarato. Trattata come ' +
+      'punto di partenza da correggere col diario, non come misura.',
+    status: 'applicable-with-caution',
+  },
+  brejon2026: {
+    speciesStudied: 'Boletus edulis',
+    habitatStudied: 'Faggeta',
+    geographicArea: 'Europa centrale (Germania) — non Italia, non Mediterraneo',
+    observationPeriod: 'Un decennio di censimento giornaliero di sporocarpi',
+    demonstratedVariable:
+      'Finestre ottimali di temperatura (20 giorni, ottimo 13 C) e precipitazione (26 giorni, ' +
+      'senza soglia superiore), selezionate per AIC su tutte le combinazioni fra 2 e 35 giorni',
+    demonstratedResult:
+      'Relazione quadratica temperatura-fruttificazione con ottimo a 13 C, stabile entro 0.6 C fra ' +
+      'tre specificazioni di modello; effetto lineare della pioggia cumulata su 26 giorni',
+    transferability:
+      'Preprint, non ancora revisionato: il metodo (selezione di finestra per AIC su dati reali) e\' ' +
+      'solido, ma il sito e\' una faggeta tedesca di clima continentale, non mediterraneo. Usata per ' +
+      'il regime autunnale d\'alta quota, dove il tipo di bosco (faggeta) coincide; ESPLICITAMENTE ' +
+      'non usata per il regime estivo di bassa quota (cerrete/castagneti), dove trasferirla sarebbe ' +
+      'l\'errore peggiore possibile — vedi `optSummerC` in questo file, lasciato senza fonte apposta. ' +
+      'Verifica di plausibilita\' (17 settembre 2026, ricerca secondaria, non lettura del testo ' +
+      'integrale): uno studio su pineta della Soria, Spagna centrale, 2011-2015 (de-Miguel, ' +
+      'Martinez-Pena et al., non letto per intero, paywall) non trova un effetto significativo ' +
+      'della temperatura sulla fruttificazione di B. edulis, a differenza di questo preprint. Non ' +
+      'e\' una contraddizione che invalida il valore: sono habitat diversi (pineta vs faggeta) e ' +
+      'clima diverso (Mediterraneo continentale interno vs Europa centrale), ma conferma che ' +
+      '"quanto conta la temperatura" non e\' universale nemmeno fra siti europei, e rafforza — non ' +
+      'indebolisce — la cautela gia\' dichiarata qui.',
+    status: 'applicable-with-caution',
+  },
+  karavani2018: {
+    speciesStudied: 'Funghi ectomicorrizici in generale (non Boletus edulis specificamente)',
+    habitatStudied: 'Pinete (Pinus spp.)',
+    geographicArea: 'Spagna/area mediterranea occidentale',
+    observationPeriod: 'Non riportato nei parametri usati qui (citazione di corroborazione)',
+    demonstratedVariable: 'Ritardo fra precipitazione e risposta dell\'umidita\' del suolo',
+    demonstratedResult: 'Ritardo osservato fino a un mese fra pioggia e umidita\' del suolo in ambiente mediterraneo',
+    transferability:
+      'Clima mediterraneo pertinente, ma specie e habitat diversi (ectomicorrizici generici in ' +
+      'pineta, non porcino in faggeta/querceto). Usata solo per corroborare l\'ordine di grandezza ' +
+      'della finestra idrica di 26 giorni, non come fonte primaria di nessun parametro.',
+    status: 'applicable-with-caution',
+  },
+  sirCrossValidation2026: {
+    speciesStudied: 'Non applicabile — non riguarda il fungo, riguarda l\'interpolazione meteo',
+    habitatStudied: 'Non applicabile',
+    geographicArea: 'Toscana, intorno alle sette zone di taratura',
+    observationPeriod: '2026-08-08 / 2026-09-16 (40 giorni)',
+    demonstratedVariable: 'Errore di interpolazione (regressione + IDW sui residui) contro la stazione piu\' vicina',
+    demonstratedResult:
+      'MAE pioggia 2.37 mm (+9.7% rispetto alla stazione piu\' vicina), massima 0.96 C (+56.9%), ' +
+      'minima 1.50 C (+16.6%), bias trascurabile su tutte e tre',
+    transferability:
+      'E\' la misura piu\' diretta possibile: sulle nostre zone, sui nostri dati, non serve ' +
+      'trasferire nulla. Riguarda pero\' la qualita\' del dato meteo in ingresso, non il modello ' +
+      'biologico: dice quanto fidarsi della temperatura o della pioggia stimata, non di quanto ' +
+      'porcini ci siano.',
+    status: 'applicable',
+  },
+} as const
+
+/** Trova la valutazione dell'evidenza a partire dal testo di citazione salvato in `Param.source`. */
+const EVIDENCE_BY_CITATION_TEXT: ReadonlyMap<string, EvidenceAssessment> = new Map(
+  (Object.keys(REFERENCES) as Array<keyof typeof REFERENCES>).map((key) => [
+    REFERENCES[key],
+    EVIDENCE[key],
+  ]),
+)
+
+export function evidenceForSource(source: string | undefined): EvidenceAssessment | undefined {
+  return source === undefined ? undefined : EVIDENCE_BY_CITATION_TEXT.get(source)
+}
 
 // ============================================================================
 // BILANCIO IDRICO
@@ -524,17 +691,36 @@ export const ALGORITHM_V1: AlgorithmConfig = {
   confidence: {
     distanceScaleKm: {
       // La pioggia decorrela piu' in fretta della temperatura: un temporale e' locale,
-      // un'ondata di calore no. I valori sono tarati sugli errori misurati in cross-validation
-      // sulle zone: con una distanza media fra stazioni di 6 km, la pioggia interpolata sbaglia
-      // 2.37 mm e la massima 0.96 gradi, quindi una stazione a pochi chilometri merita davvero
-      // una confidence alta.
-      precipitation: calibrate(18),
-      temperature_max: calibrate(35),
-      temperature_min: calibrate(30),
-      temperature_mean: calibrate(35),
-      relative_humidity_mean: calibrate(22),
-      wind_speed_mean: calibrate(15),
-      default: calibrate(25),
+      // un'ondata di calore no. Le tre grandezze validate hanno una fonte locale (sotto); le
+      // altre tre non sono state misurate e restano da calibrare.
+      precipitation: sourced(
+        18,
+        REFERENCES.sirCrossValidation2026,
+        'local-data',
+        'Il MAE (2.37 mm, +9.7% sulla stazione piu\' vicina) e\' misurato; la scala in km e\' una ' +
+          'scelta informata da quel numero, non una misura diretta della decorrelazione spaziale ' +
+          'della pioggia — quella richiederebbe un variogramma, non ancora fatto.',
+      ),
+      temperature_max: sourced(
+        35,
+        REFERENCES.sirCrossValidation2026,
+        'local-data',
+        'Guadagno maggiore fra le tre grandezze (+56.9%): il gradiente verticale forte e regolare ' +
+          'giustifica una scala di decorrelazione orizzontale ampia. Stesso avvertimento della ' +
+          'pioggia sul valore esatto in km.',
+      ),
+      temperature_min: sourced(
+        30,
+        REFERENCES.sirCrossValidation2026,
+        'local-data',
+        'Guadagno piu\' modesto (+16.6%): la minima e\' dominata dall\'accumulo locale di aria ' +
+          'fredda in conca, un fenomeno che nessuna scala di decorrelazione regolare cattura del ' +
+          'tutto — per la gelata serve la misura, non la stima, come nota anche l\'Appendice C.',
+      ),
+      temperature_mean: calibrate(35, 'Non validata separatamente: eredita il valore della massima.'),
+      relative_humidity_mean: calibrate(22, 'Non misurata in Appendice C.'),
+      wind_speed_mean: calibrate(15, 'Non misurata in Appendice C.'),
+      default: calibrate(25, 'Ripiego per grandezze non validate.'),
     },
     elevationScaleM: calibrate(
       600,

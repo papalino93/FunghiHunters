@@ -32,7 +32,7 @@ function zone(
     provenance: 'MODELLED' as const, rainMm: 0, tMinC: 10, tMaxC: 20,
   }))
   return {
-    code, name: code, reference: code, province: 'LU',
+    code, name: code, reference: code, province: 'LU', municipality: null,
     latitude: 44, longitude: 10.4, elevationM: 1000, forest: ['faggeta'], stationNotes: '',
     mpi, confidence: 70, dataQuality: 70, forecastCertainty: 100,
     label: bandNameFor(mpi), limitingFactor: o.limit === undefined ? 'Temperatura' : o.limit,

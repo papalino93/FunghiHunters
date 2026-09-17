@@ -501,7 +501,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Abbadia San Salvatore"
   },
   {
    "code": "casentino",
@@ -1001,7 +1002,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13.6,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Bibbiena"
   },
   {
    "code": "pratomagno",
@@ -1501,7 +1503,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Loro Ciuffenna"
   },
   {
    "code": "garfagnana",
@@ -2002,7 +2005,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Villa Collemandina"
   },
   {
    "code": "pistoiese",
@@ -2502,7 +2506,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Abetone Cutigliano"
   },
   {
    "code": "mugello",
@@ -3002,13 +3007,14 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Firenzuola"
   },
   {
    "code": "metallifere",
    "name": "Colline Metallifere",
    "reference": "Chiusdino e Montieri",
-   "province": "SI",
+   "province": "GR",
    "latitude": 43.14,
    "longitude": 11.05,
    "elevationM": 600,
@@ -3502,7 +3508,8 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 19,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Montieri"
   }
  ],
  "sources": [
@@ -3525,6 +3532,16 @@
    "url": "https://open-meteo.com/en/terms",
    "attribution": "Open-Meteo.com, su dati ECMWF IFS, DWD ICON, NOAA GFS ed ERA5",
    "lastUpdate": "2026-09-17"
+  },
+  {
+   "status": "ok",
+   "recordsFetched": 7,
+   "coverage": "Toscana, confini comunali",
+   "name": "ISTAT - confini amministrativi",
+   "license": "CC-BY",
+   "url": "https://github.com/guglielmo/geojson-italy",
+   "attribution": "ISTAT (confini comunali), via guglielmo/geojson-italy",
+   "lastUpdate": null
   }
  ],
  "uncalibratedParams": [
