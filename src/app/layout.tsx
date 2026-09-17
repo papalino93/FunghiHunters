@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 
 import { BottomNav } from '@/components/BottomNav'
 import { ServiceWorker } from '@/components/ServiceWorker'
+import { AuthProvider } from '@/lib/auth/context'
 import './globals.css'
 
 const sans = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
@@ -50,10 +51,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         >
           Vai al contenuto
         </a>
-        <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
-          {children}
-        </main>
-        <BottomNav />
+        <AuthProvider>
+          <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
+            {children}
+          </main>
+          <BottomNav />
+        </AuthProvider>
         <ServiceWorker />
       </body>
     </html>

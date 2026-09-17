@@ -16,6 +16,16 @@ import { EntryForm } from '@/components/diary/EntryForm'
 import { CalibrationPanel } from '@/components/diary/CalibrationPanel'
 import { formatDate, mpiColor, readableTextOn } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
+import { useAuth } from '@/lib/auth/context'
+import { useDiarySync } from '@/lib/sync/useDiarySync'
+import Link from 'next/link'
+
+const SYNC_LABEL: Readonly<Record<string, string>> = {
+  local: 'Salvato sul dispositivo',
+  syncing: 'Sincronizzazione in corso…',
+  synced: 'Sincronizzato',
+  error: 'Errore di sincronizzazione',
+}
 
 /**
  * Il diario.
@@ -38,11 +48,23 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   const [composing, setComposing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
+  const auth = useAuth()
+  const diarySync = useDiarySync(repo)
 
   const reload = useCallback(async () => {
     if (repo === null) return
     setEntries(await repo.list())
   }, [repo])
+
+  // Ogni modifica prova a sincronizzare subito, se c'è un account collegato: è il modo con cui
+  // "salvato sul dispositivo" diventa "sincronizzato" senza che l'utente debba pensarci.
+  const persistAndReload = useCallback(async () => {
+    await reload()
+    if (auth.status === 'signed-in') {
+      await diarySync.sync()
+      await reload()
+    }
+  }, [reload, auth.status, diarySync])
 
   useEffect(() => {
     if (repo === null) return
@@ -71,7 +93,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
     if (repo === null) return
     try {
       const result = await importInto(repo, JSON.parse(await file.text()))
-      await reload()
+      await persistAndReload()
       setMessage(
         `Importate ${result.imported} uscite, ${result.skipped} già presenti` +
           (result.errors.length > 0 ? `, ${result.errors.length} righe illeggibili` : '') +
@@ -87,7 +109,26 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
       <header className="mb-3">
-        <h1 className="text-xl font-semibold tracking-tight text-ink">Diario uscite</h1>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="text-xl font-semibold tracking-tight text-ink">Diario uscite</h1>
+          {auth.status === 'signed-in' && (
+            <span className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-edge bg-surface-1 px-2 py-1 text-[10px] font-medium text-ink-dim">
+              <span
+                className={`h-1.5 w-1.5 rounded-full ${
+                  diarySync.status === 'synced'
+                    ? 'bg-accent'
+                    : diarySync.status === 'error'
+                      ? 'bg-danger'
+                      : diarySync.status === 'syncing'
+                        ? 'bg-warn'
+                        : 'bg-ink-faint'
+                }`}
+                aria-hidden="true"
+              />
+              {SYNC_LABEL[diarySync.status]}
+            </span>
+          )}
+        </div>
         <p className="mt-1 text-sm leading-snug text-ink-dim">
           Registra com&apos;è andata. Ogni uscita congela il punteggio che il modello prevedeva
           quel giorno: è l&apos;unico modo per sapere se il punteggio predice qualcosa.
@@ -116,7 +157,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
           onCancel={() => { setComposing(false) }}
           onSave={async (draft) => {
             await repo?.add(draft)
-            await reload()
+            await persistAndReload()
             setComposing(false)
             setMessage('Uscita registrata.')
           }}
@@ -149,7 +190,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
                   entry={entry}
                   onDelete={async () => {
                     await repo?.remove(entry.id)
-                    await reload()
+                    await persistAndReload()
                     setMessage('Uscita eliminata.')
                   }}
                 />
@@ -163,12 +204,26 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           I tuoi dati
         </h2>
-        <p className="mt-1.5 text-xs leading-snug text-ink-dim">
-          Il diario sta <strong className="text-ink">su questo dispositivo</strong> e non viene
-          inviato da nessuna parte. Non c&apos;è un server a cui mandarlo: la sincronizzazione fra
-          telefono e computer richiede un progetto Supabase collegato, che non è ancora attivo.
-          Finché non lo è, l&apos;esportazione è l&apos;unico modo per non perdere le uscite.
-        </p>
+        {auth.status === 'signed-in' ? (
+          <p className="mt-1.5 text-xs leading-snug text-ink-dim">
+            Sincronizzato con il tuo account: ritrovi queste uscite su ogni dispositivo dove
+            accedi. L&apos;esportazione resta utile come copia di sicurezza portabile.
+          </p>
+        ) : auth.status === 'unavailable' ? (
+          <p className="mt-1.5 text-xs leading-snug text-ink-dim">
+            Il diario sta <strong className="text-ink">su questo dispositivo</strong> e non viene
+            inviato da nessuna parte: questo deploy non ha la sincronizzazione configurata.
+            L&apos;esportazione è l&apos;unico modo per non perdere le uscite cambiando telefono.
+          </p>
+        ) : (
+          <p className="mt-1.5 text-xs leading-snug text-ink-dim">
+            Il diario sta <strong className="text-ink">su questo dispositivo</strong>.{' '}
+            <Link href="/account" className="underline underline-offset-2 hover:text-ink">
+              Accedi
+            </Link>{' '}
+            per ritrovarlo anche sugli altri, oppure esportalo come copia di sicurezza.
+          </p>
+        )}
         <div className="mt-2.5 flex gap-2">
           <button
             type="button"

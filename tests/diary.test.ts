@@ -144,6 +144,60 @@ describe('archivio', () => {
   })
 })
 
+describe('tombstone', () => {
+  // La cancellazione deve propagarsi a un secondo dispositivo che era offline: per questo
+  // `remove()` non toglie la riga, la marca. Vedi il motore di sincronizzazione in `sync/engine.ts`.
+  it('remove() marca deletedAt invece di far sparire la riga', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    await repo.remove(entry.id)
+
+    const all = await repo.listAll()
+    expect(all).toHaveLength(1)
+    expect(all[0]?.deletedAt).not.toBeNull()
+  })
+
+  it('list() nasconde i tombstone, listAll() li mostra', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const live = await repo.add(draft({ date: '2026-09-16' }))
+    const removed = await repo.add(draft({ date: '2026-09-10' }))
+    await repo.remove(removed.id)
+
+    expect((await repo.list()).map((e) => e.id)).toEqual([live.id])
+    expect((await repo.listAll()).map((e) => e.id).sort()).toEqual([live.id, removed.id].sort())
+  })
+
+  it('non si aggiorna né si ri-cancella una voce già cancellata', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    await repo.remove(entry.id)
+
+    expect(await repo.update(entry.id, { notes: 'troppo tardi' })).toBeNull()
+    expect(await repo.remove(entry.id)).toBe(false)
+  })
+
+  it('purge() toglie fisicamente la riga', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    await repo.remove(entry.id)
+    expect(await repo.purge(entry.id)).toBe(true)
+    expect(await repo.listAll()).toHaveLength(0)
+  })
+
+  it("upsertRaw() scrive una voce così com'è, senza rigenerare id o timestamp", async () => {
+    const repo = new InMemoryDiaryRepository()
+    const remote: DiaryEntry = {
+      ...materialise(draft()),
+      id: 'remote-1',
+      updatedAt: '2026-01-01T00:00:00.000Z',
+    }
+    await repo.upsertRaw(remote)
+    const [stored] = await repo.listAll()
+    expect(stored?.id).toBe('remote-1')
+    expect(stored?.updatedAt).toBe('2026-01-01T00:00:00.000Z')
+  })
+})
+
 describe('esportazione e importazione', () => {
   it('fa il giro completo senza perdere nulla', async () => {
     const source = new InMemoryDiaryRepository()

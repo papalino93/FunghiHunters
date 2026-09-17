@@ -47,6 +47,20 @@ const TABS: readonly Tab[] = [
       />
     ),
   },
+  {
+    href: '/account',
+    label: 'Account',
+    icon: (
+      <path
+        d="M10 2.5a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7ZM4 17.5c0-3 2.7-5.5 6-5.5s6 2.5 6 5.5"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.6"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+  },
 ]
 
 export function BottomNav() {

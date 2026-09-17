@@ -23,10 +23,22 @@ import {
 } from '@/lib/diary/types'
 
 export interface DiaryRepository {
+  /** Voci vive, per l'interfaccia. */
   list(): Promise<DiaryEntry[]>
+  /** Voci vive e tombstone, per il motore di sincronizzazione. */
+  listAll(): Promise<DiaryEntry[]>
   add(draft: DiaryDraft): Promise<DiaryEntry>
   update(id: string, patch: Partial<DiaryDraft>): Promise<DiaryEntry | null>
+  /** Soft-delete: marca `deletedAt`, non toglie la riga. Vedi il commento su `DiaryEntry.deletedAt`. */
   remove(id: string): Promise<boolean>
+  /**
+   * Toglie fisicamente la riga. Va chiamata solo dopo che la cancellazione è stata sincronizzata
+   * (o quando non c'è nessun account da sincronizzare), altrimenti il tombstone non arriva mai
+   * agli altri dispositivi.
+   */
+  purge(id: string): Promise<boolean>
+  /** Applica una voce arrivata dal server così com'è, senza rigenerare id o timestamp. */
+  upsertRaw(entry: DiaryEntry): Promise<void>
   clear(): Promise<void>
 }
 
@@ -70,6 +82,7 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
       existing?.algorithmVersionAtEntry ?? draft.algorithmVersionAtEntry ?? null,
     createdAt: existing?.createdAt ?? nowIso(),
     updatedAt: nowIso(),
+    deletedAt: existing?.deletedAt ?? null,
   }
 }
 
@@ -83,6 +96,10 @@ export class InMemoryDiaryRepository implements DiaryRepository {
   private entries = new Map<string, DiaryEntry>()
 
   async list(): Promise<DiaryEntry[]> {
+    return sortEntries([...this.entries.values()].filter((e) => e.deletedAt === null))
+  }
+
+  async listAll(): Promise<DiaryEntry[]> {
     return sortEntries([...this.entries.values()])
   }
 
@@ -94,14 +111,25 @@ export class InMemoryDiaryRepository implements DiaryRepository {
 
   async update(id: string, patch: Partial<DiaryDraft>): Promise<DiaryEntry | null> {
     const existing = this.entries.get(id)
-    if (existing === undefined) return null
+    if (existing === undefined || existing.deletedAt !== null) return null
     const updated = materialise({ ...existing, ...patch }, existing)
     this.entries.set(id, updated)
     return updated
   }
 
   async remove(id: string): Promise<boolean> {
+    const existing = this.entries.get(id)
+    if (existing === undefined || existing.deletedAt !== null) return false
+    this.entries.set(id, { ...existing, deletedAt: nowIso(), updatedAt: nowIso() })
+    return true
+  }
+
+  async purge(id: string): Promise<boolean> {
     return this.entries.delete(id)
+  }
+
+  async upsertRaw(entry: DiaryEntry): Promise<void> {
+    this.entries.set(entry.id, entry)
   }
 
   async clear(): Promise<void> {
@@ -145,6 +173,11 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
   }
 
   async list(): Promise<DiaryEntry[]> {
+    const all = await this.listAll()
+    return all.filter((e) => e.deletedAt === null)
+  }
+
+  async listAll(): Promise<DiaryEntry[]> {
     const db = await this.connect()
     const tx = db.transaction(STORE, 'readonly')
     const all = await promisify(tx.objectStore(STORE).getAll() as IDBRequest<DiaryEntry[]>)
@@ -165,7 +198,7 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
     const existing = await promisify(
       read.objectStore(STORE).get(id) as IDBRequest<DiaryEntry | undefined>,
     )
-    if (existing === undefined) return null
+    if (existing === undefined || existing.deletedAt !== null) return null
 
     const updated = materialise({ ...existing, ...patch }, existing)
     const write = db.transaction(STORE, 'readwrite')
@@ -175,9 +208,29 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
 
   async remove(id: string): Promise<boolean> {
     const db = await this.connect()
+    const read = db.transaction(STORE, 'readonly')
+    const existing = await promisify(
+      read.objectStore(STORE).get(id) as IDBRequest<DiaryEntry | undefined>,
+    )
+    if (existing === undefined || existing.deletedAt !== null) return false
+
+    const tombstoned: DiaryEntry = { ...existing, deletedAt: nowIso(), updatedAt: nowIso() }
+    const write = db.transaction(STORE, 'readwrite')
+    await promisify(write.objectStore(STORE).put(tombstoned) as IDBRequest<IDBValidKey>)
+    return true
+  }
+
+  async purge(id: string): Promise<boolean> {
+    const db = await this.connect()
     const tx = db.transaction(STORE, 'readwrite')
     await promisify(tx.objectStore(STORE).delete(id) as IDBRequest<undefined>)
     return true
+  }
+
+  async upsertRaw(entry: DiaryEntry): Promise<void> {
+    const db = await this.connect()
+    const tx = db.transaction(STORE, 'readwrite')
+    await promisify(tx.objectStore(STORE).put(entry) as IDBRequest<IDBValidKey>)
   }
 
   async clear(): Promise<void> {
