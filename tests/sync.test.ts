@@ -160,6 +160,45 @@ describe('tombstone: la cancellazione si propaga', () => {
   })
 })
 
+describe('modifica concorrente durante un giro di sync', () => {
+  // Il cursore della prossima sincronizzazione deve venire dall'inizio del giro, non dalla fine:
+  // altrimenti una voce toccata mentre il giro è ancora in corso (fra il pull e il push, che sono
+  // entrambi await e quindi cedono il controllo) avrebbe un updatedAt più vecchio del prossimo
+  // lastSyncedAt pur non essendo mai stata sincronizzata, e sparirebbe per sempre da candidates.
+  it("una voce modificata durante il giro non si perde: il giro successivo la riprende", async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    const backend = new FakeBackend()
+    backend.rows.set(entry.id, entry)
+
+    // Simula un tocco dell'utente che arriva mentre il pull è "in volo": il backend finto
+    // modifica il repository locale prima di rispondere, esattamente come farebbe un evento
+    // dell'interfaccia intercalato con un await reale.
+    // updatedAt nel futuro rispetto a "adesso": garantisce che sia più recente del cursore
+    // (`startedAt`) che il giro sta per catturare, qualunque sia la risoluzione dell'orologio.
+    const concurrentEdit = {
+      ...entry,
+      notes: 'modificata mentre il giro era in corso',
+      updatedAt: new Date(Date.now() + 60_000).toISOString(),
+    }
+    const originalPull = backend.pull.bind(backend)
+    backend.pull = async (since) => {
+      await repo.upsertRaw(concurrentEdit)
+      return originalPull(since)
+    }
+
+    const first = await runSync(repo, backend, null)
+    expect(first.status).toBe('synced')
+    // La modifica concorrente non è stata inviata in questo giro: non poteva esserlo, il push
+    // usa l'istantanea presa all'inizio.
+    expect(backend.rows.get(entry.id)?.notes).not.toBe('modificata mentre il giro era in corso')
+
+    const second = await runSync(repo, backend, first.syncedAt)
+    expect(second.pushed).toBe(1)
+    expect(backend.rows.get(entry.id)?.notes).toBe('modificata mentre il giro era in corso')
+  })
+})
+
 describe('errori', () => {
   it('un fallimento in pull torna uno stato di errore leggibile, senza toccare il locale', async () => {
     const repo = new InMemoryDiaryRepository()

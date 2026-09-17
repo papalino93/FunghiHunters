@@ -154,6 +154,7 @@ function SignedInPanel({
   const auth = useAuth()
   const [deleting, setDeleting] = useState(false)
   const [confirmDelete, setConfirmDelete] = useState(false)
+  const [confirmForceSync, setConfirmForceSync] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
 
   const handleExport = async (): Promise<void> => {
@@ -208,11 +209,53 @@ function SignedInPanel({
             Ultima sincronizzazione: {new Date(sync.lastSyncedAt).toLocaleString('it-IT')}
           </p>
         )}
+
+        {sync.accountMismatch && (
+          <div className="mt-2 rounded-lg border border-warn/30 bg-warn/10 px-2.5 py-2">
+            <p className="text-[11px] leading-snug text-warn">
+              Il diario su questo dispositivo risulta sincronizzato l&apos;ultima volta con un
+              altro account. Non lo invio automaticamente: potrebbe contenere le uscite di
+              qualcun altro. Guarda la scheda Diario prima di decidere — sincronizzarlo qui lo
+              invierebbe a <strong>questo</strong> account.
+            </p>
+            {confirmForceSync ? (
+              <div className="mt-2 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => { void sync.sync({ force: true }); setConfirmForceSync(false) }}
+                  className="min-h-10 flex-1 rounded-lg bg-warn/80 text-xs font-semibold text-ink
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-warn"
+                >
+                  Sincronizza comunque
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setConfirmForceSync(false) }}
+                  className="min-h-10 rounded-lg border border-edge px-3 text-xs text-ink-dim
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  annulla
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => { setConfirmForceSync(true) }}
+                className="mt-2 min-h-10 w-full rounded-lg border border-warn/40 text-xs
+                           font-medium text-warn focus:outline-none focus-visible:ring-2
+                           focus-visible:ring-warn"
+              >
+                Sincronizza comunque…
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="mt-2.5 flex gap-2">
           <button
             type="button"
             onClick={() => { void sync.sync() }}
-            disabled={sync.status === 'syncing'}
+            disabled={sync.status === 'syncing' || sync.accountMismatch}
             className="min-h-11 flex-1 rounded-lg border border-edge bg-surface-2 text-xs
                        font-medium text-ink transition-colors hover:bg-surface-3 disabled:opacity-40
                        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"

@@ -39,6 +39,21 @@ Testato in `tests/sync.test.ts`: conflitto vinto dal locale, conflitto vinto dal
 esplicito del dispositivo tornato online tardi, propagazione dei tombstone in entrambe le
 direzioni, comportamento su un push o un pull falliti a metà.
 
+## Dispositivo condiviso: mai sincronizzare in automatico l'account sbagliato
+
+Bug reale, trovato in una revisione approfondita e corretto nella stessa sessione: il logout non
+cancella il diario locale (di proposito — sono dati dell'utente, non vanno persi solo perché si
+esce dall'account). Ma `sync()` partiva in automatico a ogni login, quindi su un dispositivo
+condiviso — due persone in sequenza, la prima non ha esportato/cancellato prima di uscire — il
+diario della prima, comprese eventuali coordinate esatte, finiva spedito nell'account della
+seconda.
+
+Corretto: ogni dispositivo ricorda con quale account ha sincronizzato l'ultima volta
+(`localStorage`, non nel diario). Se l'account ora collegato è diverso, `sync()` non parte da
+sola — l'utente vede un avviso esplicito in Account e in Diario, e deve confermare "Sincronizza
+comunque" prima che qualunque dato locale venga inviato. Vedi `isAccountMismatch()` in
+`src/lib/sync/useDiarySync.ts`, testata in `tests/account-mismatch.test.ts`.
+
 ## Cancellazioni (tombstone)
 
 `DiaryEntry.deletedAt` sostituisce la cancellazione fisica immediata. `remove()` marca la riga,

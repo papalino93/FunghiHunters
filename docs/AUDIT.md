@@ -1,5 +1,31 @@
 # Audit — FungiCast Toscana
 
+## Aggiornamento — giro bug approfondito (17 settembre 2026)
+
+Revisione mirata dell'intero diff di sessione (auth, sync, diario, calibrazione, modello), non
+solo lettura per scrivere codice nuovo. Due bug reali trovati e corretti:
+
+**B7 — sincronizzazione automatica poteva mischiare i diari di due account su un dispositivo
+condiviso.** Il logout non cancella il diario locale (corretto: sono dati dell'utente). Ma
+`sync()` partiva da sola a ogni login, quindi due persone in sequenza sullo stesso telefono — la
+prima non aveva esportato o cancellato prima di uscire — facevano finire il diario della prima
+(comprese eventuali coordinate esatte) nell'account della seconda. **Corretto**: ogni dispositivo
+ricorda l'ultimo account sincronizzato; se non corrisponde a quello ora collegato, la
+sincronizzazione si ferma e chiede conferma esplicita invece di procedere in silenzio. Vedi
+`docs/SYNC.md`, testato in `tests/account-mismatch.test.ts`.
+
+**B8 — una modifica fatta durante un giro di sincronizzazione poteva sparire per sempre.** Il
+cursore della sincronizzazione successiva (`lastSyncedAt`) veniva preso alla **fine** del giro
+invece che all'inizio. Una voce toccata mentre `pull`/`push` erano ancora in corso risultava più
+vecchia del prossimo cursore pur non essendo mai stata né inviata né vista — esclusa per sempre
+dai giri successivi, in contraddizione con l'invariante dichiarato del motore ("non si perde mai
+una modifica in silenzio"). **Corretto**: il cursore si cattura prima di qualunque `await`. Vedi
+`src/lib/sync/engine.ts`, testato in `tests/sync.test.ts`.
+
+Nessun altro problema di correttezza trovato nella logica nuova (Spearman, Brier score,
+classificazione, risoluzione punto-in-poligono, generatore di griglia): la revisione li ha
+verificati contro i rispettivi test e non ha trovato scostamenti.
+
 ## Aggiornamento — audit tecnico v1.1.0 (17 settembre 2026, sessione successiva)
 
 Verifica puntuale delle sei affermazioni con cui è stata aperta questa sessione, come richiesto

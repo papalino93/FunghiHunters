@@ -19,18 +19,19 @@ import type { SyncStatus } from '@/lib/sync/types'
 import { getBrowserClient } from '@/lib/supabase/client'
 
 const LAST_SYNCED_KEY = 'fungicast:diary-last-synced-at'
+const LAST_SYNCED_USER_KEY = 'fungicast:diary-last-synced-user-id'
 
-function readLastSyncedAt(): string | null {
+function readLocal(key: string): string | null {
   try {
-    return localStorage.getItem(LAST_SYNCED_KEY)
+    return localStorage.getItem(key)
   } catch {
     return null
   }
 }
 
-function writeLastSyncedAt(value: string): void {
+function writeLocal(key: string, value: string): void {
   try {
-    localStorage.setItem(LAST_SYNCED_KEY, value)
+    localStorage.setItem(key, value)
   } catch {
     // Storage bloccato (finestra privata): la prossima sincronizzazione ripartirà da zero,
     // ripescando tutto. Corretto ma ridondante, non un errore da mostrare.
@@ -42,47 +43,91 @@ export interface DiarySyncState {
   readonly error: string | null
   readonly lastSyncedAt: string | null
   readonly available: boolean
-  sync(): Promise<void>
+  /**
+   * `true` quando il diario locale risulta sincronizzato l'ultima volta con un account diverso
+   * da quello ora collegato — un dispositivo condiviso dove è appena entrato un altro utente.
+   * Finché è `true`, `sync()` senza `force` non fa nulla: sincronizzare in automatico
+   * spedirebbe il diario di chi ha usato il dispositivo prima verso l'account sbagliato. Vedi il
+   * commento su `sync()`.
+   */
+  readonly accountMismatch: boolean
+  sync(options?: { readonly force?: boolean }): Promise<void>
+}
+
+/**
+ * Se il diario locale va sincronizzato in automatico con l'account ora collegato.
+ *
+ * Funzione pura, separata dall'hook apposta: è la decisione che ha permesso al diario di una
+ * persona di finire nell'account di un'altra su un dispositivo condiviso, e va potuta testare
+ * senza montare un componente React o un `localStorage` finto.
+ */
+export function isAccountMismatch(
+  lastSyncedUserId: string | null,
+  currentUserId: string,
+): boolean {
+  return lastSyncedUserId !== null && lastSyncedUserId !== currentUserId
 }
 
 export function useDiarySync(repo: DiaryRepository | null): DiarySyncState {
   const auth = useAuth()
   const [status, setStatus] = useState<SyncStatus>('local')
   const [error, setError] = useState<string | null>(null)
-  // Inizializzatore pigro, non un effetto: `readLastSyncedAt()` è già sicuro su chi non ha
-  // `localStorage` (server, finestra privata), quindi non c'è bisogno di un giro di render in più
-  // solo per leggerlo.
-  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => readLastSyncedAt())
+  // Inizializzatori pigri, non un effetto: la lettura da `localStorage` è già sicura su chi non
+  // ce l'ha (server, finestra privata), quindi non serve un giro di render in più per farla.
+  const [lastSyncedAt, setLastSyncedAt] = useState<string | null>(() => readLocal(LAST_SYNCED_KEY))
+  const [lastSyncedUserId, setLastSyncedUserId] = useState<string | null>(() =>
+    readLocal(LAST_SYNCED_USER_KEY),
+  )
   const running = useRef(false)
   const prevSignedIn = useRef(false)
 
-  const sync = useCallback(async (): Promise<void> => {
-    if (repo === null || auth.status !== 'signed-in' || running.current) return
-    const client = getBrowserClient()
-    if (client === null) return
+  /*
+   * Il bug che questo controllo chiude: due persone sullo stesso dispositivo, in sequenza.
+   * `sync()` scattava in automatico a ogni login, e spediva TUTTE le voci locali verso l'account
+   * appena collegato — comprese quelle lasciate lì dalla persona precedente, se non aveva
+   * cancellato il diario prima di uscire (il logout non tocca il diario locale, di proposito: è
+   * dati dell'utente, non va perso). Risultato: il diario di A, con eventuali coordinate esatte,
+   * finiva nelle righe di B su Supabase. Ora si sincronizza solo quando l'ultimo account con cui
+   * ci si è sincronizzati su questo dispositivo è lo stesso di quello collegato ora, oppure non
+   * ce n'è mai stato uno (primo login, o dispositivo mai sincronizzato).
+   */
+  const accountMismatch =
+    auth.status === 'signed-in' && isAccountMismatch(lastSyncedUserId, auth.user.id)
 
-    running.current = true
-    setStatus('syncing')
-    const backend = createSupabaseSyncBackend(client, auth.user.id)
-    const outcome = await runSync(repo, backend, lastSyncedAt)
-    running.current = false
+  const sync = useCallback(
+    async (options?: { readonly force?: boolean }): Promise<void> => {
+      if (repo === null || auth.status !== 'signed-in' || running.current) return
+      if (accountMismatch && options?.force !== true) return
+      const client = getBrowserClient()
+      if (client === null) return
 
-    if (outcome.status === 'synced') {
-      setStatus('synced')
-      setError(null)
-      if (outcome.syncedAt !== null) {
-        setLastSyncedAt(outcome.syncedAt)
-        writeLastSyncedAt(outcome.syncedAt)
+      running.current = true
+      setStatus('syncing')
+      const backend = createSupabaseSyncBackend(client, auth.user.id)
+      const outcome = await runSync(repo, backend, lastSyncedAt)
+      running.current = false
+
+      if (outcome.status === 'synced') {
+        setStatus('synced')
+        setError(null)
+        if (outcome.syncedAt !== null) {
+          setLastSyncedAt(outcome.syncedAt)
+          writeLocal(LAST_SYNCED_KEY, outcome.syncedAt)
+        }
+        setLastSyncedUserId(auth.user.id)
+        writeLocal(LAST_SYNCED_USER_KEY, auth.user.id)
+      } else {
+        setStatus('error')
+        setError(outcome.error)
       }
-    } else {
-      setStatus('error')
-      setError(outcome.error)
-    }
-  }, [repo, auth.status, auth.user, lastSyncedAt])
+    },
+    [repo, auth.status, auth.user, lastSyncedAt, accountMismatch],
+  )
 
   // Sincronizza al login e quando torna la rete dopo essere stata assente. Non ad ogni render:
   // il guard su `prevSignedIn` evita di ripartire solo perché `sync` ha cambiato identità dopo
-  // essersi appena conclusa.
+  // essersi appena conclusa. Non forzato: se l'account non corrisponde all'ultimo sincronizzato
+  // su questo dispositivo, resta fermo finché non è l'utente a confermare esplicitamente.
   useEffect(() => {
     const signedIn = auth.status === 'signed-in'
     if (signedIn && !prevSignedIn.current) void sync()
@@ -100,5 +145,12 @@ export function useDiarySync(repo: DiaryRepository | null): DiarySyncState {
     return () => { window.removeEventListener('online', handleOnline) }
   }, [sync])
 
-  return { status: effectiveStatus, error, lastSyncedAt, available: auth.status !== 'unavailable', sync }
+  return {
+    status: effectiveStatus,
+    error,
+    lastSyncedAt,
+    available: auth.status !== 'unavailable',
+    accountMismatch,
+    sync,
+  }
 }

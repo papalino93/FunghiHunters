@@ -28,6 +28,17 @@ export async function runSync(
   backend: SyncBackend,
   lastSyncedAt: string | null,
 ): Promise<SyncOutcome> {
+  /*
+   * Catturato PRIMA di ogni `await`, non alla fine. Se si usasse l'ora di fine, una modifica
+   * fatta dall'utente mentre il giro è in corso (aggiunge una voce mentre `pull`/`push` sono
+   * ancora in volo — possibile: JavaScript è a thread singolo ma cede il controllo a ogni await,
+   * e un tocco sull'interfaccia può inserirsi proprio lì) avrebbe un `updatedAt` precedente al
+   * prossimo `lastSyncedAt`, pur non essendo mai stata né inviata né vista in questo giro: da quel
+   * momento sarebbe esclusa per sempre da `candidates`, sparita in silenzio. Partire da qui
+   * garantisce che quella voce resti più recente del prossimo cursore e venga ripresa al giro
+   * successivo.
+   */
+  const startedAt = new Date().toISOString()
   try {
     const localBefore = await repo.listAll()
 
@@ -66,7 +77,7 @@ export async function runSync(
       pushed: toPush.length,
       pulled,
       error: null,
-      syncedAt: new Date().toISOString(),
+      syncedAt: startedAt,
     }
   } catch (error) {
     return {

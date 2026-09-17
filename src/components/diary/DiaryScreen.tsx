@@ -204,7 +204,16 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           I tuoi dati
         </h2>
-        {auth.status === 'signed-in' ? (
+        {auth.status === 'signed-in' && diarySync.accountMismatch ? (
+          <p className="mt-1.5 text-xs leading-snug text-warn">
+            Queste uscite sono sincronizzate con un account diverso da quello collegato ora: non
+            le ho inviate in automatico. Vai in{' '}
+            <Link href="/account" className="underline underline-offset-2 hover:text-ink">
+              Account
+            </Link>{' '}
+            per decidere cosa farne, prima di aggiungerne di nuove qui.
+          </p>
+        ) : auth.status === 'signed-in' ? (
           <p className="mt-1.5 text-xs leading-snug text-ink-dim">
             Sincronizzato con il tuo account: ritrovi queste uscite su ogni dispositivo dove
             accedi. L&apos;esportazione resta utile come copia di sicurezza portabile.
