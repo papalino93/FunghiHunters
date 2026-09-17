@@ -62,31 +62,68 @@ export function variableConfidence(
 ): VariableConfidence {
   const cc = config.confidence
 
-  // Distanza e somiglianza di quota: si valutano sulla stazione migliore, non sulla media,
-  // perche' una stazione ottima vicina non viene peggiorata da una mediocre lontana.
-  let bestGeometry = 0
-  for (const station of input.stations) {
-    const byDistance = Math.exp(-station.distanceKm / distanceScale(input.variable, config))
-    const byElevation = Math.exp(-((station.elevationDiffM / cc.elevationScaleM.value) ** 2))
-    bestGeometry = Math.max(bestGeometry, byDistance * byElevation)
-  }
-  // Senza stazioni la geometria non azzera tutto: il valore viene dal modello, che una sua
-  // affidabilita' ce l'ha. A dirlo e' il fattore di provenienza.
-  const geometry = input.stations.length === 0 ? 1 : bestGeometry
-
-  const density = 1 - Math.exp(-input.stations.length / cc.densitySaturation.value)
-  const densityFactor = input.stations.length === 0 ? 1 : 0.6 + 0.4 * density
-
-  const provenanceFactor = cc.provenanceQuality[input.provenance]?.value ?? 0.6
-  const validationFactor = input.stations.some((s) => s.validated) ? 1 : 0.9
-
+  // Fattori comuni a entrambe le strade.
   const horizonFactor =
     input.horizonDays <= 0 ? 1 : Math.exp(-input.horizonDays / cc.horizonScaleDays.value)
-
   const agreementFactor =
     input.ensembleAgreement === null ? 1 : 0.5 + 0.5 * clamp01(input.ensembleAgreement)
-
   const coverageFactor = 0.4 + 0.6 * clamp01(input.coverage)
+  const common = horizonFactor * agreementFactor * coverageFactor
+
+  /*
+   * Confidence del solo modello: e' il **pavimento**.
+   *
+   * Un valore ottenuto fondendo il modello con delle osservazioni non puo' essere meno
+   * affidabile del modello da solo. La prima versione lo permetteva, e sui dati reali una
+   * stazione a 3 km faceva scendere la confidence da 63 a 42: assurdo, e il sintomo di una
+   * geometria che penalizzava due volte la quota, gia' corretta dal trend della regressione.
+   */
+  const modelFloor =
+    (cc.provenanceQuality['MODELLED']?.value ?? 0.7) * common
+
+  if (input.stations.length === 0) {
+    const components = {
+      geometry: 1,
+      density: 1,
+      provenance: cc.provenanceQuality[input.provenance]?.value ?? 0.6,
+      validation: 1,
+      horizon: horizonFactor,
+      agreement: agreementFactor,
+      coverage: coverageFactor,
+    }
+    return {
+      variable: input.variable,
+      score: 100 * clamp01(components.provenance * common),
+      components,
+    }
+  }
+
+  // Rappresentativita' della stazione migliore, non della media: una stazione ottima vicina non
+  // viene peggiorata da una mediocre lontana. La forma e' gaussiana in entrambi i termini,
+  // perche' la rappresentativita' non cala linearmente appena ci si allontana dal sensore.
+  let geometry = 0
+  for (const station of input.stations) {
+    const byDistance = Math.exp(
+      -((station.distanceKm / distanceScale(input.variable, config)) ** 2),
+    )
+    const byElevation = Math.exp(-((station.elevationDiffM / cc.elevationScaleM.value) ** 2))
+    geometry = Math.max(geometry, byDistance * byElevation)
+  }
+
+  /*
+   * La densita' aggiunge robustezza, non informazione nuova.
+   *
+   * Una sola stazione ben piazzata dice gia' quasi tutto: le altre servono soprattutto a
+   * riconoscere quando quella sbaglia. Per questo il fattore parte alto e sale poco. Con un
+   * pavimento a 0.6, come nella prima versione, una stazione perfetta esattamente sulla cella
+   * finiva sotto la confidence del solo modello e veniva schiacciata dal pavimento, rendendo
+   * indistinguibili tutti i casi a stazione singola.
+   */
+  const density = 1 - Math.exp(-input.stations.length / cc.densitySaturation.value)
+  const densityFactor = 0.85 + 0.15 * density
+  const provenanceFactor = cc.provenanceQuality[input.provenance]?.value ?? 0.6
+  // I dati SIR recenti non sono validati dalla fonte: e' una riduzione piccola ma reale.
+  const validationFactor = input.stations.some((s) => s.validated) ? 1 : 0.92
 
   const components = {
     geometry,
@@ -98,13 +135,13 @@ export function variableConfidence(
     coverage: coverageFactor,
   }
 
-  const score =
-    100 *
-    clamp01(
-      Object.values(components).reduce((acc, value) => acc * value, 1),
-    )
+  const observedScore = Object.values(components).reduce((acc, value) => acc * value, 1)
 
-  return { variable: input.variable, score, components }
+  return {
+    variable: input.variable,
+    score: 100 * clamp01(Math.max(modelFloor, observedScore)),
+    components,
+  }
 }
 
 /**

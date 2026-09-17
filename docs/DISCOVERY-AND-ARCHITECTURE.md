@@ -1351,3 +1351,59 @@ il valore sia anomalo **e** lontano in unita' fisiche.
 **B.7 — `dataora` puo' essere nulla.** Per le stazioni che non hanno trasmesso, il GeoServer
 annulla anche il timestamp, non solo il valore. Le conserviamo datate al giorno del layer: "muta
 oggi" e' informazione per il controllo qualita', non un record da scartare.
+
+---
+
+## APPENDICE C — validazione dell'interpolazione (2026-09-17)
+
+Il §L proponeva regressione con quota piu' kriging dei residui, sostenendo che la stazione piu'
+vicina non basta. L'ho misurato invece di darlo per buono.
+
+**Metodo.** Leave-one-out cross-validation su 50 stazioni SIR attorno alle sette zone (quote da
+134 a 1716 m, distanza media dalla stazione piu' vicina 6.0 km), su 40 giorni di serie reali dal
+2026-08-08 al 2026-09-16. Si toglie una stazione, si stima il valore nel suo punto con le altre,
+si confronta con la misura. Il termine di paragone e' la **stazione piu' vicina in distanza
+efficace**, che gia' tiene conto della quota: e' il piu' duro fra i confronti ingenui.
+
+| grandezza | giorni | n | MAE | RMSE | bias | MAE stazione vicina | guadagno |
+|---|---|---|---|---|---|---|---|
+| precipitazione | 29 | 1447 | **2.37 mm** | 3.94 | +0.12 | 2.62 mm | **+9.7 %** |
+| temperatura massima | 40 | 1957 | **0.96 °C** | 1.20 | −0.00 | 2.23 °C | **+56.9 %** |
+| temperatura minima | 40 | 1957 | **1.50 °C** | 1.93 | −0.03 | 1.79 °C | **+16.6 %** |
+
+Per la pioggia sono esclusi i giorni in cui non piove da nessuna parte: l'errore sarebbe zero per
+costruzione e gonfierebbe il risultato.
+
+**Tre letture.**
+
+1. **Sulla temperatura massima lo schema si giustifica da solo**: dimezza abbondantemente
+   l'errore, perche' il gradiente verticale e' forte, regolare, e la regressione lo stima dai dati
+   del giorno invece di assumere i canonici −6.5 °C/km. Sulle zone di taratura il gradiente
+   stimato il 16 settembre era **−9.0 °C/km**, sensibilmente diverso dal valore standard.
+
+2. **Sulla minima il guadagno e' modesto**, +16.6 %, e non e' una sorpresa: la minima e' dominata
+   dall'accumulo di aria fredda in conca, che e' un fenomeno locale che nessun trend regolare
+   puo' catturare. E' lo stesso motivo per cui la stazione dell'Amiata ha un bias di −3.14 °C
+   rispetto al modello. Conferma che per la gelata serve la misura, non la stima.
+
+3. **Sulla pioggia il guadagno e' piccolo**, +9.7 %. La pioggia giornaliera e' genuinamente
+   locale e poco legata alla quota. Vale la pena dirlo chiaramente invece di far finta che
+   l'interpolazione risolva tutto: per la pioggia il vero limite e' la densita' della rete.
+
+Il bias e' praticamente nullo su tutte e tre le grandezze, quindi il metodo non sposta
+sistematicamente il livello.
+
+**Correzioni fatte collegando l'interpolazione al motore.** Due difetti logici emersi facendo
+girare la pipeline completa, entrambi nel calcolo della confidence e non nell'interpolazione:
+
+- la confidence **scendeva** quando si aggiungevano le osservazioni, da 70 a 42, perche' la
+  penalita' di quota veniva applicata due volte, una nella scelta delle stazioni e una nel
+  confidence, mentre il trend della regressione gia' la corregge. Ora il valore fuso non puo' mai
+  valere meno del solo modello, che e' una proprieta' logica prima che una taratura;
+- l'eta' del dato osservato veniva applicata **anche alle grandezze modellate**. Il SIR pubblica
+  il giorno precedente, ma umidita' del suolo ed ET0 vengono dal modello, che e' aggiornato a
+  oggi: invecchiarle non aveva senso.
+
+Con le correzioni, la confidence sulle sette zone sale da 70 (solo modello) a 71–77 (con le
+osservazioni). L'aumento e' contenuto perche' meta' del peso sta su umidita' del suolo ed ET0,
+che nessuna rete osserva: e' onesto che sia cosi'.

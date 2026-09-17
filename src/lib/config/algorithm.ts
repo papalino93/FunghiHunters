@@ -169,6 +169,38 @@ export interface ConfidenceConfig {
   readonly provenanceQuality: Readonly<Record<string, Param>>
 }
 
+// ============================================================================
+// INTERPOLAZIONE SPAZIALE
+// ============================================================================
+
+export interface SpatialConfig {
+  /**
+   * Quanti chilometri "vale" un metro di dislivello nella distanza efficace.
+   *
+   * E' il parametro che risolve il caso Garfagnana: la stazione piu' vicina e' a 2.6 km ma
+   * 502 m piu' in basso, quella giusta a 2.7 km e 169 m di dislivello. Con 0.01 km/m, cento
+   * metri di quota pesano come un chilometro di distanza e la seconda vince.
+   */
+  readonly elevationPenaltyKmPerM: Param
+  /** Esponente dell'inverso della distanza nell'interpolazione dei residui. */
+  readonly idwPower: Param
+  /** Raggio di ricerca delle stazioni, in distanza efficace. */
+  readonly searchRadiusKm: Param
+  /** Numero massimo di stazioni usate per un punto. */
+  readonly maxNeighbours: Param
+  /** Stazioni minime sotto cui non si stima il trend e si ricade sul modello. */
+  readonly minStationsForTrend: Param
+  /** Regolarizzazione della regressione, per non esplodere quando i predittori sono collineari. */
+  readonly ridge: Param
+  /**
+   * Gradiente termico verticale di ripiego, in gradi per metro.
+   * Si usa solo quando le stazioni disponibili non bastano a stimarlo dai dati.
+   */
+  readonly fallbackLapseRateCPerM: Param
+  /** Distanza efficace oltre cui il peso dell'osservato scende sotto quello del modello. */
+  readonly fusionHalfDistanceKm: Param
+}
+
 export interface AlgorithmConfig {
   readonly version: string
   readonly water: WaterConfig
@@ -176,6 +208,7 @@ export interface AlgorithmConfig {
   readonly phenology: PhenologyConfig
   readonly penalties: PenaltyConfig
   readonly confidence: ConfidenceConfig
+  readonly spatial: SpatialConfig
 }
 
 /**
@@ -343,20 +376,26 @@ export const ALGORITHM_V1: AlgorithmConfig = {
 
   confidence: {
     distanceScaleKm: {
-      // La pioggia decorrela molto piu' in fretta della temperatura: un temporale e' locale,
-      // un'ondata di calore no.
-      precipitation: calibrate(12),
-      temperature_max: calibrate(30),
-      temperature_min: calibrate(25),
-      temperature_mean: calibrate(30),
-      relative_humidity_mean: calibrate(20),
+      // La pioggia decorrela piu' in fretta della temperatura: un temporale e' locale,
+      // un'ondata di calore no. I valori sono tarati sugli errori misurati in cross-validation
+      // sulle zone: con una distanza media fra stazioni di 6 km, la pioggia interpolata sbaglia
+      // 2.37 mm e la massima 0.96 gradi, quindi una stazione a pochi chilometri merita davvero
+      // una confidence alta.
+      precipitation: calibrate(18),
+      temperature_max: calibrate(35),
+      temperature_min: calibrate(30),
+      temperature_mean: calibrate(35),
+      relative_humidity_mean: calibrate(22),
       wind_speed_mean: calibrate(15),
-      default: calibrate(20),
+      default: calibrate(25),
     },
     elevationScaleM: calibrate(
-      250,
-      'E\' il parametro che distingue una stazione vicina ma in fondovalle da una piu\' lontana ' +
-        'e climaticamente simile.',
+      600,
+      `Volutamente largo, e molto più largo del criterio con cui si scelgono le stazioni
+       (elevationPenaltyKmPerM). La differenza non è una svista: il trend della regressione
+       corregge già l'effetto della quota, quindi la penalità residua nel confidence deve essere
+       mite. Penalizzarla due volte era il motivo per cui una stazione a 3 km dava meno
+       confidence del non avere alcuna stazione.`,
     ),
     densitySaturation: calibrate(4),
     horizonScaleDays: calibrate(9),
@@ -366,6 +405,34 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       MODELLED: calibrate(0.7),
       FORECAST: calibrate(0.6),
     },
+  },
+
+  spatial: {
+    elevationPenaltyKmPerM: calibrate(
+      0.01,
+      'Cento metri di dislivello pesano come un chilometro di distanza. E\' il criterio con cui, ' +
+        'sulle sette zone, si sceglie Orecchiella (2.7 km, 169 m) invece di Villacollemandina ' +
+        '(2.6 km, 502 m).',
+    ),
+    idwPower: calibrate(2),
+    searchRadiusKm: calibrate(60, 'In distanza efficace, quindi comprensiva del dislivello.'),
+    maxNeighbours: calibrate(8),
+    minStationsForTrend: calibrate(
+      6,
+      'Sotto questa soglia il trend non e\' stimabile e si ricade sul modello: meglio dichiarare ' +
+        'un dato modellato che spacciare per osservata una regressione su quattro punti.',
+    ),
+    ridge: calibrate(1e-6),
+    fallbackLapseRateCPerM: calibrate(
+      -0.0065,
+      'Gradiente termico standard di -6.5 gradi per chilometro. E\' solo un ripiego: quando le ' +
+        'stazioni bastano il gradiente si stima dai dati del giorno, che in inversione termica ' +
+        'puo\' anche cambiare segno.',
+    ),
+    fusionHalfDistanceKm: calibrate(
+      20,
+      'Distanza efficace a cui osservato e modellato pesano uguale.',
+    ),
   },
 }
 
