@@ -148,6 +148,40 @@ export interface PenaltyResult {
   readonly detail: string
 }
 
+/**
+ * L'innesco: la buttata arriva una decina di giorni dopo la pioggia forte.
+ *
+ * Il bilancio idrico descrive lo stato del suolo, non l'evento. Questo termine aggiunge la
+ * tempistica: misurata sull'Amiata, l'effetto positivo della pioggia intensa e' massimo al
+ * dodicesimo giorno successivo.
+ *
+ * Correzione a me stesso: avevo scartato il ritardo di dodici giorni del modello baseline
+ * definendolo non supportato, sulla base di uno studio tedesco che misurava un'altra cosa — una
+ * finestra di accumulo, non un innesco. I dodici giorni hanno una fonte, ed e' pure toscana.
+ */
+export function computeTrigger(
+  features: CellFeatures,
+  config: AlgorithmConfig,
+): TriggerResult {
+  const t = config.trigger
+  const days = features.daysSinceIntenseEvent
+  if (days === null) {
+    return {
+      factor: 1,
+      daysSinceEvent: null,
+      detail: `nessuna pioggia oltre ${t.intenseEventMm.value} mm in un giorno nella finestra`,
+    }
+  }
+  const closeness = gaussian(days, t.lagDays.value, t.lagSigmaDays.value)
+  return {
+    factor: 1 + t.weight.value * closeness,
+    daysSinceEvent: days,
+    detail:
+      `ultima pioggia intensa ${days} giorni fa; il massimo atteso e' al giorno ` +
+      `${t.lagDays.value.toFixed(0)}`,
+  }
+}
+
 /** Applica il peso: a peso zero la penalita' viene calcolata e registrata ma non agisce. */
 function withWeight(severity: number, floor: number, weight: number): number {
   const raw = 1 - (1 - floor) * clamp(severity, 0, 1)
@@ -209,8 +243,28 @@ export function computePenalties(
     detail: wind === null ? 'vento non disponibile' : `vento medio 7 giorni ${wind.toFixed(1)} m/s`,
   })
 
-  // Shock termico: calcolato e registrato anche a peso zero, cosi' quando il diario avra'
-  // abbastanza uscite il confronto sara' possibile senza ricalcolare il passato.
+  /*
+   * Shock di caldo: l'unica penalita' di questo modello con una fonte di campo toscana.
+   *
+   * Sull'Amiata un'impennata della massima di circa 8 gradi sopra la media del periodo inibisce
+   * la produzione, con correlazioni negative al quarto, quattordicesimo e diciannovesimo giorno.
+   */
+  const rise = features.maxThermalRise
+  const heatShockSeverity =
+    rise === null ? 0 : clamp((rise - p.heatShock.threshold.value) / 4, 0, 1)
+  out.push({
+    key: 'heatShock',
+    severity: heatShockSeverity,
+    factor: withWeight(heatShockSeverity, p.heatShock.floor.value, p.heatShock.weight.value),
+    applied: p.heatShock.weight.value > 0,
+    detail:
+      rise === null
+        ? 'andamento della massima non disponibile'
+        : `massima salita di ${rise.toFixed(1)} °C sopra la media del periodo, soglia ${p.heatShock.threshold.value} °C`,
+  })
+
+  // Shock da raffreddamento: calcolato e registrato anche a peso zero, cosi' quando il diario
+  // avra' abbastanza uscite il confronto sara' possibile senza ricalcolare il passato.
   const drop = features.maxThermalDrop
   const shockSeverity =
     drop === null ? 0 : clamp((drop - p.thermalShock.threshold.value) / 4, 0, 1)
@@ -229,8 +283,16 @@ export function computePenalties(
   return out
 }
 
+export interface TriggerResult {
+  /** Moltiplicatore applicato, 1 quando nessun evento intenso e' in finestra. */
+  readonly factor: number
+  readonly daysSinceEvent: number | null
+  readonly detail: string
+}
+
 export interface MpiComponents {
   readonly water: number
+  readonly trigger: TriggerResult
   readonly thermal: ThermalResult
   readonly phenology: number
   readonly blend: SeasonBlend
@@ -271,7 +333,8 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
     (config.phenology.floor.value + (1 - config.phenology.floor.value) * blend.seasonal) *
     anomalyFactor
 
-  const core = features.water.score * thermal.score * phenology
+  const trigger = computeTrigger(features, config)
+  const core = features.water.score * thermal.score * phenology * trigger.factor
   const penalties = computePenalties(features, config)
   const penaltyProduct = penalties.reduce((acc, p) => acc * p.factor, 1)
 
@@ -285,6 +348,7 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
     date: features.date,
     components: {
       water: features.water.score,
+      trigger,
       thermal,
       phenology,
       blend,

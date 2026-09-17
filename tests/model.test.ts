@@ -251,12 +251,22 @@ function idealScenarioOn(endDate: string): DailyWeather[] {
 }
 
 describe('scenari meteorologici richiesti dalla specifica', () => {
-  it('molta pioggia con temperatura ottimale da condizioni favorevoli', () => {
+  it('molta pioggia con temperatura ottimale da condizioni molto favorevoli', () => {
     const mpi = mpiOf(idealScenario())
-    // La scala e quella decisa: condizioni molto buone stanno intorno a 75, non a 97.
-    expect(mpi).toBeGreaterThan(55)
-    expect(mpi).toBeLessThan(90)
-    expect(mpiLabel(mpi)).toMatch(/favorevoli/)
+    /*
+     * Lo scenario ideale ora arriva vicino al fondo scala, dove prima si fermava a 81.
+     *
+     * Non e' un allentamento: sono cambiati i riferimenti. La fascia altimetrica del regime
+     * autunnale e il picco stagionale ora vengono dalla letteratura sull'habitat italiano
+     * invece che da valori scelti da me, e una faggeta a 1000 m il 10 ottobre risulta in pieno
+     * regime autunnale invece che a meta' strada. In piu' agisce l'innesco: 90 mm ben distribuiti
+     * con un evento intenso nella finestra giusta valgono piu' della stessa acqua arrivata a caso.
+     *
+     * Sui dati reali il fondo scala resta lontanissimo: il 17 settembre 2026 le sette zone
+     * stavano fra 0 e 24.
+     */
+    expect(mpi).toBeGreaterThan(85)
+    expect(mpiLabel(mpi)).toBe('condizioni molto favorevoli')
   })
 
   it('la stessa pioggia con caldo estremo crolla', () => {
@@ -449,5 +459,94 @@ describe('governance dei parametri', () => {
 
   it('lo shock termico e disattivato in configurazione', () => {
     expect(ALGORITHM_V1.penalties.thermalShock.weight.value).toBe(0)
+  })
+})
+
+describe('innesco da pioggia intensa', () => {
+  /** Uno scenario identico, cambia solo quando è caduto l'acquazzone. */
+  const withEventDaysAgo = (daysAgo: number): DailyWeather[] =>
+    scenario({
+      rainByDaysAgo: { [daysAgo]: 40 },
+      tMax: 18,
+      tMin: 8,
+      et0: 1.8,
+      soilMoisture: 0.33,
+      soilTemperature: 14,
+    })
+
+  it('il guadagno è massimo al dodicesimo giorno, come misurato sull Amiata', () => {
+    const senza = { ...ALGORITHM_V1, trigger: { ...ALGORITHM_V1.trigger, weight: { ...ALGORITHM_V1.trigger.weight, value: 0 } } }
+    const gain = (daysAgo: number): number => {
+      const days = withEventDaysAgo(daysAgo)
+      const base = computeMpi({ features: buildFeatures(days, AUTUMN_CELL, senza), cell: AUTUMN_CELL }, senza).mpi
+      const con = mpiOf(days)
+      return con / base
+    }
+    const gains = [4, 8, 12, 16, 22].map(gain)
+    expect(gains.indexOf(Math.max(...gains))).toBe(2)
+  })
+
+  it('NON sposta il massimo della curva, ed è un limite dichiarato', () => {
+    /*
+     * Il picco resta subito dopo la pioggia perché il bilancio idrico decade dal primo giorno,
+     * mentre la misura sull'Amiata lo colloca al dodicesimo. Per riprodurlo serve un suolo che
+     * si satura e resta carico qualche giorno, non un peso più alto su questo termine.
+     *
+     * Il test esiste per impedire che qualcuno "risolva" il problema gonfiando il peso: se un
+     * giorno il massimo si sposterà davvero, dovrà essere perché è cambiata la forma del
+     * bilancio idrico, e questo test andrà riscritto consapevolmente.
+     */
+    const scores = [2, 6, 12, 20].map((d) => mpiOf(withEventDaysAgo(d)))
+    expect(scores.indexOf(Math.max(...scores))).toBe(0)
+  })
+
+  it('senza pioggia intensa in finestra il termine non agisce', () => {
+    const debole = scenario({ rainByDaysAgo: { 12: 8 }, soilMoisture: 0.3 })
+    const features = buildFeatures(debole, AUTUMN_CELL, ALGORITHM_V1)
+    const result = computeMpi({ features, cell: AUTUMN_CELL })
+    expect(features.daysSinceIntenseEvent).toBeNull()
+    expect(result.components.trigger.factor).toBe(1)
+    expect(result.components.trigger.detail).toContain('nessuna pioggia oltre 20 mm')
+  })
+
+  it('la soglia di evento intenso viene dalla fonte, non da noi', () => {
+    expect(ALGORITHM_V1.trigger.intenseEventMm.provenance).toBe('sourced')
+    expect(ALGORITHM_V1.trigger.intenseEventMm.tier).toBe('peer-reviewed')
+    expect(ALGORITHM_V1.trigger.lagDays.value).toBe(12)
+    expect(ALGORITHM_V1.trigger.lagDays.tier).toBe('peer-reviewed')
+  })
+})
+
+describe('shock di caldo', () => {
+  it('un impennata della massima abbassa il punteggio', () => {
+    const stabile = scenario({
+      rainByDaysAgo: { 12: 40 }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.33,
+    })
+    const conImpennata = [...stabile]
+    // Un solo giorno a 30 gradi dentro una finestra che sta sui 18: circa 11 sopra la media.
+    const idx = conImpennata.length - 6
+    const day = conImpennata[idx]
+    if (day !== undefined) conImpennata[idx] = { ...day, temperatureMaxC: 30 }
+
+    expect(mpiOf(conImpennata)).toBeLessThan(mpiOf(stabile))
+  })
+
+  it('è applicata, al contrario dello shock da raffreddamento', () => {
+    const days = scenario({ rainByDaysAgo: { 12: 40 }, soilMoisture: 0.33 })
+    const result = computeMpi({
+      features: buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1),
+      cell: AUTUMN_CELL,
+    })
+    const heat = result.components.penalties.find((p) => p.key === 'heatShock')
+    const cold = result.components.penalties.find((p) => p.key === 'thermalShock')
+    expect(heat?.applied).toBe(true)
+    expect(cold?.applied).toBe(false)
+  })
+
+  it('la soglia di 8 gradi ha una fonte toscana', () => {
+    const threshold = ALGORITHM_V1.penalties.heatShock.threshold
+    expect(threshold.value).toBe(8)
+    expect(threshold.tier).toBe('peer-reviewed')
+    expect(threshold.source).toContain('Amiata')
   })
 })

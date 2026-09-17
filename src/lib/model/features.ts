@@ -66,6 +66,13 @@ export interface CellFeatures {
   readonly heatDays: number
   /** Calo termico massimo su tre giorni nella finestra, in gradi. Positivo = raffreddamento. */
   readonly maxThermalDrop: number | null
+  /**
+   * Impennata massima della temperatura massima rispetto alla media della finestra, in gradi.
+   * E' il parametro che lo studio dell'Amiata trova inibitorio a circa 8 gradi.
+   */
+  readonly maxThermalRise: number | null
+  /** Giorni trascorsi dall'ultimo evento di pioggia intensa. `null` se non ce n'e' stato. */
+  readonly daysSinceIntenseEvent: number | null
   readonly lastEvent: RainEvent | null
   readonly events: readonly RainEvent[]
   /** Provenienza dominante dei dati usati, per il confidence. */
@@ -168,9 +175,21 @@ function daysApart(from: string, to: string): number {
 }
 
 /**
+ * Quanto la massima e' salita sopra la media del periodo.
+ * Confronto con la media e non con il giorno prima, perche' e' cosi' che lo definisce lo studio:
+ * "sudden increases in maximum temperature compared to the average of the period".
+ */
+export function maxThermalRise(maxima: readonly (number | null)[]): number | null {
+  const present = maxima.filter((v): v is number => v !== null)
+  if (present.length < 4) return null
+  const mean = present.reduce((a, b) => a + b, 0) / present.length
+  return Math.max(...present) - mean
+}
+
+/**
  * Calo termico massimo su tre giorni consecutivi, in gradi.
  * Positivo significa raffreddamento. Lo calcoliamo sempre, anche se la penalita' associata ha
- * peso zero: serve per poterlo validare piu' avanti sul diario uscite senza ricalcolare il passato.
+ * peso zero: serve per poterlo validare piu' avanti sul diario senza ricalcolare il passato.
  */
 export function maxThermalDrop(temps: readonly (number | null)[]): number | null {
   let best: number | null = null
@@ -254,11 +273,34 @@ export function buildFeatures(
       (d) => d.temperatureMaxC !== null && d.temperatureMaxC > heatThreshold,
     ).length,
     maxThermalDrop: maxThermalDrop(dailyMeans),
+    maxThermalRise: maxThermalRise(thermalSlice.map((d) => d.temperatureMaxC)),
+    daysSinceIntenseEvent: daysSinceIntenseEvent(
+      days.slice(-waterWindow),
+      last.date,
+      config.trigger.intenseEventMm.value,
+    ),
     lastEvent: lastEventOf(days, last.date, waterWindow),
     events: detectRainEvents(days.slice(-waterWindow), last.date),
     provenanceMix,
     coverage: water.coveredDays / Math.max(1, waterWindow),
   }
+}
+
+/**
+ * Giorni trascorsi dall'ultimo giorno di pioggia intensa.
+ * Conta il singolo giorno e non l'evento aggregato, perche' l'indice R20 della fonte e' definito
+ * sul giorno: sono giorni con precipitazione maggiore o uguale alla soglia.
+ */
+export function daysSinceIntenseEvent(
+  days: readonly DailyWeather[],
+  referenceDate: string,
+  thresholdMm: number,
+): number | null {
+  let latest: string | null = null
+  for (const day of days) {
+    if (day.precipitationMm !== null && day.precipitationMm >= thresholdMm) latest = day.date
+  }
+  return latest === null ? null : daysApart(latest, referenceDate)
 }
 
 function lastEventOf(

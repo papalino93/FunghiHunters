@@ -16,24 +16,52 @@
 /** Provenienza di un parametro del modello. */
 export type ParamProvenance = 'sourced' | 'calibrate'
 
+/**
+ * Quanto pesa la fonte.
+ *
+ * Non tutte le citazioni valgono uguale, e fingere il contrario sarebbe come non citarle. Uno
+ * studio sottoposto a revisione fatto sull'Amiata vale piu' di un preprint tedesco, che vale piu'
+ * di una guida naturalistica. L'utente vede il livello accanto al parametro.
+ */
+export type SourceTier = 'peer-reviewed' | 'preprint' | 'grey'
+
 export interface Param {
   readonly value: number
   readonly provenance: ParamProvenance
   /** Obbligatoria quando `provenance` e' `sourced`. */
   readonly source?: string
+  readonly tier?: SourceTier
   readonly note?: string
 }
 
-const sourced = (value: number, source: string, note?: string): Param =>
+const sourced = (value: number, source: string, tier: SourceTier, note?: string): Param =>
   note === undefined
-    ? { value, provenance: 'sourced', source }
-    : { value, provenance: 'sourced', source, note }
+    ? { value, provenance: 'sourced', source, tier }
+    : { value, provenance: 'sourced', source, tier, note }
 
 const calibrate = (value: number, note?: string): Param =>
   note === undefined ? { value, provenance: 'calibrate' } : { value, provenance: 'calibrate', note }
 
 /** Riferimenti bibliografici citati dai parametri. */
 export const REFERENCES = {
+  /**
+   * La fonte piu' vicina a noi che esista: monitoraggio triennale di Boletus edulis
+   * sul Monte Amiata, ad Abbadia San Salvatore, a 1050 m. Una delle nostre sette zone.
+   * Usa gli stessi dati SIR che usiamo noi.
+   */
+  salerni2023:
+    'Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate ' +
+    'change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. ' +
+    'https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 su Monte Amiata, ' +
+    'Abbadia San Salvatore (SI), 1050 m s.l.m.',
+  salerni2002:
+    'Salerni E., Lagana A., Perini C., Loppi S., De Dominicis V. (2002), Effects of temperature ' +
+    'and rainfall on fruiting of macrofungi in oak forests of the Mediterranean area. ' +
+    'Israel Journal of Plant Sciences 50: 189-198 - querceti della Toscana meridionale',
+  habitatItalia:
+    'Letteratura divulgativa e micologica italiana concorde sulla fascia altimetrica: la faggeta ' +
+    'fra 900 e 1400 m e\' l\'habitat classico del porcino autunnale, mentre i porcini estivi si ' +
+    'trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di 200-300 m',
   brejon2026:
     'Brejon Lamartiniere E., Hoffman J.I. (2026), Predicting porcini: a decade of sporocarp ' +
     'monitoring reveals the meteorological triggers of Boletus edulis fruiting in central ' +
@@ -90,6 +118,49 @@ export interface WaterConfig {
 }
 
 // ============================================================================
+// INNESCO DA EVENTO INTENSO
+// ============================================================================
+
+/**
+ * La buttata, e il suo ritardo.
+ *
+ * Il bilancio idrico a 26 giorni descrive lo **stato** del suolo. Non descrive la buttata, che e'
+ * un evento: piove forte, e una decina di giorni dopo il bosco si riempie. Sono due cose diverse
+ * e servono entrambe.
+ *
+ * Questo blocco ha la fonte migliore di tutto il modello, e non e' tedesca: Salerni, Paoli e
+ * Perini hanno monitorato Boletus edulis per tre anni **sul Monte Amiata, ad Abbadia San
+ * Salvatore, a 1050 m**, cioe' dentro una delle nostre sette zone, usando gli stessi dati SIR che
+ * usiamo noi.
+ *
+ * LIMITE STRUTTURALE, DICHIARATO.
+ *
+ * Questo termine alza il punteggio nella finestra giusta — al giorno 12 il guadagno e' massimo,
+ * circa il 35 % — ma **non sposta il massimo della curva**, che resta subito dopo la pioggia
+ * perche' il bilancio idrico decade in modo monotono dal primo giorno. Misurato: senza innesco il
+ * punteggio va da 52.7 a 19.4 fra il secondo e il ventesimo giorno, con innesco da 53.5 a 20.3,
+ * e in entrambi i casi il massimo e' al secondo.
+ *
+ * Per riprodurre davvero il picco misurato al dodicesimo giorno serve un cambiamento di struttura,
+ * non un ritocco di questo peso: dopo una pioggia forte il suolo si satura e **resta** carico per
+ * qualche giorno prima di iniziare a perdere acqua, mentre il nostro decadimento esponenziale
+ * parte subito. Nessun valore del peso puo' compensarlo, e alzarlo fino a farlo sembrare giusto
+ * significherebbe far dire alla tempistica piu' di quanto la fonte dica.
+ *
+ * Il diario uscite e' il modo per decidere quale delle due forme descrive meglio la realta'.
+ */
+export interface TriggerConfig {
+  /** Pioggia giornaliera oltre cui l'evento e' "intenso". */
+  readonly intenseEventMm: Param
+  /** Giorni fra l'evento e il picco di fruttificazione. */
+  readonly lagDays: Param
+  /** Larghezza della finestra attorno al picco, in giorni. */
+  readonly lagSigmaDays: Param
+  /** Quanto l'innesco puo' alzare il punteggio, in frazione. */
+  readonly weight: Param
+}
+
+// ============================================================================
 // IDONEITA' TERMICA
 // ============================================================================
 
@@ -140,6 +211,9 @@ export interface PenaltyConfig {
   readonly heat: PenaltySpec
   readonly vpd: PenaltySpec
   readonly wind: PenaltySpec
+  /** Impennata della massima rispetto alla media del periodo: inibisce. Ha una fonte toscana. */
+  readonly heatShock: PenaltySpec
+  /** Calo termico seguito da stabilizzazione: nessun supporto di campo trovato, peso zero. */
   readonly thermalShock: PenaltySpec
 }
 
@@ -204,6 +278,7 @@ export interface SpatialConfig {
 export interface AlgorithmConfig {
   readonly version: string
   readonly water: WaterConfig
+  readonly trigger: TriggerConfig
   readonly thermal: ThermalConfig
   readonly phenology: PhenologyConfig
   readonly penalties: PenaltyConfig
@@ -222,12 +297,13 @@ export interface AlgorithmConfig {
  * Quasi tutto il resto e' da calibrare, ed e' dichiarato come tale.
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
-  version: '1.0.0-porcino',
+  version: '1.1.0-porcino',
 
   water: {
     windowDays: sourced(
       26,
       REFERENCES.brejon2026,
+      'preprint',
       'Finestra selezionata per AIC fra 2 e 35 giorni. Coerente con Karavani 2018, che trova ' +
         'un ritardo fino a un mese fra precipitazione e umidita\' del suolo in ambiente mediterraneo.',
     ),
@@ -240,6 +316,7 @@ export const ALGORITHM_V1: AlgorithmConfig = {
     lambdaTempRef: sourced(
       13,
       REFERENCES.brejon2026,
+      'preprint',
       'Usiamo l\'ottimo termico misurato come riferimento del decadimento, invece di un valore ' +
         'arbitrario: sopra questa soglia il suolo perde acqua piu\' in fretta di quanto il ' +
         'micelio possa sfruttarla.',
@@ -277,8 +354,37 @@ export const ALGORITHM_V1: AlgorithmConfig = {
     cap: sourced(
       1.15,
       REFERENCES.brejon2026,
+      'preprint',
       'La precipitazione ha effetto lineare senza soglia superiore identificata. Il tetto sopra ' +
         '1 riflette che piu\' pioggia continua ad aiutare, con rendimento decrescente.',
+    ),
+  },
+
+  trigger: {
+    intenseEventMm: sourced(
+      20,
+      REFERENCES.salerni2023,
+      'peer-reviewed',
+      'Indice R20 dell\'ETCCDI, giorni con precipitazione molto intensa. E\' la soglia con cui lo ' +
+        'studio dell\'Amiata definisce l\'evento estremo, non un numero scelto da noi.',
+    ),
+    lagDays: sourced(
+      12,
+      REFERENCES.salerni2023,
+      'peer-reviewed',
+      'Effetto positivo della pioggia intensa massimo al dodicesimo giorno successivo all\'evento, ' +
+        'misurato sull\'Amiata. Coerente con Salerni et al. 2002, che nei querceti della Toscana ' +
+        'meridionale trovava il massimo di specie fruttificanti a dieci giorni dalla pioggia.',
+    ),
+    lagSigmaDays: calibrate(
+      4,
+      'La larghezza non e\' misurata: lo studio riporta correlazioni significative sparse fra il ' +
+        'secondo e il diciannovesimo giorno, quindi la finestra e\' ampia, ma quanto e\' da calibrare.',
+    ),
+    weight: calibrate(
+      0.35,
+      'Quanto l\'innesco alza il punteggio. La direzione e il ritardo hanno una fonte, ' +
+        'l\'ampiezza no.',
     ),
   },
 
@@ -286,11 +392,13 @@ export const ALGORITHM_V1: AlgorithmConfig = {
     airWindowDays: sourced(
       20,
       REFERENCES.brejon2026,
+      'preprint',
       'Finestra selezionata per AIC. La temperatura e\' il predittore a breve termine principale.',
     ),
     optAutumnC: sourced(
       13,
       REFERENCES.brejon2026,
+      'preprint',
       'Ottimo della relazione quadratica, stabile entro 0.6 gradi fra tre modelli. Fruttificazione ' +
         'concentrata fra 10 e 15 gradi di media a 20 giorni, quasi assente fra 5 e 10.',
     ),
@@ -318,10 +426,28 @@ export const ALGORITHM_V1: AlgorithmConfig = {
   phenology: {
     summerPeakDay: calibrate(200, 'Circa il 19 luglio.'),
     summerSigmaDays: calibrate(35),
-    autumnPeakDay: calibrate(288, 'Circa il 15 ottobre.'),
+    autumnPeakDay: sourced(
+      273,
+      REFERENCES.habitatItalia,
+      'grey',
+      'Il porcino autunnale in faggeta ha il massimo fra settembre e ottobre: il picco cade ' +
+        'attorno al 30 settembre. Prima era il 15 ottobre, scelto da me senza riferimenti.',
+    ),
     autumnSigmaDays: calibrate(30),
-    lowElevationM: calibrate(500),
-    highElevationM: calibrate(1100),
+    lowElevationM: sourced(
+      700,
+      REFERENCES.habitatItalia,
+      'grey',
+      'I porcini estivi si trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di ' +
+        '200-300 m: 700 e\' il limite superiore storico della fascia estiva.',
+    ),
+    highElevationM: sourced(
+      900,
+      REFERENCES.habitatItalia,
+      'grey',
+      'La faggeta fra 900 e 1400 m e\' l\'habitat classico del porcino autunnale: da 900 in su ' +
+        'domina quel regime. Prima avevo messo 1100, senza alcun riferimento.',
+    ),
     floor: calibrate(
       0.05,
       'Fuori stagione il potenziale non e\' esattamente zero: un modello che azzera nasconde ' +
@@ -359,17 +485,38 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       floor: calibrate(0.8),
       weight: calibrate(1),
     },
+    /*
+     * Shock di CALDO, non di freddo. E qui devo correggere me stesso.
+     *
+     * Avevo concluso che lo shock termico non avesse supporto di campo, basandomi su uno studio
+     * tedesco che non lo testava. Lo studio sull'Amiata lo testa eccome, e trova un effetto
+     * chiaro: un'impennata della temperatura massima di circa 8 gradi sopra la media del periodo
+     * **inibisce** la produzione di B. edulis, con correlazioni negative significative al quarto,
+     * quattordicesimo e diciannovesimo giorno successivo.
+     *
+     * Il segno e' opposto a quello che la specifica di progetto ipotizzava: non e' il calo che
+     * innesca, e' l'impennata che blocca.
+     */
+    heatShock: {
+      threshold: sourced(
+        8,
+        REFERENCES.salerni2023,
+        'peer-reviewed',
+        'Aumento improvviso della massima rispetto alla media del periodo, in gradi.',
+      ),
+      floor: calibrate(0.55, 'L\'entita\' dell\'inibizione non e\' quantificata nello studio.'),
+      weight: calibrate(1),
+    },
     thermalShock: {
       threshold: calibrate(5, 'Calo termico in gradi su tre giorni, seguito da stabilizzazione.'),
       floor: calibrate(1),
       weight: calibrate(
         0,
-        'DISATTIVATA. La specifica di progetto indica lo shock termico come il fattore piu\' ' +
-          'discriminante sul porcino autunnale, ma non ho trovato supporto di campo: non compare ' +
-          'fra i predittori testati negli studi consultati, e le prove sperimentali riguardano ' +
-          'saprotrofi coltivati. Viene calcolata e registrata a peso zero, cosi\' quando il ' +
-          'diario avra\' abbastanza uscite il confronto sara\' gia\' possibile senza ricalcolare ' +
-          'il passato.',
+        'DISATTIVATA. Lo shock da RAFFREDDAMENTO resta senza supporto: non compare fra i ' +
+          'predittori degli studi di campo consultati, e le prove sperimentali riguardano ' +
+          'saprotrofi coltivati. Viene comunque calcolata e registrata a peso zero, cosi\' quando ' +
+          'il diario avra\' abbastanza uscite il confronto sara\' possibile senza ricalcolare il ' +
+          'passato. Da non confondere con heatShock, che ha una fonte e agisce.',
       ),
     },
   },
