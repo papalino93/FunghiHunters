@@ -57,6 +57,27 @@ export const DEFAULT_SPATIAL_QC: SpatialQcConfig = {
   madThreshold: 6,
 }
 
+/**
+ * Scarto minimo in unita' fisiche perche' un outlier spaziale sia tale.
+ *
+ * Il solo criterio statistico non basta, e l'ho scoperto facendo girare il controllo sul dato
+ * vero del 2026-09-16: su una giornata termicamente uniforme le stazioni vicine si stringono,
+ * il MAD diventa piccolissimo, e una differenza di **2.4 gradi** risulta a 10.6 deviazioni
+ * robuste. Ma 2.4 gradi fra un fondovalle e un versante sono meteorologia, non un guasto.
+ *
+ * Con questa soglia i due falsi positivi di quella giornata (Ortignano e Palazzo del Pero)
+ * spariscono, mentre un pluviometro che segna 180 mm dove gli altri segnano 3 resta segnalato.
+ */
+export const MIN_ABSOLUTE_DEVIATION: Readonly<Partial<Record<Variable, number>>> = {
+  precipitation: 20,
+  temperature_max: 6,
+  temperature_min: 6,
+  temperature_mean: 6,
+  relative_humidity_mean: 25,
+  wind_speed_mean: 8,
+  wind_gust: 15,
+}
+
 /** Parametri del controllo sullo zero prolungato. */
 export interface FlatZeroQcConfig {
   /** Giorni consecutivi a zero oltre i quali si sospetta il guasto. */

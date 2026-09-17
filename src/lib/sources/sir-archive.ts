@@ -60,14 +60,26 @@ const stationsSchema = z.object({
           Comune: z.unknown().optional(),
           Provincia: z.unknown().optional(),
           'Quota mslm': z.unknown().optional(),
+          /**
+           * `Consistenza` e' normalmente un oggetto che mappa la grandezza ai suoi anni.
+           *
+           * Ma 7 stazioni su 1411 la espongono come **array vuoto** invece che come oggetto
+           * vuoto: e' il comportamento di `json_encode` in PHP, che serializza un array
+           * associativo vuoto come `[]`. Sono stazioni senza alcuna misura (fra cui, con una
+           * certa ironia, quella chiamata "Monte Amiata"). Accettarle e trattarle come prive di
+           * grandezze costa una riga; rifiutarle fa fallire l'intera ingestione.
+           */
           Consistenza: z
-            .record(
-              z.string(),
-              z.object({
-                Anni: z.array(z.union([z.array(z.string()), z.string()])).optional(),
-                SorgenteDati: z.string().optional(),
-              }),
-            )
+            .union([
+              z.record(
+                z.string(),
+                z.object({
+                  Anni: z.array(z.union([z.array(z.string()), z.string()])).optional(),
+                  SorgenteDati: z.string().optional(),
+                }),
+              ),
+              z.array(z.unknown()),
+            ])
             .optional(),
         })
         .loose(),
@@ -127,7 +139,8 @@ export function parseStations(payload: unknown): Station[] {
     const [longitude, latitude] = feature.geometry.coordinates
 
     const measures: StationMeasure[] = []
-    for (const [key, entry] of Object.entries(props.Consistenza ?? {})) {
+    const consistency = Array.isArray(props.Consistenza) ? {} : (props.Consistenza ?? {})
+    for (const [key, entry] of Object.entries(consistency)) {
       const spec = measureByConsistencyKey(key)
       if (spec === undefined) continue
       measures.push({

@@ -289,6 +289,36 @@ describe('outlier spaziale', () => {
     expect(finding).toBeNull()
   })
 
+  it('non segnala una differenza termica fisicamente normale', () => {
+    // Caso reale del 2026-09-16: la prima versione del controllo segnalava Ortignano a 19 gradi
+    // contro una mediana locale di 21.4, perche' con stazioni molto concordi il MAD si stringe e
+    // 2.4 gradi diventano 10.6 deviazioni robuste. Ma 2.4 gradi fra fondovalle e versante sono
+    // meteorologia. Serve che il valore sia anomalo statisticamente E lontano in gradi veri.
+    const tight = [21.4, 21.5, 21.3, 21.4, 21.6, 21.2].map((value, i) => ({
+      station: station(`N${i}`, 42.88 + i * 0.01, 11.66, 920),
+      value,
+    }))
+    const finding = checkSpatialOutlier(
+      obs(AMIATA.code, 'temperature_mean', '2026-09-16', 19, 'degC'),
+      AMIATA,
+      tight,
+    )
+    expect(finding).toBeNull()
+  })
+
+  it('segnala comunque una temperatura davvero fuori scala', () => {
+    const tight = [21.4, 21.5, 21.3, 21.4, 21.6, 21.2].map((value, i) => ({
+      station: station(`N${i}`, 42.88 + i * 0.01, 11.66, 920),
+      value,
+    }))
+    const finding = checkSpatialOutlier(
+      obs(AMIATA.code, 'temperature_mean', '2026-09-16', 4, 'degC'),
+      AMIATA,
+      tight,
+    )
+    expect(finding?.flag).toBe('spatial_outlier')
+  })
+
   it('non si esprime quando le vicine sono tutte identiche', () => {
     // Con MAD zero ogni scarto sarebbe infinito: meglio tacere che gridare.
     const finding = checkSpatialOutlier(

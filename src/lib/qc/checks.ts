@@ -16,6 +16,7 @@ import {
   DEFAULT_FLAT_ZERO_QC,
   DEFAULT_SPATIAL_QC,
   type FlatZeroQcConfig,
+  MIN_ABSOLUTE_DEVIATION,
   PLAUSIBLE_RANGES,
   type SpatialQcConfig,
   STALENESS_DAYS,
@@ -251,7 +252,13 @@ export function checkSpatialOutlier(
   // Con vicine tutte identiche il MAD e' zero e ogni differenza sarebbe infinita: non giudichiamo.
   if (spread === 0) return null
 
-  const deviations = Math.abs(observation.value - centre) / spread
+  const absolute = Math.abs(observation.value - centre)
+  // Il criterio statistico da solo segnala differenze fisicamente normali quando le vicine sono
+  // molto concordi. Serve che il valore sia anomalo **e** lontano in unita' vere.
+  const floor = MIN_ABSOLUTE_DEVIATION[observation.variable]
+  if (floor !== undefined && absolute < floor) return null
+
+  const deviations = absolute / spread
   if (deviations > config.madThreshold) {
     return {
       stationCode: observation.stationCode,
