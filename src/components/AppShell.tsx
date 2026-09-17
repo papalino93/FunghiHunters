@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
+import { useSearchParams } from 'next/navigation'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import { TimeSlider } from '@/components/TimeSlider'
@@ -25,8 +26,18 @@ export function AppShell({ snapshot }: AppShellProps) {
     [snapshot.zones, todayDate],
   )
 
+  /*
+   * Zona preselezionata da "Dove vado oggi".
+   *
+   * Arrivare qui da una scheda deve aprire quella zona, altrimenti il pulsante "vedi sulla mappa"
+   * prometterebbe qualcosa che non fa. Il parametro vale come stato iniziale: appena l'utente
+   * tocca un'altra zona, comanda lui.
+   */
+  const initialCode = useSearchParams().get('zona')
   const [selectedDate, setSelectedDate] = useState(todayDate)
-  const [selectedCode, setSelectedCode] = useState<string | null>(null)
+  const [override, setOverride] = useState<string | null | undefined>(undefined)
+  const selectedCode = override === undefined ? initialCode : override
+  const setSelectedCode = setOverride
   const [showStations, setShowStations] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
 
@@ -60,7 +71,7 @@ export function AppShell({ snapshot }: AppShellProps) {
   }
 
   return (
-    <main className="relative h-full w-full overflow-hidden bg-surface-0">
+    <section className="relative h-full w-full overflow-hidden bg-surface-0">
       <MapView
         zones={snapshot.zones}
         scores={scores}
@@ -204,13 +215,13 @@ export function AppShell({ snapshot }: AppShellProps) {
 
 
       </div>
-    </main>
+    </section>
   )
 }
 
 function EmptyState() {
   return (
-    <main className="grid h-full place-items-center bg-surface-0 px-6 text-center">
+    <section className="grid h-full place-items-center bg-surface-0 px-6 text-center">
       <div className="max-w-sm">
         <h1 className="text-lg font-semibold text-ink">FungiCast Toscana</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-dim">
@@ -221,6 +232,6 @@ function EmptyState() {
           npx tsx scripts/build-snapshot.ts
         </code>
       </div>
-    </main>
+    </section>
   )
 }

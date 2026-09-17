@@ -204,6 +204,23 @@ function Summary({
           hint="per quota e stagione"
         />
       </dl>
+
+      {/* I due numeri separati: dicono se il limite sono i dati o l'orizzonte previsionale. */}
+      <dl className="grid grid-cols-2 gap-2">
+        <Stat
+          label="Qualità dati"
+          value={zone.dataQuality.toFixed(0)}
+          hint="stazioni e copertura"
+        />
+        <Stat
+          label="Certezza previsione"
+          value={(
+            zone.series.find((p) => p.date === selectedDate)?.forecastCertainty ??
+            zone.forecastCertainty
+          ).toFixed(0)}
+          hint="orizzonte del giorno"
+        />
+      </dl>
     </div>
   )
 }
@@ -329,7 +346,9 @@ function DataProvenance({
       <Group title="Copertura">
         <Row
           label="Giorni con osservazioni"
-          value={`${zone.observedDays} su ${zone.series.length + 40}`}
+          // Il denominatore viene dallo snapshot: `series.length + 40` era un numero inventato
+          // che non corrispondeva né alla finestra di calcolo né ai punti mostrati.
+          value={`${zone.observedDays} su ${zone.windowDays}`}
           hint="nella finestra di calcolo"
         />
         <Row label="Ultimo dato osservato" value={zone.lastObservedDate ?? '—'} />

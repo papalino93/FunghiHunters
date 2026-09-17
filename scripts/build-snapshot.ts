@@ -177,6 +177,8 @@ async function main(): Promise<void> {
 
   const byDate = new Map<string, Map<Variable, StationSample[]>>()
   let lastSirUpdate: string | null = null
+  // Serie effettivamente scaricate per la pioggia: e' l'indicatore di salute della fonte.
+  let sirSeries = 0
 
   for (const job of jobs) {
     process.stdout.write(`  ${job.idst} `)
@@ -198,11 +200,12 @@ async function main(): Promise<void> {
         }
         count += 1
       } catch {
-        // Una stazione che non risponde non ferma lo snapshot.
+        // Una stazione che non risponde non ferma lo snapshot, ma il conteggio lo registra.
       }
       await new Promise((resolve) => setTimeout(resolve, 100))
     }
     console.log(`${count} serie`)
+    if (job.variable === 'precipitation') sirSeries = count
   }
 
   const observationsByDate = new Map<string, DailySamples>()
@@ -242,6 +245,8 @@ async function main(): Promise<void> {
     let currentResult: ReturnType<typeof computeMpi> | null = null
     let currentFeatures: ReturnType<typeof buildFeatures> | null = null
     let currentConfidence = 0
+    let currentDataQuality = 0
+    let currentForecastCertainty = 100
 
     for (let offset = -DISPLAY_PAST_DAYS; offset <= FORECAST_DAYS - 1; offset += 1) {
       const date = addDays(todayIso, offset)
@@ -264,6 +269,8 @@ async function main(): Promise<void> {
         date,
         mpi: result.mpi,
         confidence: confidence.score,
+        dataQuality: confidence.dataQuality,
+        forecastCertainty: confidence.forecastCertainty,
         provenance: day?.provenance ?? 'MODELLED',
         rainMm: day?.precipitationMm ?? null,
         tMinC: day?.temperatureMinC ?? null,
@@ -277,6 +284,8 @@ async function main(): Promise<void> {
         currentResult = result
         currentFeatures = features
         currentConfidence = confidence.score
+        currentDataQuality = confidence.dataQuality
+        currentForecastCertainty = confidence.forecastCertainty
       }
     }
 
@@ -325,6 +334,8 @@ async function main(): Promise<void> {
       stationNotes: zone.stationNotes.replace(/\s+/g, ' ').trim(),
       mpi: currentResult.mpi,
       confidence: currentConfidence,
+      dataQuality: currentDataQuality,
+      forecastCertainty: currentForecastCertainty,
       label: mpiLabel(currentResult.mpi),
       limitingFactor: explanation.limitingFactor,
       development: Math.round(development * 10) / 10,
@@ -362,6 +373,8 @@ async function main(): Promise<void> {
               narrative: window.narrative,
             },
       observedDays: assembled.observedDays,
+      // Il denominatore vero della copertura: la finestra di calcolo, non i punti mostrati.
+      windowDays: full.filter((d) => d.date <= todayIso).length,
       lastObservedDate: assembled.lastObservedDate,
       thermalOptimumC: Math.round(currentResult.components.thermal.optimumC * 10) / 10,
       lapseRateCPerKm:
@@ -383,6 +396,10 @@ async function main(): Promise<void> {
     zones,
     sources: [
       {
+        // Una fonte che risponde a meta' non e' una fonte che funziona: va detto.
+        status: sirSeries === 0 ? 'down' : sirSeries < candidates.length ? 'degraded' : 'ok',
+        recordsFetched: sirSeries,
+        coverage: 'Toscana, rete di stazioni al suolo',
         name: 'Regione Toscana - Servizio Idrologico Regionale',
         license: LICENSES.sir.code,
         url: LICENSES.sir.url,
@@ -390,6 +407,9 @@ async function main(): Promise<void> {
         lastUpdate: lastSirUpdate,
       },
       {
+        status: modelResponses.length === ZONES.length ? 'ok' : 'degraded',
+        recordsFetched: modelResponses.length,
+        coverage: 'globale, modelli a 2-11 km',
         name: 'Open-Meteo',
         license: LICENSES.openMeteo.code,
         url: LICENSES.openMeteo.url,

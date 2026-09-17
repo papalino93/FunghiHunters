@@ -20,7 +20,12 @@
 
   --text-primary: #eef1f8;
   --text-secondary: #a3adc4;
-  --text-muted: #6b7690;
+  /*
+   * Passa AA anche su surface-3, il fondo più chiaro che usiamo (4.60), perché questo colore
+   * porta testo di 10-11 px e il requisito per il testo piccolo è 4.5, non 3.
+   * Il precedente #6b7690 si fermava a 3.53: leggibile su monitor, non al sole.
+   */
+  --text-muted: #8098b0;
 
   --accent: #4dd4ac;
   --warn: #f2b134;

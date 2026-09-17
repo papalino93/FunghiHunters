@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="FungiCast">
+  <rect width="512" height="512" rx="112" fill="#0b0e16"/>
+  <!-- Una curva di livello e il gradiente del potenziale: cartografia, non un fungo stilizzato. -->
+  <path d="M96 344c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#2b7983" stroke-width="18" stroke-linecap="round"/>
+  <path d="M96 288c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#3ba070" stroke-width="18" stroke-linecap="round" opacity=".85"/>
+  <path d="M96 232c48-16 72-56 120-56s72 40 120 40 56-24 80-40" fill="none" stroke="#8dc34c" stroke-width="18" stroke-linecap="round" opacity=".7"/>
+  <circle cx="256" cy="392" r="26" fill="#f3d83f"/>
+</svg>

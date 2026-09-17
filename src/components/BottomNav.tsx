@@ -1,0 +1,85 @@
+'use client'
+
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+
+/**
+ * Navigazione principale, in basso.
+ *
+ * In basso e non in alto perché l'app si usa con una mano, spesso in piedi, spesso con i guanti.
+ * I bersagli sono da 56 px di altezza: sopra i 44 raccomandati, perché qui si tocca male.
+ */
+
+interface Tab {
+  readonly href: string
+  readonly label: string
+  readonly icon: React.ReactNode
+}
+
+const TABS: readonly Tab[] = [
+  {
+    href: '/',
+    label: 'Dove vado',
+    icon: (
+      <path
+        d="M10 2.5a5.5 5.5 0 0 0-5.5 5.5c0 3.9 5.5 9.5 5.5 9.5s5.5-5.6 5.5-9.5A5.5 5.5 0 0 0 10 2.5Zm0 7.5a2 2 0 1 1 0-4 2 2 0 0 1 0 4Z"
+        fill="currentColor"
+      />
+    ),
+  },
+  {
+    href: '/mappa',
+    label: 'Mappa',
+    icon: (
+      <path
+        d="M7.3 2.7 2.8 4.4A1 1 0 0 0 2.2 5.3v11c0 .7.7 1.2 1.4 1L7.3 16l5.4 1.9 4.5-1.7c.4-.2.6-.5.6-.9v-11c0-.7-.7-1.2-1.4-1L12.7 4 7.3 2.7Zm0 1.9 5.4 1.9v9L7.3 14.6v-10Z"
+        fill="currentColor"
+      />
+    ),
+  },
+  {
+    href: '/diario',
+    label: 'Diario',
+    icon: (
+      <path
+        d="M5 2.5h8.5A1.5 1.5 0 0 1 15 4v12.5a1 1 0 0 1-1.5.9L10 15.5l-3.5 1.9A1 1 0 0 1 5 16.5V2.5Zm2 2v9.6l3-1.6 3 1.6V4.5H7Z"
+        fill="currentColor"
+      />
+    ),
+  },
+]
+
+export function BottomNav() {
+  const pathname = usePathname()
+
+  return (
+    <nav
+      aria-label="Navigazione principale"
+      className="shrink-0 border-t border-edge bg-surface-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
+    >
+      <ul className="flex">
+        {TABS.map((tab) => {
+          const active = pathname === tab.href
+          return (
+            <li key={tab.href} className="flex-1">
+              <Link
+                href={tab.href}
+                aria-current={active ? 'page' : undefined}
+                className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[11px]
+                            font-medium transition-colors focus:outline-none
+                            focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
+                              active ? 'text-accent' : 'text-ink-faint hover:text-ink-dim'
+                            }`}
+              >
+                <svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">
+                  {tab.icon}
+                </svg>
+                {tab.label}
+              </Link>
+            </li>
+          )
+        })}
+      </ul>
+    </nav>
+  )
+}

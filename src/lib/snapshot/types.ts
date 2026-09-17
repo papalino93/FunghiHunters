@@ -22,6 +22,8 @@ export interface SnapshotSeriesPoint {
   readonly date: string
   readonly mpi: number
   readonly confidence: number
+  readonly dataQuality: number
+  readonly forecastCertainty: number
   readonly provenance: 'OBSERVED' | 'REANALYSIS' | 'MODELLED' | 'FORECAST'
   readonly rainMm: number | null
   readonly tMinC: number | null
@@ -73,6 +75,10 @@ export interface SnapshotZone {
 
   readonly mpi: number
   readonly confidence: number
+  /** Quanto sono buoni i dati osservati, indipendentemente da quanto guardiamo avanti. */
+  readonly dataQuality: number
+  /** Quanto è affidabile la previsione per il giorno: 100 per oggi. */
+  readonly forecastCertainty: number
   readonly label: string
   readonly limitingFactor: string | null
   /** Differenza fra la media dei prossimi quattro giorni e quella degli ultimi quattro. */
@@ -94,12 +100,23 @@ export interface SnapshotZone {
   } | null
 
   readonly observedDays: number
+  /**
+   * Giorni della finestra di calcolo. È il denominatore vero di `observedDays`.
+   * Prima l'interfaccia lo ricavava con un'aritmetica inventata sul numero di punti mostrati,
+   * e presentava all'utente un numero che non corrispondeva a nulla.
+   */
+  readonly windowDays: number
   readonly lastObservedDate: string | null
   readonly thermalOptimumC: number
   readonly lapseRateCPerKm: number | null
 }
 
 export interface SnapshotSource {
+  /** `ok` quando la fonte ha risposto, `degraded` quando ha risposto in parte, `down` mai. */
+  readonly status: 'ok' | 'degraded' | 'down'
+  /** Quante serie/stazioni sono arrivate davvero, per rendere visibile un degrado silenzioso. */
+  readonly recordsFetched: number | null
+  readonly coverage: string
   readonly name: string
   readonly license: string
   readonly url: string

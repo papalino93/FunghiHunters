@@ -163,9 +163,29 @@ export interface AggregateConfidenceInput {
 }
 
 export interface AggregateConfidence {
+  /** Punteggio complessivo, per chi vuole un numero solo. */
   readonly score: number
+  /**
+   * Quanto sono buoni i **dati osservati**: stazioni vicine e comparabili, densità, copertura
+   * della finestra, freschezza. Non dipende da quanto guardiamo avanti nel tempo.
+   */
+  readonly dataQuality: number
+  /**
+   * Quanto è affidabile la **previsione** per il giorno scelto: orizzonte temporale e accordo
+   * fra i modelli. Per oggi vale 100 e non toglie nulla.
+   */
+  readonly forecastCertainty: number
   readonly factors: readonly ConfidenceFactor[]
 }
+
+/**
+ * Perché due numeri e non uno.
+ *
+ * Un'unica "affidabilità" che somma geometria delle stazioni e orizzonte previsionale non è
+ * azionabile: chi legge 50 non sa se la zona è mal coperta — e lo sarà anche domani — oppure se
+ * sta semplicemente guardando dopodomani. Sono decisioni diverse: nel primo caso cambi zona, nel
+ * secondo riguardi fra due giorni.
+ */
 
 /**
  * Confidence complessiva: media pesata **per il contributo al punteggio**, non aritmetica.
@@ -173,6 +193,8 @@ export interface AggregateConfidence {
  */
 export function aggregateConfidence(input: AggregateConfidenceInput): AggregateConfidence {
   let weighted = 0
+  let dataWeighted = 0
+  let forecastWeighted = 0
   let totalWeight = 0
   const factors: ConfidenceFactor[] = []
 
@@ -181,6 +203,19 @@ export function aggregateConfidence(input: AggregateConfidenceInput): AggregateC
     if (weight <= 0) continue
     weighted += variable.score * weight
     totalWeight += weight
+
+    // Qualità del dato: tutto tranne i termini che dipendono dal guardare avanti nel tempo.
+    const c = variable.components
+    dataWeighted +=
+      100 *
+      (c['geometry'] ?? 1) *
+      (c['density'] ?? 1) *
+      (c['provenance'] ?? 1) *
+      (c['validation'] ?? 1) *
+      (c['coverage'] ?? 1) *
+      weight
+    // Certezza della previsione: solo orizzonte e accordo fra modelli.
+    forecastWeighted += 100 * (c['horizon'] ?? 1) * (c['agreement'] ?? 1) * weight
 
     const worst = Object.entries(variable.components).reduce(
       (acc, entry) => (entry[1] < acc[1] ? entry : acc),
@@ -202,8 +237,13 @@ export function aggregateConfidence(input: AggregateConfidenceInput): AggregateC
     }
   }
 
+  const round = (value: number): number =>
+    totalWeight === 0 ? 0 : Math.round((value / totalWeight) * 10) / 10
+
   return {
-    score: totalWeight === 0 ? 0 : Math.round((weighted / totalWeight) * 10) / 10,
+    score: round(weighted),
+    dataQuality: round(dataWeighted),
+    forecastCertainty: round(forecastWeighted),
     factors,
   }
 }

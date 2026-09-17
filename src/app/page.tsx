@@ -1,16 +1,14 @@
-import { AppShell } from '@/components/AppShell'
+import { TodayScreen } from '@/components/today/TodayScreen'
 import { loadSnapshot } from '@/lib/snapshot/load'
 
 /**
- * La pagina e' un componente server che legge lo snapshot e lo passa al guscio client.
+ * La home è la schermata della decisione, non la mappa.
  *
- * Nessun calcolo a richiesta: l'MPI e' gia' stato calcolato dal job giornaliero. La pagina viene
- * rigenerata ogni ora, che e' abbondante per un dato che cambia una volta al giorno e permette
- * comunque di raccogliere un rigenerato snapshot senza aspettare un nuovo deploy.
+ * La mappa è uno strumento di esplorazione, e va benissimo — ma aprendo l'app la domanda è
+ * "dove vado", non "fammi vedere la Toscana". Chi vuole la mappa la trova nella barra in basso.
  */
 export const revalidate = 3600
 
 export default async function Page() {
-  const snapshot = await loadSnapshot()
-  return <AppShell snapshot={snapshot} />
+  return <TodayScreen snapshot={await loadSnapshot()} />
 }
