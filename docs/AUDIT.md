@@ -17,6 +17,33 @@ residui.
 | "Non esistono ancora login, sincronizzazione cloud o Google Auth funzionanti" | **Da correggere, con una distinzione importante.** Il codice esiste, è reale (non un mock lasciato a metà) e passa 26 test automatici: `src/lib/auth/`, `src/lib/sync/`, schermata `/account`, rotta `/api/account/delete`. **Non è però mai stato verificato contro un progetto Supabase vero**, perché questo ambiente non può crearne uno (credenziali di terze parti). "Funzionante" è ambiguo: il codice funziona contro backend finti, **non è dimostrato che funzioni contro Supabase reale**. Trattalo come "pronto ma non verificato dal vivo", non come "assente" né come "verificato". Vedi `docs/SYNC.md` per la checklist di verifica manuale, non ancora eseguita da nessuno. |
 | Build di produzione con processo bloccato | **Non riprodotto.** `rm -rf .next && npm run build`: completa in 17.3 secondi, nessun processo residuo prima o dopo (`ps aux` pulito). Non posso escludere che fosse un problema specifico dell'ambiente di chi ha eseguito il build la volta precedente (lockfile, watcher rimasto attivo, memoria); qui non si è ripresentato. |
 
+## Obiettivo 6 — verifica UX contro i sette requisiti
+
+Verificato punto per punto cosa mostra oggi ogni suggerimento, fra scheda compatta
+(`SuggestionCard`) e dettaglio a un tocco (`ZoneSheet`):
+
+1. Potenziale ambientale — `PotentialBar`, cinque fasce. **C'era già.**
+2. Qualità dei dati — `Reliability` nella scheda ("stima solida/discreta/incerta"), numero esatto
+   in `ZoneSheet`. **C'era già.**
+3. Incertezza della previsione — **non c'era nella scheda compatta**, solo nel dettaglio
+   (`ZoneSheet`, "Certezza previsione", separata da "Qualità dati" come richiesto — è la
+   correzione B2 di una sessione precedente). Lasciata nel dettaglio per scelta di
+   information-architecture (la scheda non deve diventare una dashboard), non per svista.
+4. Fattori favorevoli — `facts.good`. **C'era già.**
+5. Fattori limitanti — `facts.bad`. **C'era già.**
+6. Distanza in linea d'aria, dichiarata come tale — **mancava la dicitura esplicita**: la scheda
+   mostrava "43 km" senza dire se lineare o stradale. Corretto: ora dice "43 km in linea d'aria".
+   Nessuna distanza stradale reale: richiederebbe un servizio di routing, non ancora integrato.
+7. Finestra consigliata — "Meglio [data]" / "Nessun giorno migliore in vista". **C'era già.**
+
+**"Non nascondere aree scartate: spiega perché" — mancava, corretto in questa sessione.**
+`rankZones` toglieva le zone escluse dai filtri con un `continue` silenzioso: sparivano senza
+lasciare traccia. Aggiunta `excludedZones()` (`src/lib/recommend/rank.ts`), che condivide la
+stessa logica di esclusione così da non poter divergere da `rankZones`, e una sezione a comparsa
+in UI (`ExcludedZones.tsx`) che elenca ogni zona esclusa con il motivo in chiaro ("a 65 km in
+linea d'aria, oltre il limite di 50 km"). Testato: 4 casi nuovi in `tests/recommend.test.ts`,
+incluso che nessuna zona possa comparire sia come suggerimento sia come esclusa.
+
 **Le due citazioni nuove**, verificate per link forniti dall'utente: un preprint bioRxiv (non
 peer-reviewed, in revisione) e uno studio su Boletus edulis in Italian Journal of Mycology
 (peer-reviewed, ma su un singolo sito, il Monte Amiata). Il punto sollevato dall'utente è corretto

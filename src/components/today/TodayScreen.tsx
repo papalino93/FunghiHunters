@@ -6,6 +6,7 @@ import Link from 'next/link'
 import type { Snapshot } from '@/lib/snapshot/types'
 import {
   availableForestTypes,
+  excludedZones,
   rankZones,
   type Suggestion,
   type UserPosition,
@@ -15,6 +16,7 @@ import { VerdictCard } from '@/components/today/VerdictCard'
 import { SuggestionCard } from '@/components/today/SuggestionCard'
 import { LocationPrompt } from '@/components/today/LocationPrompt'
 import { FilterBar, type Filters } from '@/components/today/FilterBar'
+import { ExcludedZones } from '@/components/today/ExcludedZones'
 import { BeforeYouGo } from '@/components/today/BeforeYouGo'
 import { SourceHealth } from '@/components/today/SourceHealth'
 import { formatDate } from '@/lib/ui/scale'
@@ -75,16 +77,23 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
     }
   }
 
+  const rankOptions = useMemo(
+    () => ({
+      date,
+      from: position,
+      maxDistanceKm: filters.maxDistanceKm,
+      forestTypes: filters.forestTypes,
+      minDataQuality: filters.minDataQuality,
+    }),
+    [date, position, filters],
+  )
   const suggestions = useMemo(
-    () =>
-      rankZones(snapshot.zones, {
-        date,
-        from: position,
-        maxDistanceKm: filters.maxDistanceKm,
-        forestTypes: filters.forestTypes,
-        minDataQuality: filters.minDataQuality,
-      }),
-    [snapshot.zones, date, position, filters],
+    () => rankZones(snapshot.zones, rankOptions),
+    [snapshot.zones, rankOptions],
+  )
+  const excluded = useMemo(
+    () => excludedZones(snapshot.zones, rankOptions),
+    [snapshot.zones, rankOptions],
   )
 
   const forestTypes = useMemo(() => availableForestTypes(snapshot.zones), [snapshot.zones])
@@ -134,6 +143,7 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
           forestTypes={forestTypes}
           hasPosition={position !== null}
         />
+        <ExcludedZones excluded={excluded} />
         <BeforeYouGo topSuggestion={best ?? null} />
         <SourceHealth snapshot={snapshot} />
       </div>

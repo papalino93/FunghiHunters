@@ -11,6 +11,7 @@ import type { SnapshotZone } from '@/lib/snapshot/types'
 import {
   availableForestTypes,
   bestDayFrom,
+  excludedZones,
   rankZones,
   suggestedTiming,
   trend72h,
@@ -164,6 +165,40 @@ describe('filtri', () => {
     // La posizione è lontana da entrambe le zone, altrimenti quella a distanza zero passerebbe.
     const altrove = { latitude: 45.5, longitude: 9.2 }
     expect(rankZones(zones, { date: TODAY, from: altrove, maxDistanceKm: 10 })).toHaveLength(0)
+  })
+})
+
+describe('aree escluse: mai nascoste senza motivo', () => {
+  const zones = [
+    zone('alta', { elevationM: 1400, forest: ['faggeta'], lat: 44, lon: 10.4 }),
+    zone('bassa', { elevationM: 500, forest: ['cerreta', 'leccio'], lat: 43.1, lon: 11 }),
+  ]
+  const from = { latitude: 44, longitude: 10.4 }
+
+  it('una zona esclusa per distanza compare qui con il motivo, e non fra i suggerimenti', () => {
+    const suggestions = rankZones(zones, { date: TODAY, from, maxDistanceKm: 50 })
+    const excluded = excludedZones(zones, { date: TODAY, from, maxDistanceKm: 50 })
+
+    expect(suggestions.map((s) => s.zone.code)).toEqual(['alta'])
+    expect(excluded.map((e) => e.zone.code)).toEqual(['bassa'])
+    expect(excluded[0]?.reason).toMatch(/linea d'aria/)
+  })
+
+  it('nessuna zona compare due volte: o è un suggerimento, o è esclusa, mai entrambe', () => {
+    const options = { date: TODAY, from, minElevationM: 1000 }
+    const suggestedCodes = new Set(rankZones(zones, options).map((s) => s.zone.code))
+    const excludedCodes = new Set(excludedZones(zones, options).map((e) => e.zone.code))
+    expect([...suggestedCodes].some((c) => excludedCodes.has(c))).toBe(false)
+    expect(suggestedCodes.size + excludedCodes.size).toBe(zones.length)
+  })
+
+  it('senza filtri attivi, nessuna zona è esclusa', () => {
+    expect(excludedZones(zones, { date: TODAY, from: null })).toHaveLength(0)
+  })
+
+  it('il motivo cita la soglia di quota, non solo "esclusa"', () => {
+    const excluded = excludedZones(zones, { date: TODAY, from, minElevationM: 1000 })
+    expect(excluded[0]?.reason).toMatch(/quota minima di 1000/)
   })
 })
 

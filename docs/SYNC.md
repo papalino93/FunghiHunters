@@ -64,6 +64,16 @@ cancellazione la resusciterebbe alla sincronizzazione successiva.
 - Il diario non ha, e non avrà in questa forma, nessuna funzione di condivisione pubblica: la
   colonna `privacy_level` ereditata dallo schema iniziale (visibilità `private/municipality/
   zone/public`) resta al suo default `'private'` e non viene ancora esposta in UI.
+- **"Modello collettivo": non esiste, e per questo non c'è un interruttore per attivarlo.** La
+  richiesta di un opt-in separato e revocabile per usare i diari nella calibrazione collettiva
+  presuppone che esista una pipeline che aggrega i diari fra utenti — non esiste. Costruire un
+  interruttore "contribuisci al modello collettivo" che oggi non farebbe nulla sarebbe la stessa
+  falsa precisione che questo progetto vuole evitare altrove, solo spostata sul consenso invece
+  che sui dati. Oggi, con RLS attiva, **ogni diario resta leggibile solo dal proprietario, punto**
+  — non esiste nessun percorso, nemmeno interno, che legga i dati di più utenti insieme. Quando
+  (e se) nascerà una vera calibrazione collettiva, dovrà nascere già con un opt-in esplicito e
+  separato dal giorno zero, non aggiunta dopo: è un vincolo di progetto da rispettare al momento
+  di costruirla, non un lavoro rimandabile a oggi.
 
 ## Cosa serve per attivarla davvero
 

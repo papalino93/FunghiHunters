@@ -33,7 +33,11 @@ export function SuggestionCard({
       <div className="flex items-baseline justify-between gap-2">
         <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
         <span className="shrink-0 text-xs text-ink-faint">
-          {distanceKm !== null && <>{distanceKm.toFixed(0)} km · </>}
+          {distanceKm !== null && (
+            <span title="Distanza in linea d'aria, non stradale">
+              {distanceKm.toFixed(0)} km in linea d&apos;aria ·{' '}
+            </span>
+          )}
           {zone.elevationM} m
         </span>
       </div>

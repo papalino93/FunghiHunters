@@ -130,7 +130,7 @@ export function buildVerdict(input: VerdictInput): Verdict {
   }
 }
 
-function toneFor(mpi: number): VerdictTone {
+export function toneFor(mpi: number): VerdictTone {
   if (mpi < 20) return 'no'
   if (mpi < 40) return 'weak'
   if (mpi < 60) return 'worth'
