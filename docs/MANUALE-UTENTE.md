@@ -55,7 +55,9 @@ prossimi giorni, se cambia qualcosa.
 ## Posizione e filtri
 
 - **Posizione**: te la chiede l'app solo se gliela concedi tu, e solo per ordinare le zone per
-  distanza. Puoi anche non darla: le zone restano visibili, solo non ordinate per vicinanza.
+  distanza. Puoi anche non darla: le zone restano visibili, solo non ordinate per vicinanza. In
+  alternativa al GPS puoi scegliere un punto di partenza salvato in precedenza (Diario → Punti
+  liberi → tipo "Partenza") o un riferimento di zona: la distanza resta sempre in linea d'aria.
 - **Filtri** (sotto le zone, si aprono a richiesta): distanza massima, tipo di bosco, affidabilità
   minima dei dati. Se nessuna zona rispetta i filtri, l'app te lo dice invece di mostrarti
   qualcosa che non hai chiesto.
@@ -105,17 +107,25 @@ Garfagnana" e "ero esattamente qui", ed è per questo che senza una posizione ve
 di precisione che puoi scegliere è "solo la zona" — gli altri restano disattivati, per non
 promettere una precisione che non esiste.
 
-Puoi anche segnare gli **alberi presenti** (faggio, abete, castagno, cerro, leccio) e aggiungere
-**foto a supporto**: le foto restano solo sul dispositivo che le ha scattate, non vengono mai
-sincronizzate né incluse nell'esportazione.
+Puoi anche segnare gli **alberi presenti** (faggio, abete, castagno, cerro, leccio), quanto è
+**durata la ricerca** in minuti e **quante persone** hanno cercato insieme a te — entrambi
+facoltativi, servono a leggere meglio uno "zero": dopo dieci minuti non dice molto, dopo mezza
+giornata sì. Niente foto: c'erano, sono state tolte perché non servivano al modello e complicavano
+spazio, riservatezza ed esportazione senza un motivo concreto.
 
 Il diario resta sul tuo telefono anche senza account. Puoi sempre esportarlo in un file (scheda
 Diario → Esporta) come copia di sicurezza, e reimportarlo su un altro dispositivo.
 
-**Punti salvati**: sempre nella scheda Diario, "Punti salvati" ti fa segnare con un tocco dove hai
-lasciato l'auto o un punto a cui tornare se ti perdi nel bosco — con distanza e direzione dalla tua
-posizione attuale, e un link diretto per aprirlo nell'app mappe del telefono. Anche questi restano
-solo sul dispositivo, non sincronizzati.
+### Punti salvati
+
+Ogni uscita ha una sezione **"Punti dell'uscita"**: segna con un tocco l'auto parcheggiata,
+l'accesso al sentiero, un bivio o un altro riferimento, con distanza e direzione dalla tua
+posizione attuale e un link diretto per aprirlo nell'app mappe del telefono. In cima al Diario c'è
+anche **"Punti liberi"**: punti non legati a nessuna uscita, per riferimenti che riusi spesso —
+casa, un parcheggio abituale. Un punto libero di tipo "Partenza" compare anche in **"Dove vado
+oggi"**, come punto di partenza per calcolare la distanza dalle zone. Tutti i punti salvati, di
+qualunque tipo, restano **solo sul dispositivo**, non sincronizzati mai: l'unica eccezione è "apri
+in mappe", che condivide quella singola coordinata con l'app che scegli, e solo quando lo tocchi.
 
 ## Account e sincronizzazione (facoltativi)
 

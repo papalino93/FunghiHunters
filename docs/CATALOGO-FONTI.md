@@ -1,14 +1,37 @@
 # Catalogo delle fonti — attive, valutate, scartate
 
-**Metodo e limite di questa ricerca, dichiarato prima dei risultati.** Questa sessione non ha
-accesso di rete in uscita alla maggior parte degli host esterni: verificato con `curl` (rifiutato
-dal gateway con 403 su `api.open-meteo.com`, `sir.toscana.it`, `dati.toscana.it`,
+**Nota per chi legge dopo il 18 settembre 2026 (sessione "roadmap outdoor").** Il blocco di rete
+descritto qui sotto (paragrafo originale, lasciato per la cronologia) **non vale più in questa
+sessione**: `www502.regione.toscana.it`, `dati.toscana.it` e `sir.toscana.it` rispondono tutti con
+`200`, verificato con richieste reali (non solo handshake TLS). Due fatti confermati di persona,
+non da ricerca testuale:
+
+- Il servizio WMS UCS (`GeoCapabilities` interrogato davvero) è **MapServer**
+  (`com.rt.wms.RTmap`), non GeoServer come ipotizzato prima — cambia il pattern di adapter da
+  seguire, non `sir-geoserver.ts`. `Fees: none`, `AccessConstraints: none`.
+- La licenza su `dati.toscana.it/dataset/ucs` è **confermata CC BY** (prima "probabile, non
+  verificata").
+
+**Non ho comunque scritto l'adapter in questa sessione**: individuare l'endpoint WFS giusto,
+i nomi dei campi e i codici delle classi Corine dal `GetCapabilities`/`DescribeFeatureType` veri,
+poi scrivere il parser con un fixture catturato da una risposta reale, è un lavoro a sé — e
+comunque, per la regola di questo progetto (`Non usare la nuova granularità finché habitat e dati
+altimetrici non sono entrambi disponibili e validati`), da solo non sbloccherebbe nulla in UI
+finché non esiste anche il DTM. **Il prossimo passo concreto resta quello scritto più sotto**, ora
+con un ostacolo in meno: la rete c'è, la licenza è confermata, manca solo l'adapter vero.
+
+---
+
+**Metodo e limite della ricerca originale (sessione precedente, per la cronologia).** Quella
+sessione non aveva accesso di rete in uscita alla maggior parte degli host esterni: verificato con
+`curl` (rifiutato dal gateway con 403 su `api.open-meteo.com`, `sir.toscana.it`, `dati.toscana.it`,
 `www502.regione.toscana.it`, `en.wikipedia.org`, `overpass-api.de`, tutti con lo stesso errore di
-policy). **`raw.githubusercontent.com` e `api.github.com` sono invece raggiungibili** — verificato
+policy). **`raw.githubusercontent.com` e `api.github.com` erano invece raggiungibili** — verificato
 scaricando davvero file reali, non solo l'handshake TLS. Questo ha permesso di implementare una
-fonte reale (sotto), ma limita le altre candidate a fonti raggiungibili solo tramite ricerca
-testuale o mirror su GitHub. Ogni riga dichiara cosa è verificato con una richiesta reale e cosa
-resta da confermare al primo collegamento con rete piena.
+fonte reale (sotto), ma ha limitato le altre candidate a fonti raggiungibili solo tramite ricerca
+testuale o mirror su GitHub. Ogni riga dichiara cosa era verificato con una richiesta reale e cosa
+restava da confermare al primo collegamento con rete piena — vedi la nota sopra per cosa è stato
+confermato da allora.
 
 ## Fonti attive in produzione
 
@@ -64,12 +87,12 @@ precondizione per superare le sette macro-zone. Le prime tre righe sono quindi l
 
 | Campo | Valore | Verificato come |
 |---|---|---|
-| Ente | Regione Toscana (SIPT) | Ricerca web |
-| Licenza | Pubblicata come open data su `dati.toscana.it`; il tipo esatto (probabilmente IODL 2.0, licenza standard degli opendata regionali toscani) **non confermato**: non ho potuto aprire la pagina del dataset | **Da verificare al collegamento** |
+| Ente | Regione Toscana (SIPT), Direzione Urbanistica | **Confermato**: `GetCapabilities` interrogato davvero il 18/09/2026 |
+| Licenza | **CC BY, confermata** su `dati.toscana.it/dataset/ucs` (era "probabile, non verificata") | **Confermato con richiesta reale**, 18/09/2026 |
 | Copertura geografica | Intera regione Toscana | Ricerca web |
 | Granularità spaziale | Poligonale, scala 1:10.000 | Ricerca web |
-| Classificazione | Corine Land Cover, III livello, con un IV livello regionale per alcune classi | Ricerca web |
-| Accesso | WMS (`USO_E_COPERTURA_DEL_SUOLO` su GEOscopio) e WFS per le query; anche scaricabile come archivio Spatialite completo | Ricerca web — URL del `GetCapabilities` trovato, mai interrogato |
+| Classificazione | Corine Land Cover, III livello, con un IV livello regionale per alcune classi | Ricerca web — nomenclatura delle classi non ancora letta da un `DescribeFeatureType` vero |
+| Accesso | WMS **MapServer** (`com.rt.wms.RTmap`, servizio "Geoscopio_wms USO_E_COPERTURA_DEL_SUOLO") — **confermato con `GetCapabilities` reale**; endpoint WFS per le query puntuali non ancora individuato | **Servizio WMS confermato raggiungibile e funzionante**, 18/09/2026; WFS da trovare |
 | Aggiornamento | Non confermato con che frequenza viene rifatto il censimento | Da verificare |
 | Utilità per il porcino | **Alta**: è esattamente la maschera forestale che manca per smettere di rappresentare le zone come macro-aree — distingue faggeta da querceto da non-bosco, la variabile che il modello già usa (`zone.forest`) ma solo come etichetta manuale per zona, non per cella | — |
 | **Stato** | **da integrare** — priorità 1, bloccata solo dalla rete di questa sessione | — |

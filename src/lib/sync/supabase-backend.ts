@@ -30,6 +30,8 @@ interface Row {
   privacy_level_app: string | null
   position_source: string | null
   tree_species: string[] | null
+  duration_minutes: number | null
+  searchers: number | null
   mpi_at_observation: number | null
   confidence_at_observation: number | null
   algorithm_version_text: string | null
@@ -83,9 +85,8 @@ function rowToEntry(row: Row): DiaryEntry {
     privacy: isPrivacyLevel(row.privacy_level_app) ? row.privacy_level_app : 'area',
     positionSource: isPositionSource(row.position_source) ? row.position_source : null,
     trees: toTreeSpecies(row.tree_species),
-    // Le foto non viaggiano per riga (vedi il commento in types.ts): il chiamante in `engine.ts`
-    // preserva quelle locali invece di azzerarle con questo valore.
-    photoIds: [],
+    durationMinutes: row.duration_minutes,
+    searchers: row.searchers,
     mpiAtEntry: row.mpi_at_observation,
     confidenceAtEntry: row.confidence_at_observation,
     algorithmVersionAtEntry: row.algorithm_version_text,
@@ -113,6 +114,8 @@ function entryToRow(entry: DiaryEntry, userId: string): Record<string, unknown> 
     privacy_level_app: entry.privacy,
     position_source: entry.positionSource,
     tree_species: entry.trees,
+    duration_minutes: entry.durationMinutes,
+    searchers: entry.searchers,
     mpi_at_observation: entry.mpiAtEntry,
     confidence_at_observation: entry.confidenceAtEntry,
     algorithm_version_text: entry.algorithmVersionAtEntry,

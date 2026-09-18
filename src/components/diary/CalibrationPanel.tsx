@@ -24,6 +24,27 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
       <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">{report.verdict}</p>
 
       {report.usable > 0 && (
+        <p className="mt-1 text-[11px] text-ink-faint">
+          {report.contextual} su {report.usable} hanno anche la durata della ricerca: solo per
+          queste uno &quot;zero&quot; si legge davvero.
+        </p>
+      )}
+
+      {report.shortSearchCaveat !== null && (
+        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-warn">
+          {report.shortSearchCaveat}
+        </p>
+      )}
+
+      {report.hasSignal && report.biasDirection !== null && report.biasDirection !== 'nessuna' && (
+        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-dim">
+          {report.biasDirection === 'sovrastima'
+            ? 'Il modello tende a sovrastimare: assegna probabilità più alte di quante se ne osservino davvero.'
+            : 'Il modello tende a sottostimare: assegna probabilità più basse di quante se ne osservino davvero.'}
+        </p>
+      )}
+
+      {report.usable > 0 && (
         <>
           <ul className="mt-3 space-y-1.5">
             {report.bands.map((band) => (

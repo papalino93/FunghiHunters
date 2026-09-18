@@ -9,9 +9,10 @@ Web app mobile-first che calcola, per ogni zona della Toscana, un **Mushroom Pot
 ## Stato
 
 App funzionante: motore MPI versionato, interpolazione spaziale validata, snapshot giornaliero
-precalcolato, mappa, diario uscite con calibrazione, PWA offline, account e sincronizzazione fra
-dispositivi (opzionale). Ambito v1: **solo porcino**, un unico indice, sulle sette zone di
-taratura toscane.
+precalcolato, mappa, diario uscite con calibrazione (posizione GPS reale, alberi osservati, durata
+della ricerca e numero di cercatori), punti salvati locali (auto, accessi, riferimenti, punti di
+partenza — mai sincronizzati), PWA offline, account e sincronizzazione fra dispositivi (opzionale).
+Ambito v1: **solo porcino**, un unico indice, sulle sette zone di taratura toscane.
 
 - [`docs/DISCOVERY-AND-ARCHITECTURE.md`](docs/DISCOVERY-AND-ARCHITECTURE.md) — fonti, licenze,
   limiti verificati, schema DB, MPI v1, confidence, costi

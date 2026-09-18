@@ -8,13 +8,31 @@ import {
   directionsUrl,
   distanceMeters,
   type Waypoint,
+  type WaypointKind,
 } from '@/lib/waypoints/types'
 import { createWaypointRepository, type WaypointRepository } from '@/lib/waypoints/store'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 
-const KIND_LABEL: Readonly<Record<Waypoint['kind'], string>> = {
+const KIND_LABEL: Readonly<Record<WaypointKind, string>> = {
   car: 'Auto',
-  point: 'Punto',
+  access: 'Accesso',
+  reference: 'Riferimento',
+  departure: 'Partenza',
+}
+
+const KIND_HINT: Readonly<Record<WaypointKind, string>> = {
+  car: 'dove hai lasciato l’auto',
+  access: 'dove sei entrato nel bosco',
+  reference: 'un bivio, una radura, un punto a cui tornare',
+  departure: 'un punto di partenza da riusare, es. casa o un parcheggio abituale',
+}
+
+type GeoState = 'idle' | 'asking' | 'denied' | 'unavailable' | 'timeout'
+
+const GEO_ERROR_TEXT: Readonly<Record<Exclude<GeoState, 'idle' | 'asking'>, string>> = {
+  denied: 'Permesso di posizione negato. Puoi concederlo dalle impostazioni del browser.',
+  unavailable: 'Posizione non disponibile: nessun segnale GPS qui.',
+  timeout: 'Il GPS non ha risposto in tempo. Riprova, magari spostandoti verso il cielo aperto.',
 }
 
 function formatTime(iso: string): string {
@@ -30,30 +48,62 @@ function getPosition(): Promise<{ latitude: number; longitude: number }> {
     }
     navigator.geolocation.getCurrentPosition(
       (result) => { resolve({ latitude: result.coords.latitude, longitude: result.coords.longitude }) },
-      (error) => { reject(new Error(error.code === error.PERMISSION_DENIED ? 'denied' : 'unavailable')) },
+      (error) => {
+        const code =
+          error.code === error.PERMISSION_DENIED
+            ? 'denied'
+            : error.code === error.TIMEOUT
+              ? 'timeout'
+              : 'unavailable'
+        reject(new Error(code))
+      },
       { timeout: 10_000, maximumAge: 60_000 },
     )
   })
 }
 
+export interface WaypointsPanelProps {
+  /**
+   * `null` per i punti liberi (compresi i punti di partenza preferiti — vedi `LocationPrompt`),
+   * l'id di una voce del diario per i punti di quella specifica uscita. Un punto vive nell'uno o
+   * nell'altro elenco, mai in entrambi: vedi il commento su `entryId` in `lib/waypoints/types.ts`.
+   */
+  readonly entryId: string | null
+  readonly title: string
+  readonly description: string
+  /** Se il pannello parte già aperto. I punti di un'uscita appena creata conviene vederli subito. */
+  readonly defaultOpen?: boolean
+  readonly emptyText: string
+  /** Quali categorie proporre: un'uscita passata non ha bisogno di "Partenza", i punti liberi sì. */
+  readonly kinds?: readonly WaypointKind[]
+}
+
 /**
- * Punti salvati: dove ho lasciato l'auto, o un punto a cui tornare se mi perdo nel bosco.
+ * Punti salvati: auto, accesso al sentiero, un riferimento, un punto di partenza.
  *
- * Diverso dal diario apposta (vedi `src/lib/waypoints/types.ts`): niente esito da calibrare, solo
- * un posto e un'ora, e mai sincronizzato — serve solo a chi l'ha salvato, sullo stesso telefono con
- * cui ci è tornato nel bosco.
+ * Nessuna traccia continua, nessun monitoraggio in background: un punto si salva solo dopo un
+ * tocco esplicito, con la posizione di quel preciso momento. Mai sincronizzato, mai condiviso —
+ * l'unica eccezione è "apri in mappe", un gesto dell'utente che apre un'app scelta da lui.
  */
-export function WaypointsPanel() {
+export function WaypointsPanel({
+  entryId,
+  title,
+  description,
+  defaultOpen = false,
+  emptyText,
+  kinds = ['car', 'access', 'reference', 'departure'],
+}: WaypointsPanelProps) {
   const hydrated = useIsHydrated()
   const repo: WaypointRepository | null = useMemo(
     () => (hydrated ? createWaypointRepository() : null),
     [hydrated],
   )
-  const [open, setOpen] = useState(false)
+  const [open, setOpen] = useState(defaultOpen)
   const [points, setPoints] = useState<Waypoint[] | null>(null)
-  const [saving, setSaving] = useState<'car' | 'point' | null>(null)
-  const [addingLabel, setAddingLabel] = useState(false)
+  const [kind, setKind] = useState<WaypointKind>(kinds[0] ?? 'reference')
   const [label, setLabel] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [geoState, setGeoState] = useState<GeoState>('idle')
   const [error, setError] = useState<string | null>(null)
   /** Quale punto ha chiesto conferma di cancellazione: uno solo per volta. */
   const [confirmingId, setConfirmingId] = useState<string | null>(null)
@@ -61,51 +111,51 @@ export function WaypointsPanel() {
 
   const reload = useCallback(async () => {
     if (repo === null) return
-    setPoints(await repo.list())
-  }, [repo])
+    const all = await repo.list()
+    setPoints(entryId === null ? all.filter((p) => p.entryId === null) : all.filter((p) => p.entryId === entryId))
+  }, [repo, entryId])
 
   useEffect(() => {
     if (!open || repo === null) return
     let cancelled = false
+    // `.then()/.catch()` inline, non tramite `reload()`: passare per una funzione richiamata
+    // indirettamente impedisce al linter di verificare che l'aggiornamento di stato sia
+    // asincrono, e segnala un falso rischio di render a cascata.
     void repo
       .list()
-      .then((list) => { if (!cancelled) setPoints(list) })
+      .then((all) => {
+        if (cancelled) return
+        setPoints(entryId === null ? all.filter((p) => p.entryId === null) : all.filter((p) => p.entryId === entryId))
+      })
       .catch((err: unknown) => {
         if (cancelled) return
         setPoints([])
         setError(err instanceof Error ? err.message : 'Non riesco a leggere i punti salvati.')
       })
     return () => { cancelled = true }
-  }, [open, repo])
+  }, [open, repo, entryId])
 
-  const saveCar = async (): Promise<void> => {
+  const save = async (): Promise<void> => {
     if (repo === null) return
     setError(null)
-    setSaving('car')
+    setGeoState('asking')
+    setSaving(true)
     try {
       const position = await getPosition()
-      await repo.add({ kind: 'car', label: 'Auto', ...position })
-      await reload()
-    } catch {
-      setError('Posizione non disponibile: controlla il permesso di geolocalizzazione.')
-    }
-    setSaving(null)
-  }
-
-  const savePoint = async (): Promise<void> => {
-    if (repo === null) return
-    setError(null)
-    setSaving('point')
-    try {
-      const position = await getPosition()
-      await repo.add({ kind: 'point', label: label.trim() === '' ? 'Punto' : label.trim(), ...position })
-      await reload()
+      await repo.add({
+        entryId,
+        kind,
+        label: label.trim() === '' ? KIND_LABEL[kind] : label.trim(),
+        ...position,
+      })
+      setGeoState('idle')
       setLabel('')
-      setAddingLabel(false)
-    } catch {
-      setError('Posizione non disponibile: controlla il permesso di geolocalizzazione.')
+      await reload()
+    } catch (err) {
+      const code = err instanceof Error ? err.message : 'unavailable'
+      setGeoState(code === 'denied' || code === 'timeout' ? code : 'unavailable')
     }
-    setSaving(null)
+    setSaving(false)
   }
 
   const refreshHere = (): void => {
@@ -130,10 +180,8 @@ export function WaypointsPanel() {
                    focus-visible:ring-2 focus-visible:ring-accent"
       >
         <span>
-          <span className="text-sm font-semibold text-ink">Punti salvati</span>
-          <span className="ml-2 text-xs text-ink-faint">
-            auto parcheggiata, o un punto a cui tornare nel bosco
-          </span>
+          <span className="text-sm font-semibold text-ink">{title}</span>
+          <span className="ml-2 text-xs text-ink-faint">{description}</span>
         </span>
         <svg
           width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"
@@ -151,50 +199,57 @@ export function WaypointsPanel() {
             </p>
           )}
 
-          <div className="flex flex-wrap gap-2">
-            <button
-              type="button"
-              onClick={saveCar}
-              disabled={saving !== null}
-              className="min-h-11 flex-1 rounded-lg border border-accent/40 bg-accent/15 px-3 text-sm
-                         font-medium text-ink transition-colors hover:bg-accent/25 disabled:opacity-60
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-            >
-              {saving === 'car' ? 'Salvo…' : 'Salva posizione auto'}
-            </button>
-            <button
-              type="button"
-              onClick={() => { setAddingLabel((v) => !v) }}
-              aria-expanded={addingLabel}
+          <fieldset>
+            <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+              Che punto è
+            </legend>
+            <div className="flex flex-wrap gap-1.5">
+              {kinds.map((k) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => { setKind(k) }}
+                  aria-pressed={kind === k}
+                  title={KIND_HINT[k]}
+                  className={`min-h-11 rounded-lg border px-3 text-xs font-medium
+                              transition-colors focus:outline-none focus-visible:ring-2
+                              focus-visible:ring-accent ${
+                                kind === k
+                                  ? 'border-accent bg-accent/15 text-ink'
+                                  : 'border-edge bg-surface-2 text-ink-dim hover:text-ink'
+                              }`}
+                >
+                  {KIND_LABEL[k]}
+                </button>
+              ))}
+            </div>
+            <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">{KIND_HINT[kind]}</p>
+          </fieldset>
+
+          <div className="mt-2.5 flex gap-2">
+            <input
+              type="text"
+              value={label}
+              onChange={(e) => { setLabel(e.target.value) }}
+              placeholder={`etichetta (facoltativa, es. "${KIND_LABEL[kind]}")`}
               className="min-h-11 flex-1 rounded-lg border border-edge bg-surface-2 px-3 text-sm
-                         font-medium text-ink-dim transition-colors hover:text-ink focus:outline-none
+                         text-ink placeholder:text-ink-faint focus:outline-none
                          focus-visible:ring-2 focus-visible:ring-accent"
+            />
+            <button
+              type="button"
+              onClick={() => { void save() }}
+              disabled={saving}
+              className="min-h-11 shrink-0 rounded-lg border border-accent/40 bg-accent/15 px-3
+                         text-sm font-medium text-ink transition-colors hover:bg-accent/25
+                         disabled:opacity-60 focus:outline-none focus-visible:ring-2
+                         focus-visible:ring-accent"
             >
-              + Salva punto
+              {saving ? 'Salvo…' : 'Salva qui'}
             </button>
           </div>
-
-          {addingLabel && (
-            <div className="mt-2 flex gap-2">
-              <input
-                type="text"
-                value={label}
-                onChange={(e) => { setLabel(e.target.value) }}
-                placeholder="es. bivio, radura, sorgente…"
-                className="min-h-11 flex-1 rounded-lg border border-edge bg-surface-2 px-3 text-sm
-                           text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-              />
-              <button
-                type="button"
-                onClick={savePoint}
-                disabled={saving !== null}
-                className="min-h-11 shrink-0 rounded-lg border border-accent/40 bg-accent/15 px-3
-                           text-sm font-medium text-ink disabled:opacity-60 focus:outline-none
-                           focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                {saving === 'point' ? 'Salvo…' : 'Salva'}
-              </button>
-            </div>
+          {(geoState === 'denied' || geoState === 'unavailable' || geoState === 'timeout') && (
+            <p className="mt-1.5 text-[11px] leading-snug text-warn">{GEO_ERROR_TEXT[geoState]}</p>
           )}
 
           {points !== null && points.length > 0 && (
@@ -264,6 +319,7 @@ export function WaypointsPanel() {
                           href={directionsUrl(point)}
                           target="_blank"
                           rel="noopener noreferrer"
+                          title="Apre l'app mappe del dispositivo: condivide questa posizione con quell'app"
                           className="min-h-11 shrink-0 rounded-lg px-2 text-[11px] font-medium text-accent
                                      transition-colors hover:underline focus:outline-none
                                      focus-visible:ring-2 focus-visible:ring-accent"
@@ -287,13 +343,15 @@ export function WaypointsPanel() {
                   </li>
                 ))}
               </ul>
+              <p className="mt-2 text-[11px] leading-snug text-ink-faint">
+                &quot;Apri in mappe&quot; condivide quella coordinata con l&apos;app che scegli sul telefono.
+                Per il resto, questi punti restano solo su questo dispositivo: mai sincronizzati.
+              </p>
             </>
           )}
 
           {points !== null && points.length === 0 && (
-            <p className="mt-3 text-[11px] leading-snug text-ink-faint">
-              Nessun punto salvato. Resta solo su questo dispositivo, non viene mai sincronizzato.
-            </p>
+            <p className="mt-3 text-[11px] leading-snug text-ink-faint">{emptyText}</p>
           )}
         </div>
       )}

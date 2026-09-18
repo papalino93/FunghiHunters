@@ -8,7 +8,6 @@
 export const DB_NAME = 'fungicast'
 export const DB_VERSION = 2
 export const DIARY_STORE = 'diary'
-export const PHOTOS_STORE = 'photos'
 export const WAYPOINTS_STORE = 'waypoints'
 
 /**
@@ -39,10 +38,12 @@ export function openDatabase(): Promise<IDBDatabase> {
         const store = db.createObjectStore(DIARY_STORE, { keyPath: 'id' })
         store.createIndex('date', 'date')
       }
-      if (!db.objectStoreNames.contains(PHOTOS_STORE)) {
-        const store = db.createObjectStore(PHOTOS_STORE, { keyPath: 'id' })
-        store.createIndex('entryId', 'entryId')
-      }
+      /*
+       * Le foto (object store "photos") sono state rimosse dall'app — erano una funzione reale,
+       * in produzione, vedi `docs/AUDIT.md`. Un'installazione nuova non crea più quello store; su
+       * un dispositivo che lo aveva già, resta lì inutilizzato: cancellarlo richiederebbe salire
+       * di versione per un guadagno nullo, e i dati residui non fanno male a nessuno.
+       */
       if (!db.objectStoreNames.contains(WAYPOINTS_STORE)) {
         db.createObjectStore(WAYPOINTS_STORE, { keyPath: 'id' })
       }

@@ -26,15 +26,45 @@ const EMPTY: Snapshot = {
   uncalibratedParams: [],
 }
 
+/**
+ * Controllo strutturale minimo, non uno schema completo: basta a distinguere "questo è uno
+ * snapshot" da "questo è un JSON qualunque" — un file troncato da uno scrittura interrotta, un
+ * formato precedente incompatibile, o un errore umano nella pipeline di generazione. Non sostituto
+ * di una validazione di dominio: quella (range dell'MPI, coerenza delle date) resta nella pipeline
+ * che genera il file, non nella lettura.
+ */
+function hasValidShape(value: unknown): value is Snapshot {
+  if (typeof value !== 'object' || value === null) return false
+  const v = value as Partial<Snapshot>
+  return (
+    typeof v.algorithmVersion === 'string' &&
+    typeof v.referenceDate === 'string' &&
+    typeof v.generatedAt === 'string' &&
+    Array.isArray(v.zones) &&
+    Array.isArray(v.sources)
+  )
+}
+
 export async function loadSnapshot(): Promise<Snapshot> {
   try {
     const raw = await readFile(SNAPSHOT_PATH, 'utf8')
-    return JSON.parse(raw) as Snapshot
+    const parsed: unknown = JSON.parse(raw)
+    if (!hasValidShape(parsed)) {
+      // Non un crash: uno snapshot strutturalmente rotto è lo stesso caso di uno assente per chi
+      // guarda l'app, e merita la stessa pagina onesta invece di una schermata di errore.
+      console.error(
+        'snapshot.json non ha la struttura attesa (campi mancanti o di tipo sbagliato): ' +
+          'servito lo snapshot vuoto invece di rischiare dati inventati o un crash a runtime.',
+      )
+      return EMPTY
+    }
+    return parsed
   } catch {
     // Un deploy senza snapshot deve mostrare una pagina onesta, non una schermata di errore.
     return EMPTY
   }
 }
+
 
 export function zoneByCode(snapshot: Snapshot, code: string): SnapshotZone | undefined {
   return snapshot.zones.find((z) => z.code === code)

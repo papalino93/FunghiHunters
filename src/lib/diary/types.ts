@@ -56,6 +56,26 @@ export const PRIVACY_LABELS: Readonly<Record<PrivacyLevel, string>> = {
 export const TREE_SPECIES = ['faggio', 'abete', 'castagno', 'cerro', 'leccio'] as const
 export type TreeSpecies = (typeof TREE_SPECIES)[number]
 
+/**
+ * Intervalli validi per i due campi di contesto facoltativi.
+ *
+ * Non sono limiti arbitrari: sotto i 5 minuti non è una ricerca, è un'occhiata; sopra le 12 ore
+ * (720 minuti) è quasi certamente un errore di battitura, non un'uscita vera. Stesso discorso per
+ * le persone: oltre venti non è più un gruppo che cerca funghi insieme, è un evento.
+ */
+export const DURATION_MINUTES_MIN = 5
+export const DURATION_MINUTES_MAX = 720
+export const SEARCHERS_MIN = 1
+export const SEARCHERS_MAX = 20
+
+export function isValidDurationMinutes(value: number): boolean {
+  return Number.isInteger(value) && value >= DURATION_MINUTES_MIN && value <= DURATION_MINUTES_MAX
+}
+
+export function isValidSearchers(value: number): boolean {
+  return Number.isInteger(value) && value >= SEARCHERS_MIN && value <= SEARCHERS_MAX
+}
+
 export interface DiaryEntry {
   readonly id: string
   /** Giorno dell'uscita, in data locale. */
@@ -95,14 +115,15 @@ export interface DiaryEntry {
   readonly trees: readonly TreeSpecies[]
 
   /**
-   * Riferimenti alle foto salvate per questa voce (vedi `src/lib/diary/photos.ts`).
+   * Quanto è durata la ricerca, in minuti. `null` se non indicato.
    *
-   * Solo gli id: le immagini vere stanno in un object store separato, non qui dentro — altrimenti
-   * ogni esportazione del diario peserebbe come un rullino. Conseguenza dichiarata:
-   * l'esportazione/importazione JSON porta gli id ma non le foto stesse, che restano solo sul
-   * dispositivo dove sono state scattate.
+   * Non è un dettaglio: uno "zero" dopo dieci minuti e uno zero dopo quattro ore di ricerca non
+   * dicono la stessa cosa, ma senza questo campo il diario li registrava allo stesso modo — vedi
+   * `shortSearchCaveat` in `lib/diary/calibration.ts`.
    */
-  readonly photoIds: readonly string[]
+  readonly durationMinutes: number | null
+  /** Persone che hanno cercato insieme, `null` se non indicato. Più cercatori, più probabilità di trovare qualcosa a parità di condizioni — un fattore di sforzo, non ambientale. */
+  readonly searchers: number | null
 
   /*
    * I tre campi congelati.
@@ -142,7 +163,8 @@ export interface DiaryDraft {
   readonly privacy?: PrivacyLevel
   readonly positionSource?: 'gps' | 'zone' | null
   readonly trees?: readonly TreeSpecies[]
-  readonly photoIds?: readonly string[]
+  readonly durationMinutes?: number | null
+  readonly searchers?: number | null
   readonly mpiAtEntry?: number | null
   readonly confidenceAtEntry?: number | null
   readonly algorithmVersionAtEntry?: string | null

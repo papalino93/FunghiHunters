@@ -1,3 +1,5 @@
+import { ALGORITHM_V1 } from '@/lib/config/algorithm'
+
 /**
  * Formato dello snapshot precalcolato.
  *
@@ -160,4 +162,20 @@ export interface Snapshot {
   readonly sources: readonly SnapshotSource[]
   /** Parametri del modello che non hanno una fonte e sono dichiarati da calibrare. */
   readonly uncalibratedParams: readonly string[]
+}
+
+/**
+ * `true` quando lo snapshot è stato calcolato da una versione del modello diversa da quella che
+ * gira ora nell'app deployata.
+ *
+ * Può succedere davvero: lo snapshot si rigenera una volta al giorno via cron
+ * (`.github/workflows/daily-snapshot.yml`), il codice dell'app si deploya in un momento
+ * indipendente. Un attimo di disallineamento fra i due non è un bug, ma va potuto vedere, perché
+ * la spiegazione dei punteggi (`explainScore`, `ALGORITHM_V1` in `lib/config/algorithm.ts`)
+ * descrive la versione del codice corrente, non necessariamente quella che ha prodotto i numeri
+ * che si stanno leggendo. Vive qui e non in `snapshot/load.ts` apposta: quel modulo importa
+ * `node:fs` e non può essere importato da un componente client, questa funzione sì.
+ */
+export function algorithmVersionMismatch(snapshot: Snapshot): boolean {
+  return snapshot.zones.length > 0 && snapshot.algorithmVersion !== ALGORITHM_V1.version
 }

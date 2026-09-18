@@ -9,8 +9,12 @@ import { InMemoryWaypointRepository } from '@/lib/waypoints/store'
 import {
   bearingDegrees,
   compassLabel,
+  departurePoints,
   directionsUrl,
   distanceMeters,
+  normaliseWaypoint,
+  unassociatedWaypoints,
+  waypointsForEntry,
 } from '@/lib/waypoints/types'
 
 describe('distanza', () => {
@@ -77,9 +81,9 @@ describe('archivio punti salvati', () => {
 
   it('elenca dal più recente', async () => {
     const repo = new InMemoryWaypointRepository()
-    const first = await repo.add({ kind: 'point', label: 'Primo', latitude: 44, longitude: 10 })
+    const first = await repo.add({ kind: 'reference', label: 'Primo', latitude: 44, longitude: 10 })
     await new Promise((r) => setTimeout(r, 2))
-    const second = await repo.add({ kind: 'point', label: 'Secondo', latitude: 44, longitude: 10 })
+    const second = await repo.add({ kind: 'reference', label: 'Secondo', latitude: 44, longitude: 10 })
     const list = await repo.list()
     expect(list[0]?.id).toBe(second.id)
     expect(list[1]?.id).toBe(first.id)
@@ -90,5 +94,72 @@ describe('archivio punti salvati', () => {
     const saved = await repo.add({ kind: 'car', label: 'Auto', latitude: 44.1, longitude: 10.4 })
     await repo.remove(saved.id)
     expect(await repo.list()).toHaveLength(0)
+  })
+
+  it('un punto senza entryId indicato è libero, non associato a nessuna uscita', async () => {
+    const repo = new InMemoryWaypointRepository()
+    const saved = await repo.add({ kind: 'car', label: 'Auto', latitude: 44.1, longitude: 10.4 })
+    expect(saved.entryId).toBeNull()
+  })
+
+  it('associa un punto a una specifica uscita', async () => {
+    const repo = new InMemoryWaypointRepository()
+    const saved = await repo.add({
+      entryId: 'uscita-1',
+      kind: 'reference',
+      label: 'Bivio',
+      latitude: 44.1,
+      longitude: 10.4,
+    })
+    expect(saved.entryId).toBe('uscita-1')
+  })
+
+  it('removeAllFor() toglie solo i punti di quella uscita', async () => {
+    const repo = new InMemoryWaypointRepository()
+    await repo.add({ entryId: 'uscita-1', kind: 'car', label: 'Auto', latitude: 44, longitude: 10 })
+    await repo.add({ entryId: 'uscita-2', kind: 'car', label: 'Auto', latitude: 44, longitude: 10 })
+    await repo.add({ kind: 'departure', label: 'Casa', latitude: 44, longitude: 10 }) // libero
+    await repo.removeAllFor('uscita-1')
+    const remaining = await repo.list()
+    expect(remaining).toHaveLength(2)
+    expect(remaining.some((p) => p.entryId === 'uscita-1')).toBe(false)
+  })
+})
+
+describe('filtri sui punti (liberi, per uscita, di partenza)', () => {
+  const points = [
+    { id: 'a', entryId: null, kind: 'departure' as const, label: 'Casa', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
+    { id: 'b', entryId: null, kind: 'car' as const, label: 'Auto', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
+    { id: 'c', entryId: 'uscita-1', kind: 'reference' as const, label: 'Bivio', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
+  ]
+
+  it('unassociatedWaypoints() prende solo i punti liberi', () => {
+    expect(unassociatedWaypoints(points).map((p) => p.id)).toEqual(['a', 'b'])
+  })
+
+  it('waypointsForEntry() prende solo i punti di quella uscita', () => {
+    expect(waypointsForEntry(points, 'uscita-1').map((p) => p.id)).toEqual(['c'])
+    expect(waypointsForEntry(points, 'uscita-2')).toEqual([])
+  })
+
+  it('departurePoints() prende solo i punti di partenza liberi', () => {
+    expect(departurePoints(points).map((p) => p.id)).toEqual(['a'])
+  })
+})
+
+describe('compatibilità con i punti salvati prima delle quattro categorie', () => {
+  it('un punto con kind "point" (il valore generico di prima) diventa "reference"', () => {
+    const legacy = normaliseWaypoint({ id: 'vecchio', kind: 'point', label: 'Un posto', latitude: 44, longitude: 10, createdAt: '2026-01-01T00:00:00Z' })
+    expect(legacy.kind).toBe('reference')
+  })
+
+  it('un punto salvato prima di entryId diventa un punto libero, non sparisce', () => {
+    const legacy = normaliseWaypoint({ id: 'vecchio', kind: 'car', label: 'Auto', latitude: 44, longitude: 10, createdAt: '2026-01-01T00:00:00Z' })
+    expect(legacy.entryId).toBeNull()
+  })
+
+  it('non lancia su un kind sconosciuto: ricade su "reference"', () => {
+    expect(() => normaliseWaypoint({ id: 'x', kind: 'boh', latitude: 44, longitude: 10 })).not.toThrow()
+    expect(normaliseWaypoint({ id: 'x', kind: 'boh', latitude: 44, longitude: 10 }).kind).toBe('reference')
   })
 })

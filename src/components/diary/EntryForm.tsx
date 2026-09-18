@@ -1,19 +1,26 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import {
   ABUNDANCE_LABELS,
   ABUNDANCE_LEVELS,
+  DURATION_MINUTES_MAX,
+  DURATION_MINUTES_MIN,
   PRIVACY_LABELS,
   PRIVACY_LEVELS,
+  SEARCHERS_MAX,
+  SEARCHERS_MIN,
   TREE_SPECIES,
+  isValidDurationMinutes,
+  isValidSearchers,
   type Abundance,
   type DiaryDraft,
   type PrivacyLevel,
   type TreeSpecies,
 } from '@/lib/diary/types'
+import { useAuth } from '@/lib/auth/context'
 
 const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
   faggio: 'faggio',
@@ -22,6 +29,8 @@ const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
   cerro: 'cerro',
   leccio: 'leccio',
 }
+
+type GpsState = 'idle' | 'asking' | 'denied' | 'unavailable' | 'timeout'
 
 /**
  * Registrazione di un'uscita.
@@ -36,54 +45,47 @@ const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
  * La posizione GPS reale (se l'utente la concede) è quella che permette di ritrovare una fungaia:
  * il punto di riferimento della zona resta il ripiego di sempre quando non la si vuole o non si
  * può darla, ma non è più spacciato per lo stesso tipo di dato — `positionSource` li distingue.
+ *
+ * **Niente foto**: erano una funzione reale (vedi `docs/AUDIT.md`), rimossa perché non serviva al
+ * modello e complicava spazio, privacy, export e sincronizzazione — vedi il diario delle
+ * decisioni. Un vecchio export con `photoIds` si importa comunque, senza errori: vedi
+ * `importInto` in `lib/diary/store.ts`.
  */
 export function EntryForm({
   snapshot,
-  onSave,
   onCancel,
+  onSave,
 }: {
   snapshot: Snapshot
-  /**
-   * Riceve la bozza **e** le foto in attesa, e le salva insieme.
-   *
-   * Le foto non le persiste il form: gli servirebbe l'id della voce, che nasce solo quando la
-   * voce e' stata scritta, e il risultato era un salvataggio in due tempi con il form gia'
-   * smontato a meta'. Qui il chiamante fa tutto in un passaggio solo, e puo' collegare le foto
-   * alla voce che ha appena creato.
-   */
-  onSave: (draft: DiaryDraft, photos: readonly File[]) => Promise<void>
   onCancel: () => void
+  onSave: (draft: DiaryDraft) => Promise<void>
 }) {
+  const auth = useAuth()
   const [date, setDate] = useState(snapshot.referenceDate)
   const [zoneCode, setZoneCode] = useState(snapshot.zones[0]?.code ?? '')
   const [abundance, setAbundance] = useState<Abundance | null>(null)
   const [elevation, setElevation] = useState('')
+  const [duration, setDuration] = useState('')
+  const [searchers, setSearchers] = useState('')
   const [notes, setNotes] = useState('')
   const [privacy, setPrivacy] = useState<PrivacyLevel>('area')
   const [trees, setTrees] = useState<TreeSpecies[]>([])
-  const [photos, setPhotos] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
-  const [gpsState, setGpsState] = useState<'idle' | 'asking' | 'denied' | 'unavailable'>('idle')
+  const [gpsState, setGpsState] = useState<GpsState>('idle')
   const [capturedPosition, setCapturedPosition] = useState<{
     latitude: number
     longitude: number
   } | null>(null)
 
-  // Le anteprime sono URL locali agli oggetti File: vanno revocati quando la foto viene tolta o il
-  // form si smonta, altrimenti restano allocati finché la scheda non si ricarica.
-  const previews = useMemo(() => photos.map((file) => URL.createObjectURL(file)), [photos])
-  useEffect(() => {
-    return () => {
-      for (const url of previews) URL.revokeObjectURL(url)
-    }
-  }, [previews])
-
   const zone = snapshot.zones.find((z) => z.code === zoneCode)
   // Il punteggio di quel giorno, se lo snapshot lo copre. Fuori finestra resta null, ed è
   // corretto: inventarlo renderebbe la calibrazione una finzione.
   const point = zone?.series.find((p) => p.date === date)
+
+  const durationValid = duration === '' || isValidDurationMinutes(Number(duration))
+  const searchersValid = searchers === '' || isValidSearchers(Number(searchers))
 
   const requestLocation = (): void => {
     if (typeof navigator === 'undefined' || navigator.geolocation === undefined) {
@@ -97,7 +99,13 @@ export function EntryForm({
         setGpsState('idle')
       },
       (error) => {
-        setGpsState(error.code === error.PERMISSION_DENIED ? 'denied' : 'unavailable')
+        setGpsState(
+          error.code === error.PERMISSION_DENIED
+            ? 'denied'
+            : error.code === error.TIMEOUT
+              ? 'timeout'
+              : 'unavailable',
+        )
       },
       { timeout: 10_000, maximumAge: 300_000 },
     )
@@ -109,47 +117,33 @@ export function EntryForm({
     )
   }
 
-  const addPhotos = (files: FileList | null): void => {
-    if (files === null) return
-    // `files` è un FileList vivo, legato all'input: va convertito in array subito, prima che il
-    // chiamante svuoti `input.value` (necessario per poter riselezionare lo stesso file), altrimenti
-    // l'aggiornamento di stato — differito dentro il updater — lo troverebbe già vuoto.
-    const selected = Array.from(files)
-    setPhotos((current) => [...current, ...selected])
-  }
-
-  const removePhoto = (index: number): void => {
-    setPhotos((current) => current.filter((_, i) => i !== index))
-  }
-
   const submit = async (event: React.FormEvent): Promise<void> => {
     event.preventDefault()
-    if (abundance === null || zone === undefined) return
+    if (abundance === null || zone === undefined || !durationValid || !searchersValid) return
     setSaving(true)
     setSaveError(null)
     try {
-      await onSave(
-        {
-          date,
-          zoneCode: zone.code,
-          zoneName: zone.name,
-          abundance,
-          elevationM: elevation === '' ? null : Number(elevation),
-          notes: notes.trim(),
-          latitude: capturedPosition?.latitude ?? zone.latitude,
-          longitude: capturedPosition?.longitude ?? zone.longitude,
-          // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto
-          // della zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello
-          // onesto qui.
-          privacy: capturedPosition === null ? 'zone' : privacy,
-          positionSource: capturedPosition !== null ? 'gps' : 'zone',
-          trees,
-          mpiAtEntry: point?.mpi ?? null,
-          confidenceAtEntry: point?.confidence ?? null,
-          algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
-        },
-        photos,
-      )
+      await onSave({
+        date,
+        zoneCode: zone.code,
+        zoneName: zone.name,
+        abundance,
+        elevationM: elevation === '' ? null : Number(elevation),
+        notes: notes.trim(),
+        latitude: capturedPosition?.latitude ?? zone.latitude,
+        longitude: capturedPosition?.longitude ?? zone.longitude,
+        // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto
+        // della zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello
+        // onesto qui.
+        privacy: capturedPosition === null ? 'zone' : privacy,
+        positionSource: capturedPosition !== null ? 'gps' : 'zone',
+        trees,
+        durationMinutes: duration === '' ? null : Number(duration),
+        searchers: searchers === '' ? null : Number(searchers),
+        mpiAtEntry: point?.mpi ?? null,
+        confidenceAtEntry: point?.confidence ?? null,
+        algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
+      })
     } catch (error) {
       // Prima restava tutto muto: il form tornava selezionabile e l'utente non sapeva se la voce
       // fosse stata salvata o no. Con lo storage pieno o bloccato succede davvero.
@@ -220,6 +214,53 @@ export function EntryForm({
           </p>
         </fieldset>
 
+        <div className="grid grid-cols-2 gap-3">
+          <Field label="Durata ricerca" htmlFor="entry-duration" optional>
+            <input
+              id="entry-duration"
+              type="number"
+              inputMode="numeric"
+              placeholder="minuti"
+              value={duration}
+              onChange={(e) => { setDuration(e.target.value) }}
+              aria-invalid={!durationValid}
+              className={`min-h-11 w-full rounded-lg border bg-surface-2 px-3 text-sm text-ink
+                          focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                            durationValid ? 'border-edge' : 'border-danger'
+                          }`}
+            />
+          </Field>
+          <Field label="Persone" htmlFor="entry-searchers" optional>
+            <input
+              id="entry-searchers"
+              type="number"
+              inputMode="numeric"
+              placeholder="quante"
+              value={searchers}
+              onChange={(e) => { setSearchers(e.target.value) }}
+              aria-invalid={!searchersValid}
+              className={`min-h-11 w-full rounded-lg border bg-surface-2 px-3 text-sm text-ink
+                          focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                            searchersValid ? 'border-edge' : 'border-danger'
+                          }`}
+            />
+          </Field>
+        </div>
+        {!durationValid && (
+          <p className="-mt-2 text-[11px] text-danger">
+            Fra {DURATION_MINUTES_MIN} e {DURATION_MINUTES_MAX} minuti.
+          </p>
+        )}
+        {!searchersValid && (
+          <p className="-mt-2 text-[11px] text-danger">
+            Fra {SEARCHERS_MIN} e {SEARCHERS_MAX} persone.
+          </p>
+        )}
+        <p className="-mt-2 text-[11px] leading-snug text-ink-faint">
+          Servono a leggere meglio uno &quot;zero&quot;: dopo dieci minuti non dice molto, dopo
+          quattro ore sì. Facoltativi entrambi.
+        </p>
+
         <fieldset>
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
             Posizione del punto trovato
@@ -266,6 +307,12 @@ export function EntryForm({
                 <p className="mt-1.5 text-[11px] leading-snug text-warn">
                   Posizione non disponibile qui. Si salva il punto di riferimento della zona invece
                   del posto esatto.
+                </p>
+              )}
+              {gpsState === 'timeout' && (
+                <p className="mt-1.5 text-[11px] leading-snug text-warn">
+                  Il GPS non ha risposto in tempo. Puoi riprovare, o proseguire con il punto di
+                  riferimento della zona.
                 </p>
               )}
               <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
@@ -331,60 +378,6 @@ export function EntryForm({
 
         <fieldset>
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-            Foto a supporto <span className="normal-case tracking-normal">(facoltativo)</span>
-          </legend>
-          <label
-            htmlFor="entry-photos"
-            className="flex min-h-11 w-full cursor-pointer items-center justify-center rounded-lg
-                       border border-dashed border-edge bg-surface-2 px-3 text-xs font-medium
-                       text-ink-dim transition-colors hover:text-ink"
-          >
-            Aggiungi foto
-          </label>
-          <input
-            id="entry-photos"
-            type="file"
-            accept="image/*"
-            multiple
-            className="sr-only"
-            onChange={(e) => { addPhotos(e.target.files); e.target.value = '' }}
-          />
-          {photos.length > 0 && (
-            <ul className="mt-2 flex flex-wrap gap-2">
-              {photos.map((file, index) => (
-                <li key={`${file.name}-${index}`} className="relative">
-                  {previews[index] !== undefined && (
-                    // eslint-disable-next-line @next/next/no-img-element -- anteprima locale da object URL, non un asset ottimizzabile
-                    <img
-                      src={previews[index]}
-                      alt=""
-                      className="h-16 w-16 rounded-lg border border-edge object-cover"
-                    />
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => { removePhoto(index) }}
-                    aria-label="Rimuovi foto"
-                    className="absolute -right-1.5 -top-1.5 grid h-5 w-5 place-items-center
-                               rounded-full border border-edge bg-surface-1 text-ink-faint
-                               transition-colors hover:text-danger focus:outline-none
-                               focus-visible:ring-2 focus-visible:ring-accent"
-                  >
-                    <svg width="9" height="9" viewBox="0 0 16 16" aria-hidden="true">
-                      <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-                    </svg>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
-          <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
-            Restano solo su questo dispositivo: non vengono mai sincronizzate.
-          </p>
-        </fieldset>
-
-        <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
             Precisione della posizione salvata
           </legend>
           <div className="flex gap-1.5">
@@ -419,6 +412,16 @@ export function EntryForm({
               ? 'Acquisisci la posizione qui sopra per poter salvare più di "solo la zona".'
               : 'L’arrotondamento è definitivo: una volta salvata l’area, le coordinate precise non esistono più.'}
           </p>
+          {/*
+            * Disclosure esplicita richiesta: chi è connesso e sceglie "coordinate esatte" deve
+            * saperlo prima di salvare, non scoprirlo dopo controllando Account.
+            */}
+          {auth.status === 'signed-in' && privacy === 'exact' && capturedPosition !== null && (
+            <p className="mt-1.5 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-dim">
+              Sei connesso: queste coordinate esatte verranno sincronizzate nel tuo account cloud,
+              non solo su questo dispositivo.
+            </p>
+          )}
         </fieldset>
 
         <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-faint">
@@ -440,7 +443,7 @@ export function EntryForm({
       <div className="mt-4 flex gap-2">
         <button
           type="submit"
-          disabled={abundance === null || saving}
+          disabled={abundance === null || saving || !durationValid || !searchersValid}
           className="min-h-12 flex-1 rounded-lg border border-accent/40 bg-accent/15 text-sm
                      font-semibold text-ink transition-colors hover:bg-accent/25
                      disabled:opacity-40 focus:outline-none focus-visible:ring-2
