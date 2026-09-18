@@ -64,6 +64,8 @@ export interface SnapshotWeather {
   readonly soilMoisture: number | null
   readonly vpdMean7d: number | null
   readonly windMean7d: number | null
+  /** Umidità relativa dell'aria a 2 m, media 7 giorni. Informativa: non entra nel punteggio. */
+  readonly humidityMean7d: number | null
 }
 
 export interface SnapshotZone {

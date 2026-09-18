@@ -72,7 +72,7 @@ function zone(
       rain24h: 0, rain72h: 0, rain7d: 0, rain14d: 0, rain26d: 0,
       effectiveWaterMm: 0, initialDeficitMm: 0, et0_7d: 0, et0_14d: 0,
       tMean20d: 18, tMinWindow: 8, tMaxWindow: 24, soilTemperatureMean: 15,
-      soilMoisture: 0.2, vpdMean7d: 0.6, windMean7d: 2,
+      soilMoisture: 0.2, vpdMean7d: 0.6, windMean7d: 2, humidityMean7d: 70,
     },
     positiveFactors: [], negativeFactors: [], neutralFactors: [], stations: [],
     dataQuality: confidence, forecastCertainty: 100,

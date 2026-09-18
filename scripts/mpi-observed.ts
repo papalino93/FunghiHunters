@@ -112,6 +112,8 @@ function toModelSeries(response: OpenMeteoResponse, todayIso: string): DailyWeat
     soilMoisture: soilMoisture.get(date) ?? null,
     soilTemperatureC: soilTemp.get(date) ?? null,
     vpdKpa: vpd.get(date) ?? null,
+    // Script diagnostico, non richiede l'umidità: non è nel confronto osservato-vs-modellato.
+    relativeHumidityPercent: null,
     provenance: date > todayIso ? 'FORECAST' : 'MODELLED',
   }))
 }

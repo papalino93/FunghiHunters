@@ -349,6 +349,7 @@ function Weather({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: str
       </Group>
 
       <Group title="Aria e suolo">
+        <Row label="Umidità relativa dell'aria" value={formatValue(w.humidityMean7d, '%', 0)} hint="media 7 giorni" />
         <Row label="Umidità del suolo" value={formatValue(w.soilMoisture, 'm³/m³', 3)} />
         <Row label="Deficit di vapore (VPD)" value={formatValue(w.vpdMean7d, 'kPa', 2)} />
         <Row label="Vento medio 7 giorni" value={formatValue(w.windMean7d, 'm/s')} />

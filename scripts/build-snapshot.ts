@@ -67,6 +67,7 @@ interface OpenMeteoResponse {
     soil_moisture_0_to_7cm: Array<number | null>
     soil_temperature_0_to_7cm: Array<number | null>
     vapour_pressure_deficit: Array<number | null>
+    relative_humidity_2m: Array<number | null>
   }
 }
 
@@ -78,7 +79,8 @@ async function fetchModel(): Promise<OpenMeteoResponse[]> {
     daily:
       'precipitation_sum,temperature_2m_max,temperature_2m_min,' +
       'et0_fao_evapotranspiration,wind_speed_10m_max',
-    hourly: 'soil_moisture_0_to_7cm,soil_temperature_0_to_7cm,vapour_pressure_deficit',
+    hourly:
+      'soil_moisture_0_to_7cm,soil_temperature_0_to_7cm,vapour_pressure_deficit,relative_humidity_2m',
     past_days: String(HISTORY_DAYS),
     forecast_days: String(FORECAST_DAYS),
     timezone: 'Europe/Rome',
@@ -112,6 +114,7 @@ function toModelSeries(response: OpenMeteoResponse, todayIso: string): DailyWeat
   const soilMoisture = dailyMean(response.hourly.time, response.hourly.soil_moisture_0_to_7cm)
   const soilTemp = dailyMean(response.hourly.time, response.hourly.soil_temperature_0_to_7cm)
   const vpd = dailyMean(response.hourly.time, response.hourly.vapour_pressure_deficit)
+  const humidity = dailyMean(response.hourly.time, response.hourly.relative_humidity_2m)
 
   return response.daily.time.map((date, i) => {
     const wind = response.daily.wind_speed_10m_max[i]
@@ -126,6 +129,7 @@ function toModelSeries(response: OpenMeteoResponse, todayIso: string): DailyWeat
       soilMoisture: soilMoisture.get(date) ?? null,
       soilTemperatureC: soilTemp.get(date) ?? null,
       vpdKpa: vpd.get(date) ?? null,
+      relativeHumidityPercent: humidity.get(date) ?? null,
       provenance: date > todayIso ? 'FORECAST' : 'MODELLED',
     }
   })
@@ -365,6 +369,7 @@ async function main(): Promise<void> {
         soilMoisture: full.find((d) => d.date === todayIso)?.soilMoisture ?? null,
         vpdMean7d: currentFeatures.vpdMean7d,
         windMean7d: currentFeatures.windMean7d,
+        humidityMean7d: currentFeatures.humidityMean7d,
       },
       positiveFactors: explanation.positiveFactors.map(toSnapshotFactor),
       negativeFactors: explanation.negativeFactors.map(toSnapshotFactor),

@@ -94,6 +94,8 @@ function toDailyWeather(response: OpenMeteoDaily, todayIso: string): DailyWeathe
     soilMoisture: soilMoisture.get(date) ?? null,
     soilTemperatureC: soilTemp.get(date) ?? null,
     vpdKpa: vpd.get(date) ?? null,
+    // Script diagnostico, non richiede l'umidità.
+    relativeHumidityPercent: null,
     provenance: date > todayIso ? 'FORECAST' : 'MODELLED',
   }))
 }

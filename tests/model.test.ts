@@ -55,6 +55,7 @@ function scenario(options: ScenarioOptions = {}): DailyWeather[] {
       soilTemperatureC: options.soilTemperature ?? 14,
       vpdKpa: options.vpd ?? 0.5,
       windMs: options.wind ?? 2,
+      relativeHumidityPercent: 70,
       provenance: 'OBSERVED',
     })
   }
@@ -418,6 +419,35 @@ describe('shock termico', () => {
     expect(shock).toBeDefined()
     expect(shock?.applied).toBe(false)
     expect(shock?.factor).toBe(1)
+  })
+})
+
+describe('umidità relativa: informativa, non entra nel punteggio', () => {
+  it('calcola la media a 7 giorni dalla serie giornaliera', () => {
+    const days = scenario({ days: 10 }).map((d, i) => ({ ...d, relativeHumidityPercent: 50 + i }))
+    const features = buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1)
+    // Ultimi 7 giorni della serie di 10 (indici 3..9): media di 53..59.
+    expect(features.humidityMean7d).toBeCloseTo(56, 5)
+  })
+
+  it('resta null, non zero, quando la fonte non la fornisce', () => {
+    const days = scenario().map((d) => ({ ...d, relativeHumidityPercent: null }))
+    const features = buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1)
+    expect(features.humidityMean7d).toBeNull()
+  })
+
+  it('non cambia il punteggio: stesso MPI con umidità diversa a parità di tutto il resto', () => {
+    const umida = scenario({ days: 30 }).map((d) => ({ ...d, relativeHumidityPercent: 90 }))
+    const secca = scenario({ days: 30 }).map((d) => ({ ...d, relativeHumidityPercent: 20 }))
+    const mpiUmida = computeMpi({
+      features: buildFeatures(umida, AUTUMN_CELL, ALGORITHM_V1),
+      cell: AUTUMN_CELL,
+    }).mpi
+    const mpiSecca = computeMpi({
+      features: buildFeatures(secca, AUTUMN_CELL, ALGORITHM_V1),
+      cell: AUTUMN_CELL,
+    }).mpi
+    expect(mpiUmida).toBe(mpiSecca)
   })
 })
 
