@@ -462,9 +462,14 @@ export interface AlgorithmConfig {
  * per AIC su tutte le combinazioni fra 2 e 35 giorni.
  *
  * Quasi tutto il resto e' da calibrare, ed e' dichiarato come tale.
+ *
+ * v1.2.0: disattivati due doppi conteggi del vento sul potenziale — il termine diretto nel
+ * bilancio idrico (ridondante con ET0, che include gia' il vento) e la penalita' che lo
+ * mescolava con la sicurezza dell'uscita, ora un segnale separato. Vedi i commenti su
+ * `water.lambdaWindCoeff` e `penalties.wind`.
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
-  version: '1.1.0-porcino',
+  version: '1.2.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -494,7 +499,25 @@ export const ALGORITHM_V1: AlgorithmConfig = {
         'pioggia puo\' essere annullata da giorni caldi e ventosi.',
     ),
     lambdaEt0Ref: calibrate(3.5, 'ET0 giornaliera tipica di settembre in Appennino, in mm.'),
-    lambdaWindCoeff: calibrate(0.15),
+    /*
+     * DISATTIVATO (valore 0): era un secondo termine di vento nel decadimento, ridondante con
+     * ET0. `et0_fao_evapotranspiration` (Open-Meteo) e' calcolato con Penman-Monteith FAO-56, la
+     * cui formula usa la velocita' del vento a 2 m come input diretto: il vento sta gia' dentro
+     * `lambdaEt0Coeff` per la via fisicamente corretta (piu' vento -> ET0 piu' alta -> decadimento
+     * piu' rapido). Sommarci sopra un secondo moltiplicatore di vento — questo, quello che c'era
+     * qui — contava lo stesso vento due volte sullo stesso bilancio idrico.
+     *
+     * Resta calcolato (`dailyDecay` lo applica ancora, a moltiplicatore neutro con valore 0) per
+     * lo stesso motivo di `thermalShock`: se in futuro si trovasse un canale fisico realmente
+     * separato da ET0 — ad esempio l'essiccamento della lettiera superficiale, che risponde al
+     * vento piu' in fretta della riserva idrica del suolo che ET0 descrive — il confronto storico
+     * resta possibile senza dover ricalcolare tutto da capo.
+     */
+    lambdaWindCoeff: calibrate(
+      0,
+      'Disattivato: ridondante con ET0, che include gia\' il vento (Penman-Monteith FAO-56). ' +
+        'Vedi il commento sopra per il dettaglio.',
+    ),
     lambdaWindRef: calibrate(3.0),
     canopyShelter: calibrate(0.8, 'Sotto chioma densa l\'evaporazione e\' ridotta.'),
     southFacingPenalty: calibrate(1.25, 'I versanti a sud asciugano prima.'),
@@ -647,10 +670,32 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       floor: calibrate(0.7),
       weight: calibrate(1),
     },
+    /*
+     * DISATTIVATA (peso 0): il vento come penalita' diretta al potenziale ecologico confondeva
+     * due domande diverse — "le condizioni sono compatibili con la fruttificazione?" e "e'
+     * prudente uscire con questo vento?" — nella stessa cifra. Un'area con ottime condizioni ma
+     * vento forte previsto diventava indistinguibile da un'area davvero sfavorevole: l'utente non
+     * poteva più sapere se "conviene aspettare" o "conviene andare ma con attenzione". La
+     * sicurezza ora e' un segnale separato, mai moltiplicato nell'MPI — vedi
+     * `src/lib/model/wind.ts` e `SnapshotZone.windSafety`.
+     *
+     * Resta calcolata (come le altre penalita' disattivate) per il confronto storico. La soglia
+     * sotto e' inoltre imprecisa quanto dichiarata: il dato di Open-Meteo usato qui
+     * (`wind_speed_10m_max`) e' il **massimo** giornaliero, non una media — la media dei massimi
+     * di sette giorni e' sistematicamente piu' alta di una vera media settimanale del vento.
+     */
     wind: {
-      threshold: calibrate(6, 'Vento medio a 7 giorni, in m/s.'),
+      threshold: calibrate(
+        6,
+        'Soglia sulla media dei MASSIMI giornalieri a 7 giorni (non una vera media del vento), ' +
+          'in m/s — vedi il commento sopra.',
+      ),
       floor: calibrate(0.8),
-      weight: calibrate(1),
+      weight: calibrate(
+        0,
+        'Disattivata: il vento non deve abbassare il potenziale ecologico, solo informare un ' +
+          'segnale di sicurezza separato. Vedi il commento sopra.',
+      ),
     },
     /*
      * Shock di CALDO, non di freddo. E qui devo correggere me stesso.

@@ -7,6 +7,7 @@ import { Sparkline } from '@/components/Sparkline'
 import { PotentialBar } from '@/components/today/PotentialBar'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
+import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
@@ -213,6 +214,41 @@ function Summary({
           hint="orizzonte del giorno"
         />
       </dl>
+
+      <Wind zone={zone} selectedDate={selectedDate} />
+    </div>
+  )
+}
+
+/**
+ * Vento, in due blocchi separati apposta — vedi `src/lib/model/wind.ts`. Non tocca il
+ * potenziale mostrato sopra: il primo spiega il bilancio idrico, il secondo e' un avviso di
+ * prudenza per il giorno scelto, non un giudizio sulle condizioni ambientali.
+ */
+function Wind({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: string }) {
+  const point = zone.series.find((p) => p.date === selectedDate)
+  const water = describeWaterWind(zone.weather.windMean7d)
+  const outing = describeOutingWind(point?.windMs ?? null)
+
+  return (
+    <div className="space-y-2">
+      <WindRow title="Vento e asciugamento del suolo" assessment={water} />
+      <WindRow title="Vento previsto per il giorno scelto" assessment={outing} />
+    </div>
+  )
+}
+
+function WindRow({ title, assessment }: { title: string; assessment: WindAssessment }) {
+  const tone =
+    assessment.level === 'forte'
+      ? 'text-warn'
+      : assessment.level === 'dati-insufficienti'
+        ? 'text-ink-faint'
+        : 'text-ink-dim'
+  return (
+    <div className="rounded-lg bg-surface-2 px-3 py-2">
+      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{title}</p>
+      <p className={`mt-0.5 text-xs leading-snug ${tone}`}>{assessment.message}</p>
     </div>
   )
 }

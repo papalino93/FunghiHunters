@@ -48,6 +48,7 @@ function zone(
     rainMm: 0,
     tMinC: 10,
     tMaxC: 18,
+    windMs: null,
   }))
 
   return {

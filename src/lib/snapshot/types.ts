@@ -30,6 +30,8 @@ export interface SnapshotSeriesPoint {
   readonly rainMm: number | null
   readonly tMinC: number | null
   readonly tMaxC: number | null
+  /** Massimo giornaliero, non una media — vedi il commento su `windMean7d` in `model/features.ts`. */
+  readonly windMs: number | null
 }
 
 export interface SnapshotStation {

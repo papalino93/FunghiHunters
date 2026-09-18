@@ -29,7 +29,7 @@ function zone(
   const mpi = o.mpi ?? 10
   const series = (o.series ?? [{ date: TODAY, mpi }, { date: '2026-09-18', mpi }]).map((p) => ({
     date: p.date, mpi: p.mpi, confidence: 70, dataQuality: 70, forecastCertainty: 100,
-    provenance: 'MODELLED' as const, rainMm: 0, tMinC: 10, tMaxC: 20,
+    provenance: 'MODELLED' as const, rainMm: 0, tMinC: 10, tMaxC: 20, windMs: null,
   }))
   return {
     code, name: code, reference: code, province: 'LU', municipality: null,

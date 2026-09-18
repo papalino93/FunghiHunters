@@ -1,5 +1,23 @@
 # Audit — FungiCast Toscana
 
+## Aggiornamento — vento: doppio conteggio corretto, sicurezza separata (18 settembre 2026)
+
+Trovato e corretto un doppio conteggio reale: il vento entrava nel bilancio idrico sia tramite
+ET0 (che lo include già, Penman-Monteith FAO-56) sia tramite un secondo termine diretto
+(`water.lambdaWindCoeff`) — stesso fenomeno fisico contato due volte. Disattivato, insieme alla
+penalità di vento sull'MPI (`penalties.wind`), che mescolava potenziale ecologico e sicurezza
+dell'uscita nello stesso numero. Al suo posto, un segnale separato che non tocca mai l'MPI
+(`src/lib/model/wind.ts`): "vento e asciugamento del suolo" (informativo) e "vento previsto per
+il giorno scelto" (prudenza), con soglie dichiarate (scala Beaufort) invece che arbitrarie.
+
+**Effetto pratico da sapere**: `ALGORITHM_V1.version` è salita a `1.2.0-porcino`, ma
+`public/data/snapshot.json` in produzione resta calcolato con `1.1.0-porcino` finché il prossimo
+giro del cron giornaliero (GitHub Actions, che ha rete vera) non lo rigenera — questa sessione non
+può rifare le chiamate a Open-Meteo/SIR per rigenerarlo con dati freschi. I numeri mostrati oggi
+in app includono ancora, per poco, il vecchio doppio conteggio. Dettaglio completo, incluso il
+catalogo delle fonti di vento valutate (tutte bloccate dalla stessa rete già documentata), in
+`docs/VENTO.md`.
+
 ## Aggiornamento — giro bug approfondito (17 settembre 2026)
 
 Revisione mirata dell'intero diff di sessione (auth, sync, diario, calibrazione, modello), non

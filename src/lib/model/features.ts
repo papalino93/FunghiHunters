@@ -61,6 +61,13 @@ export interface CellFeatures {
   readonly tMaxWindow: number | null
   readonly soilTemperatureMean: number | null
   readonly vpdMean7d: number | null
+  /**
+   * Media dei **massimi giornalieri** di vento su 7 giorni, non una vera media del vento — Open-
+   * Meteo non offre l'una nell'endpoint che usiamo, solo l'altra (`wind_speed_10m_max`). Il nome
+   * resta per non toccare ogni punto che lo consuma, ma va letto come un indicatore di raffiche,
+   * non come "quanto tira vento in media" — usato per il segnale di sicurezza
+   * (`src/lib/model/wind.ts`), non per il bilancio idrico.
+   */
   readonly windMean7d: number | null
   /** Giorni con massima sopra la soglia di stress da caldo, nella finestra termica. */
   readonly heatDays: number

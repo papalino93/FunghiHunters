@@ -277,6 +277,9 @@ async function main(): Promise<void> {
         rainMm: day?.precipitationMm ?? null,
         tMinC: day?.temperatureMinC ?? null,
         tMaxC: day?.temperatureMaxC ?? null,
+        // Massimo giornaliero (Open-Meteo non offre una vera media nell'endpoint daily), non
+        // "vento medio": vedi il commento su windMean7d in model/features.ts.
+        windMs: day?.windMs ?? null,
       })
 
       if (offset >= 0) {
