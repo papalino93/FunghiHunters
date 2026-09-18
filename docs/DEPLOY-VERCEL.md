@@ -61,14 +61,14 @@ salvare. Finché questo interruttore è spento, ogni tentativo torna indietro co
 
 **Authentication → URL Configuration**. Due campi, due ruoli diversi:
 
-- **Site URL**: l'indirizzo di produzione, es. `https://<la-tua-app>.vercel.app`. È anche il
-  ripiego: quando un ritorno non è autorizzato, Supabase manda **lì** invece che dove chiedeva
-  l'app. Se dopo il login ci si ritrova sulla home invece che su `/account`, il colpevole è
-  l'elenco qui sotto, non il codice.
+- **Site URL**: l'indirizzo di produzione — per questo progetto
+  `https://funghihunters.vercel.app`. È anche il ripiego: quando un ritorno non è autorizzato,
+  Supabase manda **lì** invece che dove chiedeva l'app. Se dopo il login ci si ritrova sulla home
+  invece che su `/account`, il colpevole è l'elenco qui sotto, non il codice.
 - **Redirect URLs**: l'elenco degli indirizzi su cui Supabase accetta di tornare. Servono almeno:
 
   ```
-  https://<la-tua-app>.vercel.app/account
+  https://funghihunters.vercel.app/account
   http://localhost:3000/account
   ```
 
@@ -109,9 +109,21 @@ Per lo sviluppo locale le stesse tre variabili vanno in `.env.local` — vedi `.
 
 ## 6. Verificare che funzioni
 
-1. Aprire `/account` sul sito pubblicato. Se dice *"la sincronizzazione non è configurata su
-   questo deploy"*, le variabili non sono arrivate al build: rifare il passo 5. È il controllo più
-   veloce, e non richiede di provare l'accesso.
+1. Aprire [`/account`](https://funghihunters.vercel.app/account) sul sito pubblicato. Se dice
+   *"la sincronizzazione non è configurata su questo deploy"*, le variabili non sono arrivate al
+   build: rifare il passo 5. È il controllo più veloce, e non richiede di provare l'accesso.
+
+   Lo stesso controllo si può fare da fuori, senza aprire il browser: nel JavaScript pubblicato
+   devono comparire i **valori** delle variabili, non i loro nomi. Se in un chunk si legge ancora
+   `env.NEXT_PUBLIC_SUPABASE_URL` invece di `https://<ref>.supabase.co`, quel deploy è stato
+   costruito senza le variabili.
+
+   ```bash
+   curl -s https://funghihunters.vercel.app/account \
+     | grep -o 'static/immutable/chunks/[A-Za-z0-9._-]*\.js' | sort -u \
+     | while read c; do curl -s "https://funghihunters.vercel.app/_next/$c"; done \
+     | grep -o 'https://[a-z0-9]*\.supabase\.co' | sort -u
+   ```
 2. Premere **Continua con Google** e completare l'accesso. Si deve tornare su `/account` con
    l'indirizzo email in alto.
 3. Registrare un'uscita nel Diario e controllare su Supabase (**Table Editor → user_observations**)
