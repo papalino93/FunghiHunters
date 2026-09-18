@@ -305,7 +305,8 @@
     "soilTemperatureMean": 18.236904761904764,
     "soilMoisture": 0.15454166666666666,
     "vpdMean7d": 0.8303571428571429,
-    "windMean7d": 3.416666666666667
+    "windMean7d": 3.416666666666667,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -884,7 +885,8 @@
     "soilTemperatureMean": 18.255357142857143,
     "soilMoisture": 0.21025000000000002,
     "vpdMean7d": 0.6251785714285714,
-    "windMean7d": 3.365079365079365
+    "windMean7d": 3.365079365079365,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -1439,7 +1441,8 @@
     "soilTemperatureMean": 16.251785714285717,
     "soilMoisture": 0.1995,
     "vpdMean7d": 0.616547619047619,
-    "windMean7d": 3.261904761904762
+    "windMean7d": 3.261904761904762,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -2036,7 +2039,8 @@
     "soilTemperatureMean": 15.170238095238092,
     "soilMoisture": 0.23704166666666662,
     "vpdMean7d": 0.5632142857142857,
-    "windMean7d": 3.293650793650794
+    "windMean7d": 3.293650793650794,
+    "humidityMean7d": null
    },
    "positiveFactors": [
     {
@@ -2652,7 +2656,8 @@
     "soilTemperatureMean": 16.68452380952381,
     "soilMoisture": 0.17787499999999998,
     "vpdMean7d": 0.5063690476190476,
-    "windMean7d": 2.7698412698412698
+    "windMean7d": 2.7698412698412698,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -3201,7 +3206,8 @@
     "soilTemperatureMean": 17.857738095238098,
     "soilMoisture": 0.16824999999999993,
     "vpdMean7d": 0.44892857142857145,
-    "windMean7d": 4.365079365079366
+    "windMean7d": 4.365079365079366,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -3756,7 +3762,8 @@
     "soilTemperatureMean": 20.43511904761905,
     "soilMoisture": 0.15737499999999996,
     "vpdMean7d": 0.8724404761904762,
-    "windMean7d": 3.2619047619047614
+    "windMean7d": 3.2619047619047614,
+    "humidityMean7d": null
    },
    "positiveFactors": [],
    "negativeFactors": [

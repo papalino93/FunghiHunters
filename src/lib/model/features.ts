@@ -24,6 +24,7 @@ export interface DailyWeather {
   readonly soilTemperatureC: number | null
   readonly vpdKpa: number | null
   readonly windMs: number | null
+  readonly relativeHumidityPercent: number | null
   readonly provenance: Provenance
 }
 
@@ -69,6 +70,14 @@ export interface CellFeatures {
    * (`src/lib/model/wind.ts`), non per il bilancio idrico.
    */
   readonly windMean7d: number | null
+  /**
+   * Umidità relativa dell'aria a 2 m, media 7 giorni — Open-Meteo la offre solo su base oraria
+   * (`relative_humidity_2m`), aggregata a giornaliera come VPD e temperatura del suolo. Non entra
+   * nel punteggio: `relative_humidity_mean` in `algorithm.ts` è una scala di decorrelazione per
+   * un'eventuale interpolazione da stazioni, mai collegata — questo campo è solo informativo, per
+   * leggere le condizioni del giorno senza dover dedurle dal VPD.
+   */
+  readonly humidityMean7d: number | null
   /** Giorni con massima sopra la soglia di stress da caldo, nella finestra termica. */
   readonly heatDays: number
   /** Calo termico massimo su tre giorni nella finestra, in gradi. Positivo = raffreddamento. */
@@ -276,6 +285,7 @@ export function buildFeatures(
     soilTemperatureMean: mean(days.slice(-soilWindow).map((d) => d.soilTemperatureC)),
     vpdMean7d: mean(days.slice(-7).map((d) => d.vpdKpa)),
     windMean7d: mean(days.slice(-7).map((d) => d.windMs)),
+    humidityMean7d: mean(days.slice(-7).map((d) => d.relativeHumidityPercent)),
     heatDays: thermalSlice.filter(
       (d) => d.temperatureMaxC !== null && d.temperatureMaxC > heatThreshold,
     ).length,

@@ -130,6 +130,16 @@ precondizione per superare le sette macro-zone. Le prime tre righe sono quindi l
 | Utilità per il porcino | **Bassa**: sono osservazioni orarie di alta qualità, ma da aeroporti di pianura a decine di km dalle zone forestali di montagna che contano per il modello — esattamente il problema di rappresentatività già documentato per le stazioni SIR più lontane (vedi `stationNotes` in `zones.ts`). Utile eventualmente come validazione incrociata per vento e pressione, non come fonte primaria. | — |
 | **Stato** | **da rivalutare con rete piena**, priorità bassa: la copertura geografica non è quella che serve | — |
 
+### 7. Ventusky
+
+| Campo | Valore | Verificato come |
+|---|---|---|
+| Ente | Ventusky.com (InMeteo, s.r.o.) | Ricerca web |
+| Licenza | Nessuna API pubblica documentata: è un visualizzatore, non un fornitore dati — i dati sottostanti sono modelli pubblici (GFS, ICON, ECMWF fra gli altri), non un layer proprietario di osservazioni | Ricerca web, non verificato con una richiesta reale |
+| Accesso | `ventusky.com`, `api.ventusky.com` — **irraggiungibile da questa sessione**, stesso errore di policy delle altre fonti bloccate | `curl -sS https://ventusky.com` → CONNECT rifiutato |
+| Utilità per il porcino | **Nessuna oltre a quanto già disponibile**: stesso caso di Windy sopra — Ventusky visualizza gli stessi modelli (GFS/ICON/ECMWF) che Open-Meteo già serve via API con licenza aperta e che questo progetto già consuma. Non esiste un'API pubblica di Ventusky da integrare: sarebbe uno scraping di una pagina pensata per l'occhio umano, non una fonte dati — pratica che questo progetto esclude a priori, a prescindere dal blocco di rete. | — |
+| **Stato** | **non da integrare**: non per il blocco di rete di questa sessione, ma perché non esiste un'API da consumare e i dati che mostra sono già disponibili da una fonte con licenza aperta che l'app usa | — |
+
 ## Candidate scartate
 
 | Fonte | Motivo dello scarto |

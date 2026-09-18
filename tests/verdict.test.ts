@@ -41,7 +41,7 @@ function zone(
       rain24h: 0, rain72h: 0, rain7d: 0, rain14d: 0, rain26d: o.rain26d ?? 120,
       effectiveWaterMm: o.water ?? 100, initialDeficitMm: 0, et0_7d: 0, et0_14d: 0,
       tMean20d: o.tMean === undefined ? 19 : o.tMean, tMinWindow: 8, tMaxWindow: 24,
-      soilTemperatureMean: 15, soilMoisture: 0.25, vpdMean7d: 0.6, windMean7d: 2,
+      soilTemperatureMean: 15, soilMoisture: 0.25, vpdMean7d: 0.6, windMean7d: 2, humidityMean7d: 70,
     },
     positiveFactors: [], negativeFactors: [], neutralFactors: [], stations: [],
     bestWindow: null, observedDays: 60, windowDays: 61, lastObservedDate: '2026-09-16',
