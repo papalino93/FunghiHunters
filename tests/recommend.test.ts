@@ -24,6 +24,8 @@ function zone(
   overrides: {
     mpi?: number
     confidence?: number
+    /** Separabile da `confidence` apposta: sono due numeri diversi, vedi confidence.ts. */
+    dataQuality?: number
     lat?: number
     lon?: number
     elevationM?: number
@@ -33,6 +35,7 @@ function zone(
 ): SnapshotZone {
   const mpi = overrides.mpi ?? 30
   const confidence = overrides.confidence ?? 70
+  const dataQuality = overrides.dataQuality ?? confidence
   const series = (overrides.series ?? [
     { date: TODAY, mpi },
     { date: '2026-09-18', mpi },
@@ -42,7 +45,7 @@ function zone(
     date: p.date,
     mpi: p.mpi,
     confidence,
-    dataQuality: confidence,
+    dataQuality,
     forecastCertainty: 100,
     provenance: 'MODELLED' as const,
     rainMm: 0,
@@ -75,7 +78,7 @@ function zone(
       soilMoisture: 0.2, vpdMean7d: 0.6, windMean7d: 2, humidityMean7d: 70,
     },
     positiveFactors: [], negativeFactors: [], neutralFactors: [], stations: [],
-    dataQuality: confidence, forecastCertainty: 100,
+    dataQuality, forecastCertainty: 100,
     bestWindow: null, observedDays: 0, windowDays: 61, lastObservedDate: null,
     thermalOptimumC: 13, lapseRateCPerKm: null, nearbyMunicipalities: [],
   }
@@ -159,6 +162,28 @@ describe('filtri', () => {
     const misto = [zone('debole', { confidence: 30 }), zone('forte', { confidence: 90 })]
     const result = rankZones(misto, { date: TODAY, from: null, minDataQuality: 50 })
     expect(result.map((s) => s.zone.code)).toEqual(['forte'])
+  })
+
+  it('il filtro guarda la qualità dei dati, non la confidence complessiva', () => {
+    /*
+     * Sono due numeri diversi apposta (vedi "Perché due numeri e non uno" in confidence.ts): la
+     * confidence include anche quanto si guarda avanti nel tempo, la qualità dei dati no. Filtrare
+     * sulla prima faceva sparire, guardando a qualche giorno di distanza, zone con stazioni
+     * ottime — e il motivo mostrato diceva "qualità dei dati 41" mentre la scheda della stessa
+     * zona ne dichiarava 88.
+     */
+    const lontanaNelTempo = zone('coperta-bene', { confidence: 41, dataQuality: 88 })
+    const options = { date: TODAY, from: null, minDataQuality: 70 }
+
+    expect(rankZones([lontanaNelTempo], options).map((s) => s.zone.code)).toEqual(['coperta-bene'])
+    expect(excludedZones([lontanaNelTempo], options)).toHaveLength(0)
+  })
+
+  it('il motivo dell esclusione cita lo stesso numero che il filtro confronta', () => {
+    const scarsa = zone('dati-scarsi', { confidence: 90, dataQuality: 20 })
+    const excluded = excludedZones([scarsa], { date: TODAY, from: null, minDataQuality: 50 })
+    expect(excluded).toHaveLength(1)
+    expect(excluded[0]?.reason).toContain('qualità dei dati 20')
   })
 
   it('un filtro che non lascia nulla restituisce lista vuota, non un ripiego', () => {

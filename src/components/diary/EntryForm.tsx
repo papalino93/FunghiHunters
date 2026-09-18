@@ -11,11 +11,9 @@ import {
   TREE_SPECIES,
   type Abundance,
   type DiaryDraft,
-  type DiaryEntry,
   type PrivacyLevel,
   type TreeSpecies,
 } from '@/lib/diary/types'
-import type { PhotoRepository } from '@/lib/diary/photos'
 
 const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
   faggio: 'faggio',
@@ -41,13 +39,19 @@ const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
  */
 export function EntryForm({
   snapshot,
-  photoRepo,
   onSave,
   onCancel,
 }: {
   snapshot: Snapshot
-  photoRepo: PhotoRepository
-  onSave: (draft: DiaryDraft) => Promise<DiaryEntry>
+  /**
+   * Riceve la bozza **e** le foto in attesa, e le salva insieme.
+   *
+   * Le foto non le persiste il form: gli servirebbe l'id della voce, che nasce solo quando la
+   * voce e' stata scritta, e il risultato era un salvataggio in due tempi con il form gia'
+   * smontato a meta'. Qui il chiamante fa tutto in un passaggio solo, e puo' collegare le foto
+   * alla voce che ha appena creato.
+   */
+  onSave: (draft: DiaryDraft, photos: readonly File[]) => Promise<void>
   onCancel: () => void
 }) {
   const [date, setDate] = useState(snapshot.referenceDate)
@@ -59,6 +63,7 @@ export function EntryForm({
   const [trees, setTrees] = useState<TreeSpecies[]>([])
   const [photos, setPhotos] = useState<File[]>([])
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   const [gpsState, setGpsState] = useState<'idle' | 'asking' | 'denied' | 'unavailable'>('idle')
   const [capturedPosition, setCapturedPosition] = useState<{
@@ -121,26 +126,39 @@ export function EntryForm({
     event.preventDefault()
     if (abundance === null || zone === undefined) return
     setSaving(true)
-    const entry = await onSave({
-      date,
-      zoneCode: zone.code,
-      zoneName: zone.name,
-      abundance,
-      elevationM: elevation === '' ? null : Number(elevation),
-      notes: notes.trim(),
-      latitude: capturedPosition?.latitude ?? zone.latitude,
-      longitude: capturedPosition?.longitude ?? zone.longitude,
-      // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto della
-      // zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello onesto qui.
-      privacy: capturedPosition === null ? 'zone' : privacy,
-      positionSource: capturedPosition !== null ? 'gps' : 'zone',
-      trees,
-      mpiAtEntry: point?.mpi ?? null,
-      confidenceAtEntry: point?.confidence ?? null,
-      algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
-    })
-    for (const file of photos) await photoRepo.add(entry.id, file)
-    setSaving(false)
+    setSaveError(null)
+    try {
+      await onSave(
+        {
+          date,
+          zoneCode: zone.code,
+          zoneName: zone.name,
+          abundance,
+          elevationM: elevation === '' ? null : Number(elevation),
+          notes: notes.trim(),
+          latitude: capturedPosition?.latitude ?? zone.latitude,
+          longitude: capturedPosition?.longitude ?? zone.longitude,
+          // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto
+          // della zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello
+          // onesto qui.
+          privacy: capturedPosition === null ? 'zone' : privacy,
+          positionSource: capturedPosition !== null ? 'gps' : 'zone',
+          trees,
+          mpiAtEntry: point?.mpi ?? null,
+          confidenceAtEntry: point?.confidence ?? null,
+          algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
+        },
+        photos,
+      )
+    } catch (error) {
+      // Prima restava tutto muto: il form tornava selezionabile e l'utente non sapeva se la voce
+      // fosse stata salvata o no. Con lo storage pieno o bloccato succede davvero.
+      setSaveError(error instanceof Error ? error.message : 'Salvataggio non riuscito.')
+    } finally {
+      // Anche quando il salvataggio fallisce: senza, il pulsante resterebbe su "Salvo…" per
+      // sempre e non ci sarebbe modo di riprovare.
+      setSaving(false)
+    }
   }
 
   return (
@@ -443,6 +461,15 @@ export function EntryForm({
       {abundance === null && (
         <p className="mt-2 text-center text-[11px] text-ink-faint">
           Scegli quanti ne hai trovati per salvare.
+        </p>
+      )}
+      {saveError !== null && (
+        <p
+          role="alert"
+          className="mt-2 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-2 text-[11px]
+                     leading-snug text-danger"
+        >
+          {saveError} La voce non è stata registrata: puoi riprovare.
         </p>
       )}
     </form>

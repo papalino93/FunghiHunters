@@ -70,6 +70,20 @@ export function confidenceOn(zone: SnapshotZone, date: string): number {
   return zone.series.find((p) => p.date === date)?.confidence ?? zone.confidence
 }
 
+/**
+ * Qualità dei **dati osservati** nel giorno scelto, che non è la `confidence` complessiva.
+ *
+ * Le due si somigliano ma rispondono a domande diverse (vedi il commento "Perché due numeri e non
+ * uno" in `src/lib/model/confidence.ts`): `confidence` include anche quanto si sta guardando
+ * avanti nel tempo, `dataQuality` no. Il filtro dell'utente si chiama "affidabilità minima dei
+ * dati" e va confrontato con la seconda: con la prima, guardare a cinque giorni faceva sparire
+ * zone con stazioni ottime solo perché la previsione è lontana, e il numero mostrato nel motivo
+ * dell'esclusione non corrispondeva a quello scritto nella scheda della zona.
+ */
+export function dataQualityOn(zone: SnapshotZone, date: string): number {
+  return zone.series.find((p) => p.date === date)?.dataQuality ?? zone.dataQuality
+}
+
 /** Variazione fra il punteggio del giorno scelto e quello di tre giorni dopo. */
 export function trend72h(zone: SnapshotZone, date: string): number {
   const index = zone.series.findIndex((p) => p.date === date)
@@ -158,8 +172,7 @@ export function excludedZones(zones: readonly SnapshotZone[], options: RankOptio
             distanceKm(options.from.latitude, options.from.longitude, zone.latitude, zone.longitude) *
               10,
           ) / 10
-    const confidence = confidenceOn(zone, options.date)
-    const reason = exclusionReason(zone, distance, confidence, options)
+    const reason = exclusionReason(zone, distance, dataQualityOn(zone, options.date), options)
     if (reason !== null) out.push({ zone, reason })
   }
   return out
@@ -188,7 +201,7 @@ export function rankZones(
               10,
           ) / 10
 
-    if (!passesFilters(zone, distance, confidence, options)) continue
+    if (!passesFilters(zone, distance, dataQualityOn(zone, options.date), options)) continue
 
     const potentialTerm = mpi / 100
     const confidenceTerm = confidence / 100

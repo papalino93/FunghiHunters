@@ -17,10 +17,17 @@ sempre.
 ## 1. Progetto Supabase
 
 1. Creare un progetto su [supabase.com](https://supabase.com) (il piano gratuito basta).
-2. Nell'**SQL Editor**, eseguire in ordine `db/migrations/0001_init.sql`,
-   `db/migrations/0002_sync.sql` e `db/migrations/0003_grants.sql`. Il terzo file esiste perché su
-   almeno un progetto reale i primi due non bastavano: vedi il caso `permission denied for schema
-   public` più sotto se lo hai già saltato.
+2. Nell'**SQL Editor**, eseguire **in ordine** tutti i file di `db/migrations/`:
+   `0001_init.sql`, `0002_sync.sql`, `0003_grants.sql`, `0004_diary_location.sql` e
+   `0005_grants_narrow.sql`. Il terzo esiste perché su almeno un progetto reale i primi due non
+   bastavano: vedi il caso `permission denied for schema public` più sotto se lo hai già saltato.
+
+   > **Se hai già eseguito `0003_grants.sql`, esegui anche `0005_grants_narrow.sql`: non è
+   > facoltativo.** Il terzo file concedeva scrittura su *tutte* le tabelle dello schema `public`
+   > ai ruoli `anon` e `authenticated`, ma solo tre di quelle tabelle hanno la Row Level Security
+   > accesa — sulle altre il permesso non era filtrato da niente, e `anon` è il ruolo della chiave
+   > pubblica che chiunque può leggere dal bundle JavaScript del sito. `0005` restringe i permessi
+   > alle sole tabelle protette da policy e accende la RLS su tutte le altre.
 3. Da **Project Settings → API** annotare:
    - **Project URL** → sarà `NEXT_PUBLIC_SUPABASE_URL`
    - chiave **anon / public** → sarà `NEXT_PUBLIC_SUPABASE_ANON_KEY`

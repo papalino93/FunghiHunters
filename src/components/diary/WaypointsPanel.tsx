@@ -65,9 +65,14 @@ export function WaypointsPanel() {
   useEffect(() => {
     if (!open || repo === null) return
     let cancelled = false
-    void repo.list().then((list) => {
-      if (!cancelled) setPoints(list)
-    })
+    void repo
+      .list()
+      .then((list) => { if (!cancelled) setPoints(list) })
+      .catch((err: unknown) => {
+        if (cancelled) return
+        setPoints([])
+        setError(err instanceof Error ? err.message : 'Non riesco a leggere i punti salvati.')
+      })
     return () => { cancelled = true }
   }, [open, repo])
 

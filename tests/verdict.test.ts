@@ -69,6 +69,19 @@ describe('il verdetto risponde in parole', () => {
     expect(v.reason).toContain('6 gradi di troppo')
   })
 
+  it('sotto l ottimo parla di freddo, non di caldo che manca', () => {
+    /*
+     * Novembre in quota: la media a 20 giorni scende sotto l'ottimo. Prima usciva «fa ancora
+     * troppo caldo: 5 °C ... Sono -8 gradi di troppo», cioè il contrario del numero citato nella
+     * stessa frase — ed è la coda della stagione dei porcini, non un caso di laboratorio.
+     */
+    const v = verdictFor([zone('gelo', { mpi: 12, tMean: 5, optimum: 13 })])
+    expect(v.reason).toContain('troppo freddo')
+    expect(v.reason).not.toContain('troppo caldo')
+    expect(v.reason).toContain('8 gradi sotto')
+    expect(v.reason).not.toContain('-8')
+  })
+
   it('dice che il caldo è ovunque solo se lo è davvero', () => {
     const tutte = verdictFor([zone('a', { mpi: 12 }), zone('b', { mpi: 8 })])
     expect(tutte.reason).toContain('In tutta la Toscana')
@@ -157,6 +170,13 @@ describe('fatti della zona, in parole', () => {
   it('quando manca l acqua non dichiara un punto di forza falso', () => {
     const facts = zoneFacts(zone('a', { water: 10, tMean: 13, optimum: 13 }))
     expect(facts.bad).toContain('Manca acqua')
+  })
+
+  it('sotto l ottimo il difetto è il freddo, non il fresco che manca', () => {
+    const facts = zoneFacts(zone('a', { water: 113, tMean: 4.5, optimum: 13.4 }))
+    expect(facts.bad).toContain('Troppo freddo')
+    expect(facts.bad).not.toContain('Manca il fresco')
+    expect(facts.bad).toContain('4.5')
   })
 })
 

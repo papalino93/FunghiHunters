@@ -177,12 +177,21 @@ function reasonFor(
     zones.length > 1 && regionalLimit === limit && zones.every((z) => mpiOn(z, date) < 20)
 
   if (limit?.startsWith('Temperatura') === true && tMean !== null) {
-    const excess = tMean - optimum
+    /*
+     * La temperatura può limitare da due lati, e prima se ne raccontava uno solo.
+     *
+     * Con la media sotto l'ottimo — novembre in quota, cioè la coda della stagione, non un caso
+     * di laboratorio — usciva «fa ancora troppo caldo: 5 °C ... Sono -8 gradi di troppo»: la
+     * frase diceva il contrario del dato che citava lei stessa.
+     */
+    const gap = tMean - optimum
+    const tooWarm = gap > 0
     const scope = everywhere ? 'In tutta la Toscana fa' : 'Fa'
     return (
-      `${scope} ancora troppo caldo: ${tMean.toFixed(0)} °C di media negli ultimi 20 giorni, ` +
+      `${scope} ${tooWarm ? 'ancora troppo caldo' : 'troppo freddo'}: ` +
+      `${tMean.toFixed(0)} °C di media negli ultimi 20 giorni, ` +
       `contro i ${optimum.toFixed(0)} a cui il porcino fruttifica. ` +
-      `Sono ${excess.toFixed(0)} gradi di troppo.`
+      `Sono ${Math.abs(gap).toFixed(0)} gradi ${tooWarm ? 'di troppo' : 'sotto'}.`
     )
   }
 
@@ -286,12 +295,17 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
       ? null
       : `${tMean.toFixed(1)} °C di media a 20 giorni, ottimo ${optimum.toFixed(1)}`
 
+  // Stessa ragione della frase del verdetto: sotto l'ottimo il problema è il freddo, e chiamarlo
+  // "manca il fresco" significa contraddire il numero scritto nella riga accanto.
+  const tempProblem =
+    tMean === null || temp === null || tempOk
+      ? null
+      : tMean > optimum
+        ? `Manca il fresco: ${temp}`
+        : `Troppo freddo: ${temp}`
+
   return {
     good: waterOk ? `L'acqua c'è: ${water}` : tempOk && temp !== null ? `Temperatura giusta: ${temp}` : null,
-    bad: !tempOk && temp !== null
-      ? `Manca il fresco: ${temp}`
-      : !waterOk
-        ? `Manca acqua: solo ${water}`
-        : null,
+    bad: tempProblem ?? (!waterOk ? `Manca acqua: solo ${water}` : null),
   }
 }
