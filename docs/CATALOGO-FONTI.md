@@ -46,6 +46,15 @@ commit, con il file `public/data/admin-boundaries.json` prodotto come prova.
 - Superficie in app: `SnapshotZone.municipality`, mostrato in `ZoneSheet` al posto della sola
   sigla di provincia; attribuzione in `snapshot.sources`.
 
+**Estensione (sessione successiva): comuni entro raggio, non solo quello che contiene il punto.**
+Stessa fonte, stesso file scaricato, una funzione in più (`nearbyMunicipalities` in
+`istat-boundaries.ts`) che restituisce tutti i comuni il cui centroide cade entro 15 km dal punto
+di riferimento di ciascuna zona, con distanza reale (haversine), non solo il primo che contiene il
+punto. Nasce dalla richiesta di indicare "posti dove cercare" senza inventare coordinate: le sette
+zone sono punti, non poligoni, quindi non hanno un confine reale da mostrare — i comuni vicini sono
+il modo onesto di dare un riferimento geografico verificabile. Vedi `scripts/ingest-nearby-comuni.ts`
+e `public/data/nearby-comuni.json`; superficie in app nella scheda "Dove cercare" di `ZoneSheet`.
+
 ## Candidate valutate (non implementate — bloccate dalla rete di questa sessione)
 
 Priorità dichiarata dal progetto (`docs/DECISIONS.md`, D8): maschera forestale e DTM sono
@@ -99,6 +108,27 @@ precondizione per superare le sette macro-zone. Le prime tre righe sono quindi l
 | Accesso | WMS/WFS su GEOscopio, scaricabile da Open Toscana | Ricerca web |
 | Utilità per il porcino | Bassa per il punteggio, alta per "prima di partire": sentieristica pubblica verificabile invece di indicazioni generiche | — |
 | **Stato** | **da integrare**, priorità più bassa delle prime tre — non influenza il modello, solo la sezione pratica | — |
+
+### 5. Windy — dati puntuali e modello proprietario
+
+| Campo | Valore | Verificato come |
+|---|---|---|
+| Ente | Windy.com (Windyty SE) | Ricerca web |
+| Licenza | API a pagamento (Windy API — Point Forecast, Map Forecast); i dati sottostanti sono per lo più forecast pubblici (ECMWF, GFS, ICON) più un layer proprietario | Ricerca web, non verificato con una richiesta reale |
+| Accesso | `api.windy.com` — **irraggiungibile da questa sessione**: `curl` rifiutato dal gateway di rete con lo stesso errore di policy delle altre fonti bloccate | `curl -sS https://api.windy.com` → CONNECT rifiutato |
+| Utilità per il porcino | Bassa oltre a ciò che Open-Meteo già dà: Windy soprattutto ridistribuisce/visualizza modelli (fra cui ECMWF) che Open-Meteo offre già in `docs/VENTO.md` come `models=ecmwf_ifs025`, senza un layer nuovo di dati stazione. Il suo valore reale è l'interfaccia grafica, non nuovi dati per questo modello. | — |
+| **Stato** | **non prioritario** — prima di integrarlo varrebbe verificare se aggiunge qualcosa che Open-Meteo/ECMWF Open Data non copra già (raffica, direzione ad alta risoluzione locale), non riverificato con rete piena | — |
+
+### 6. Aeronautica Militare / ICAO METAR-TAF (stazioni aeroportuali)
+
+| Campo | Valore | Verificato come |
+|---|---|---|
+| Ente | Aeronautica Militare (Servizio Meteorologico), messaggi METAR/TAF su standard ICAO/OMM | Ricerca web |
+| Licenza | METAR/TAF sono messaggi di sicurezza del volo, in genere ridistribuiti liberamente per uso non aeronautico (es. via NOAA Aviation Weather Center); la licenza specifica del portale AM non è stata verificata | Ricerca web, non verificato con una richiesta reale |
+| Copertura | Solo stazioni aeroportuali — in Toscana: Pisa (LIRP), Firenze (LIRQ), Grosseto (LIRS, militare) — **nessuna in quota, nessuna vicina alle sette zone di taratura**, tutte in pianura o costa | Ricerca web |
+| Accesso | `www.meteoam.it`, `aviationweather.gov` — **irraggiungibile da questa sessione**, stesso errore di policy | `curl -sS https://www.meteoam.it` → CONNECT rifiutato |
+| Utilità per il porcino | **Bassa**: sono osservazioni orarie di alta qualità, ma da aeroporti di pianura a decine di km dalle zone forestali di montagna che contano per il modello — esattamente il problema di rappresentatività già documentato per le stazioni SIR più lontane (vedi `stationNotes` in `zones.ts`). Utile eventualmente come validazione incrociata per vento e pressione, non come fonte primaria. | — |
+| **Stato** | **da rivalutare con rete piena**, priorità bassa: la copertura geografica non è quella che serve | — |
 
 ## Candidate scartate
 

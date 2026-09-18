@@ -524,7 +524,63 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Abbadia San Salvatore"
+   "municipality": "Abbadia San Salvatore",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Abbadia San Salvatore",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 2.3
+    },
+    {
+     "municipality": "Piancastagnaio",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 6.4
+    },
+    {
+     "municipality": "Santa Fiora",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 8.1
+    },
+    {
+     "municipality": "Radicofani",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 9
+    },
+    {
+     "municipality": "Seggiano",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 9.3
+    },
+    {
+     "municipality": "Castiglione d'Orcia",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 11.4
+    },
+    {
+     "municipality": "Castell'Azzara",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 12.5
+    },
+    {
+     "municipality": "Castel del Piano",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 13.5
+    },
+    {
+     "municipality": "Arcidosso",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 15
+    }
+   ]
   },
   {
    "code": "casentino",
@@ -1047,7 +1103,39 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13.6,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Bibbiena"
+   "municipality": "Bibbiena",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Poppi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 2.8
+    },
+    {
+     "municipality": "Bibbiena",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 6.2
+    },
+    {
+     "municipality": "Chiusi della Verna",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 9.1
+    },
+    {
+     "municipality": "Pratovecchio Stia",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.4
+    },
+    {
+     "municipality": "Chitignano",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 14
+    }
+   ]
   },
   {
    "code": "pratomagno",
@@ -1570,7 +1658,81 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Loro Ciuffenna"
+   "municipality": "Loro Ciuffenna",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Castelfranco Piandiscò",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 5.7
+    },
+    {
+     "municipality": "Loro Ciuffenna",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 6.9
+    },
+    {
+     "municipality": "Ortignano Raggiolo",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 8.7
+    },
+    {
+     "municipality": "Castel San Niccolò",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 9.2
+    },
+    {
+     "municipality": "Reggello",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 9.2
+    },
+    {
+     "municipality": "Talla",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 10.7
+    },
+    {
+     "municipality": "Terranuova Bracciolini",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 10.9
+    },
+    {
+     "municipality": "Montemignaio",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 11.9
+    },
+    {
+     "municipality": "Castel Focognano",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 12.1
+    },
+    {
+     "municipality": "Poppi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.1
+    },
+    {
+     "municipality": "San Giovanni Valdarno",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.3
+    },
+    {
+     "municipality": "Castiglion Fibocchi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 14.7
+    }
+   ]
   },
   {
    "code": "garfagnana",
@@ -2094,7 +2256,99 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Villa Collemandina"
+   "municipality": "Villa Collemandina",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Villa Collemandina",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 1.8
+    },
+    {
+     "municipality": "San Romano in Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 2.5
+    },
+    {
+     "municipality": "Castiglione di Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 4.9
+    },
+    {
+     "municipality": "Camporgiano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 5.9
+    },
+    {
+     "municipality": "Pieve Fosciana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 6.4
+    },
+    {
+     "municipality": "Piazza al Serchio",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 7.6
+    },
+    {
+     "municipality": "Castelnuovo di Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 8.8
+    },
+    {
+     "municipality": "Sillano Giuncugnano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 9.4
+    },
+    {
+     "municipality": "Fosciandora",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 10.3
+    },
+    {
+     "municipality": "Careggine",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 10.6
+    },
+    {
+     "municipality": "Vagli Sotto",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Gallicano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Minucciano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 12.6
+    },
+    {
+     "municipality": "Molazzana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 12.9
+    },
+    {
+     "municipality": "Barga",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 13.6
+    }
+   ]
   },
   {
    "code": "pistoiese",
@@ -2617,7 +2871,33 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Abetone Cutigliano"
+   "municipality": "Abetone Cutigliano",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Abetone Cutigliano",
+     "province": "Pistoia",
+     "provinceAcronym": "PT",
+     "distanceKm": 5.3
+    },
+    {
+     "municipality": "San Marcello Piteglio",
+     "province": "Pistoia",
+     "provinceAcronym": "PT",
+     "distanceKm": 6.8
+    },
+    {
+     "municipality": "Bagni di Lucca",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Coreglia Antelminelli",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 14
+    }
+   ]
   },
   {
    "code": "mugello",
@@ -3140,7 +3420,39 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Firenzuola"
+   "municipality": "Firenzuola",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Firenzuola",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 7.1
+    },
+    {
+     "municipality": "Barberino di Mugello",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 8.2
+    },
+    {
+     "municipality": "Scarperia e San Piero",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 10.3
+    },
+    {
+     "municipality": "Vernio",
+     "province": "Prato",
+     "provinceAcronym": "PO",
+     "distanceKm": 13
+    },
+    {
+     "municipality": "Borgo San Lorenzo",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 14.9
+    }
+   ]
   },
   {
    "code": "metallifere",
@@ -3663,7 +3975,39 @@
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 19,
    "lapseRateCPerKm": -9.02,
-   "municipality": "Montieri"
+   "municipality": "Montieri",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Montieri",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 2.4
+    },
+    {
+     "municipality": "Chiusdino",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 8.7
+    },
+    {
+     "municipality": "Radicondoli",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 10.6
+    },
+    {
+     "municipality": "Monticiano",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 14.8
+    },
+    {
+     "municipality": "Castelnuovo di Val di Cecina",
+     "province": "Pisa",
+     "provinceAcronym": "PI",
+     "distanceKm": 14.8
+    }
+   ]
   }
  ],
  "sources": [

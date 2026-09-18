@@ -36,7 +36,7 @@ function zone(
     latitude: 44, longitude: 10.4, elevationM: 1000, forest: ['faggeta'], stationNotes: '',
     mpi, confidence: 70, dataQuality: 70, forecastCertainty: 100,
     label: bandNameFor(mpi), limitingFactor: o.limit === undefined ? 'Temperatura' : o.limit,
-    development: 0, series,
+    development: 0, series, nearbyMunicipalities: [],
     weather: {
       rain24h: 0, rain72h: 0, rain7d: 0, rain14d: 0, rain26d: o.rain26d ?? 120,
       effectiveWaterMm: o.water ?? 100, initialDeficitMm: 0, et0_7d: 0, et0_14d: 0,

@@ -128,6 +128,68 @@ function nearestCentroid(lon: number, lat: number, geometry: MunicipalityGeometr
   return best
 }
 
+const EARTH_RADIUS_KM = 6371
+
+function haversineKm(lon1: number, lat1: number, lon2: number, lat2: number): number {
+  const toRad = (d: number): number => (d * Math.PI) / 180
+  const dLat = toRad(lat2 - lat1)
+  const dLon = toRad(lon2 - lon1)
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2
+  return 2 * EARTH_RADIUS_KM * Math.asin(Math.sqrt(a))
+}
+
+export interface NearbyMunicipality {
+  readonly municipality: string
+  readonly province: string
+  readonly provinceAcronym: string
+  readonly istatCode: string
+  readonly distanceKm: number
+}
+
+/**
+ * Comuni reali il cui centroide (dell'anello esterno più vicino, per i MultiPolygon) cade entro
+ * `radiusKm` dal punto dato, in ordine di distanza.
+ *
+ * Non è il confine della "zona" — le sette zone di taratura sono punti, non poligoni (vedi
+ * `zones.ts`) — ma toponimi reali e verificabili attorno a quel punto, utili per orientarsi senza
+ * inventare una precisione che il modello non ha. La distanza è in linea d'aria, calcolata col
+ * centroide del comune: un'approssimazione dichiarata, non il confine amministrativo vero.
+ */
+export function nearbyMunicipalities(
+  lon: number,
+  lat: number,
+  collection: MunicipalityCollection,
+  radiusKm: number,
+): NearbyMunicipality[] {
+  const out: NearbyMunicipality[] = []
+  for (const feature of collection.features) {
+    const outerRings: Ring[] =
+      feature.geometry.type === 'Polygon'
+        ? [feature.geometry.coordinates[0] as Ring]
+        : (feature.geometry.coordinates as readonly (readonly Ring[])[]).map((r) => r[0] as Ring)
+
+    let best = Infinity
+    for (const ring of outerRings) {
+      const centroid = ringCentroid(ring)
+      const distance = haversineKm(lon, lat, centroid.lon, centroid.lat)
+      if (distance < best) best = distance
+    }
+
+    if (best <= radiusKm) {
+      out.push({
+        municipality: feature.properties.name,
+        province: feature.properties.prov_name,
+        provinceAcronym: feature.properties.prov_acr,
+        istatCode: feature.properties.com_istat_code,
+        distanceKm: best,
+      })
+    }
+  }
+  return out.sort((a, b) => a.distanceKm - b.distanceKm)
+}
+
 export type MatchType = 'exact' | 'nearest-fallback'
 
 export interface MunicipalityMatch {

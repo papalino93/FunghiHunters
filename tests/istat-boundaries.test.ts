@@ -13,6 +13,7 @@ import fixture from './fixtures/istat-comuni-toscana.sample.json'
 
 import {
   findMunicipality,
+  nearbyMunicipalities,
   parseBoundaries,
   pointInGeometry,
   type MunicipalityCollection,
@@ -85,5 +86,31 @@ describe('findMunicipality', () => {
   it('torna null su una collezione vuota', () => {
     const empty: MunicipalityCollection = { type: 'FeatureCollection', features: [] }
     expect(findMunicipality(11.66, 42.88, empty)).toBeNull()
+  })
+})
+
+describe('nearbyMunicipalities', () => {
+  it('trova i comuni reali entro raggio, ordinati per distanza crescente', () => {
+    // Centro della zona Colline Metallifere: Montieri contiene il punto (distanza minima),
+    // Chiusdino è il vicino confinante che dà il nome alla zona insieme a Montieri.
+    const nearby = nearbyMunicipalities(11.05, 43.14, collection, 15)
+    expect(nearby.map((m) => m.municipality)).toEqual(['Montieri', 'Chiusdino'])
+    expect(nearby[0]!.distanceKm).toBeLessThan(nearby[1]!.distanceKm)
+  })
+
+  it('esclude i comuni fuori raggio invece di restituirli tutti', () => {
+    // Bibbiena, Abbadia San Salvatore e Podenzana sono a decine di km dal centro Metallifere.
+    const nearby = nearbyMunicipalities(11.05, 43.14, collection, 15)
+    expect(nearby.map((m) => m.municipality)).not.toContain('Bibbiena')
+    expect(nearby.map((m) => m.municipality)).not.toContain('Abbadia San Salvatore')
+  })
+
+  it('un raggio più ampio include anche i comuni più lontani', () => {
+    const nearby = nearbyMunicipalities(11.05, 43.14, collection, 500)
+    expect(nearby).toHaveLength(5)
+  })
+
+  it('nessun comune entro un raggio nullo, non un errore', () => {
+    expect(nearbyMunicipalities(11.05, 43.14, collection, 0)).toEqual([])
   })
 })

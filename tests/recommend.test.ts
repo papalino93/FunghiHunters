@@ -77,7 +77,7 @@ function zone(
     positiveFactors: [], negativeFactors: [], neutralFactors: [], stations: [],
     dataQuality: confidence, forecastCertainty: 100,
     bestWindow: null, observedDays: 0, windowDays: 61, lastObservedDate: null,
-    thermalOptimumC: 13, lapseRateCPerKm: null,
+    thermalOptimumC: 13, lapseRateCPerKm: null, nearbyMunicipalities: [],
   }
 }
 

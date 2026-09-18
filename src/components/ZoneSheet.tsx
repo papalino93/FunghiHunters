@@ -8,6 +8,7 @@ import { PotentialBar } from '@/components/today/PotentialBar'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
 import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
+import { habitatCuesFor } from '@/lib/model/habitat'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
@@ -19,11 +20,12 @@ export interface ZoneSheetProps {
   readonly onToggleStations: () => void
 }
 
-type Tab = 'sintesi' | 'meteo' | 'perche' | 'dati'
+type Tab = 'sintesi' | 'meteo' | 'dove' | 'perche' | 'dati'
 
 const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
   { id: 'sintesi', label: 'Sintesi' },
   { id: 'meteo', label: 'Meteo' },
+  { id: 'dove', label: 'Dove cercare' },
   { id: 'perche', label: 'Perché' },
   { id: 'dati', label: 'Dati' },
 ]
@@ -115,15 +117,19 @@ export function ZoneSheet({
         </p>
       </header>
 
-      <nav className="flex gap-1 border-b border-edge px-2 py-1.5" aria-label="Sezioni">
+      <nav
+        className="flex gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
+        aria-label="Sezioni"
+      >
         {TABS.map((entry) => (
           <button
             key={entry.id}
             type="button"
             onClick={() => { setTab(entry.id) }}
             aria-current={tab === entry.id ? 'page' : undefined}
-            className={`rounded-lg px-3 py-1.5 text-xs font-medium transition-colors
-                        focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+            className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium
+                        transition-colors focus:outline-none focus-visible:ring-2
+                        focus-visible:ring-accent ${
                           tab === entry.id
                             ? 'bg-surface-3 text-ink'
                             : 'text-ink-dim hover:bg-surface-2 hover:text-ink'
@@ -138,7 +144,8 @@ export function ZoneSheet({
         {tab === 'sintesi' && (
           <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} onSelectDate={onSelectDate} />
         )}
-        {tab === 'meteo' && <Weather zone={zone} />}
+        {tab === 'meteo' && <Weather zone={zone} selectedDate={selectedDate} />}
+        {tab === 'dove' && <Where zone={zone} />}
         {tab === 'perche' && <Why zone={zone} />}
         {tab === 'dati' && (
           <DataProvenance
@@ -277,10 +284,32 @@ function WindRow({ title, assessment }: { title: string; assessment: WindAssessm
   )
 }
 
-function Weather({ zone }: { zone: SnapshotZone }) {
+function Weather({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: string }) {
   const w = zone.weather
+  const point = zone.series.find((p) => p.date === selectedDate)
   return (
     <div className="space-y-4">
+      {point !== undefined && (
+        <Group title={`Giorno selezionato — ${formatDate(selectedDate)}`}>
+          <Row label="Pioggia" value={formatValue(point.rainMm, 'mm')} emphasis />
+          <Row
+            label="Temperatura"
+            value={
+              point.tMinC === null || point.tMaxC === null
+                ? '—'
+                : `${point.tMinC.toFixed(0)}–${point.tMaxC.toFixed(0)} °C`
+            }
+            emphasis
+          />
+          <Row
+            label="Vento (massimo giornaliero)"
+            value={formatValue(point.windMs, 'm/s')}
+            hint="non una media: vedi la scheda Sintesi per il dettaglio"
+          />
+          <Row label="Dato" value={provenanceLabel(point.provenance)} hint="misura, modello o previsione" />
+        </Group>
+      )}
+
       <Group title="Acqua">
         <Row label="Pioggia 24 h" value={formatValue(w.rain24h, 'mm')} />
         <Row label="Pioggia 72 h" value={formatValue(w.rain72h, 'mm')} />
@@ -320,6 +349,76 @@ function Weather({ zone }: { zone: SnapshotZone }) {
         <Row label="Deficit di vapore (VPD)" value={formatValue(w.vpdMean7d, 'kPa', 2)} />
         <Row label="Vento medio 7 giorni" value={formatValue(w.windMean7d, 'm/s')} />
       </Group>
+    </div>
+  )
+}
+
+/**
+ * Habitat e toponimi reali, mai un pin. Vedi `src/lib/model/habitat.ts`: nessuna fonte lega
+ * coordinate GPS a ritrovamenti di porcino, quindi qui non compare nessuna coordinata inventata,
+ * solo ecologia generale del bosco presente e comuni reali verificati contro i confini ISTAT.
+ */
+function Where({ zone }: { zone: SnapshotZone }) {
+  const cues = habitatCuesFor(zone.forest)
+  const nearby = zone.nearbyMunicipalities.slice(0, 6)
+
+  return (
+    <div className="space-y-4">
+      <div>
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          Che bosco cercare
+        </h3>
+        {cues.length === 0 ? (
+          <p className="text-xs leading-relaxed text-ink-dim">
+            Nessuna indicazione disponibile per il tipo di bosco di questa zona.
+          </p>
+        ) : (
+          <ul className="space-y-2">
+            {cues.map((cue) => (
+              <li key={cue.forestType} className="rounded-lg bg-surface-2 px-3 py-2">
+                <p className="text-sm font-medium capitalize text-ink">
+                  {cue.forestType} <span className="font-normal text-ink-faint">— {cue.host}</span>
+                </p>
+                <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">{cue.note}</p>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+          Ecologia generale del genere, valida ovunque compaia questo tipo di bosco: non è
+          calibrata su questa zona e non promette nulla su questa uscita.
+        </p>
+      </div>
+
+      <div>
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          Comuni della zona
+        </h3>
+        {nearby.length === 0 ? (
+          <p className="text-xs leading-relaxed text-ink-dim">
+            Nessun comune risolto entro raggio per questa zona.
+          </p>
+        ) : (
+          <ul className="space-y-1.5">
+            {nearby.map((m) => (
+              <li
+                key={m.municipality}
+                className="flex items-baseline justify-between gap-2 rounded-lg bg-surface-2 px-3 py-2"
+              >
+                <span className="truncate text-sm text-ink">{m.municipality}</span>
+                <span className="tabular shrink-0 text-xs text-ink-faint">
+                  {m.provinceAcronym} · {m.distanceKm.toFixed(1)} km
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+          Comuni reali entro 15 km in linea d&apos;aria dal punto di riferimento della zona,
+          verificati contro i confini ISTAT — non il confine della zona, che non esiste: le sette
+          zone di taratura sono punti, non poligoni.
+        </p>
+      </div>
     </div>
   )
 }

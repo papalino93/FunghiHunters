@@ -120,6 +120,21 @@ export interface SnapshotZone {
   readonly lastObservedDate: string | null
   readonly thermalOptimumC: number
   readonly lapseRateCPerKm: number | null
+
+  /**
+   * Comuni reali entro 15 km dal punto di riferimento della zona, verificati contro i confini
+   * ISTAT (`scripts/ingest-nearby-comuni.ts`). Non è il confine della zona — le sette zone sono
+   * punti, non poligoni — ma toponimi reali per orientarsi, mai coordinate esatte fabbricate.
+   * Array vuoto se `public/data/nearby-comuni.json` non è stato generato.
+   */
+  readonly nearbyMunicipalities: readonly SnapshotNearbyMunicipality[]
+}
+
+export interface SnapshotNearbyMunicipality {
+  readonly municipality: string
+  readonly province: string
+  readonly provinceAcronym: string
+  readonly distanceKm: number
 }
 
 export interface SnapshotSource {

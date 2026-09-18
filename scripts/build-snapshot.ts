@@ -38,6 +38,7 @@ import {
 import type {
   Snapshot,
   SnapshotFactor,
+  SnapshotNearbyMunicipality,
   SnapshotSeriesPoint,
   SnapshotStation,
   SnapshotZone,
@@ -212,6 +213,7 @@ async function main(): Promise<void> {
   for (const [date, samples] of byDate) observationsByDate.set(date, samples)
 
   const municipalityByZone = await loadAdminBoundaries()
+  const nearbyByZone = await loadNearbyComuni()
 
   const zones: SnapshotZone[] = []
 
@@ -387,6 +389,7 @@ async function main(): Promise<void> {
         tmaxInterpolation?.lapseRatePerM === null || tmaxInterpolation === undefined
           ? null
           : Math.round(tmaxInterpolation.lapseRatePerM * 1000 * 100) / 100,
+      nearbyMunicipalities: nearbyByZone.get(zone.code) ?? [],
     })
 
     console.log(
@@ -479,6 +482,24 @@ async function loadAdminBoundaries(): Promise<Map<string, string>> {
   } catch {
     // File non ancora generato: lo snapshot esce comunque, con municipality null per tutte le
     // zone invece di fallire. Vedi il commento su SnapshotZone.municipality.
+    return new Map()
+  }
+}
+
+/**
+ * Legge i comuni reali entro raggio per zona, precalcolati da `scripts/ingest-nearby-comuni.ts`.
+ * Stesso motivo di `loadAdminBoundaries`: i confini comunali non cambiano ogni giorno, non ha
+ * senso rifare la query geometrica a ogni build dello snapshot meteo.
+ */
+async function loadNearbyComuni(): Promise<Map<string, SnapshotNearbyMunicipality[]>> {
+  try {
+    const raw = await readFile('public/data/nearby-comuni.json', 'utf-8')
+    const parsed = JSON.parse(raw) as {
+      zones?: Record<string, SnapshotNearbyMunicipality[]>
+    }
+    return new Map(Object.entries(parsed.zones ?? {}))
+  } catch {
+    // File non ancora generato: nearbyMunicipalities resta un array vuoto per tutte le zone.
     return new Map()
   }
 }
