@@ -97,8 +97,25 @@ esplicitamente, invece di calcolare una correlazione che non avrebbe senso con p
 **Registrare i "niente trovato" non è pessimismo, è il dato che manca di più**: senza, il modello
 imparerebbe solo dai successi e diventerebbe ottimista senza motivo.
 
+**Posizione della voce**: premendo "Usa la mia posizione" nel modulo, l'app chiede al telefono il
+punto esatto in cui ti trovi in quel momento — lo stesso permesso di geolocalizzazione usato
+altrove nell'app, mai inviato a nessun server finché non lo salvi tu. Senza premerlo, la voce
+registra solo la zona scelta dal menu, non un punto sulla mappa: è la differenza fra "ero in
+Garfagnana" e "ero esattamente qui", ed è per questo che senza una posizione vera l'unico livello
+di precisione che puoi scegliere è "solo la zona" — gli altri restano disattivati, per non
+promettere una precisione che non esiste.
+
+Puoi anche segnare gli **alberi presenti** (faggio, abete, castagno, cerro, leccio) e aggiungere
+**foto a supporto**: le foto restano solo sul dispositivo che le ha scattate, non vengono mai
+sincronizzate né incluse nell'esportazione.
+
 Il diario resta sul tuo telefono anche senza account. Puoi sempre esportarlo in un file (scheda
 Diario → Esporta) come copia di sicurezza, e reimportarlo su un altro dispositivo.
+
+**Punti salvati**: sempre nella scheda Diario, "Punti salvati" ti fa segnare con un tocco dove hai
+lasciato l'auto o un punto a cui tornare se ti perdi nel bosco — con distanza e direzione dalla tua
+posizione attuale, e un link diretto per aprirlo nell'app mappe del telefono. Anche questi restano
+solo sul dispositivo, non sincronizzati.
 
 ## Account e sincronizzazione (facoltativi)
 

@@ -21,6 +21,7 @@ import {
   type DiaryExport,
   applyPrivacy,
 } from '@/lib/diary/types'
+import { DIARY_STORE, openDatabase, promisify } from '@/lib/diary/db'
 
 export interface DiaryRepository {
   /** Voci vive, per l'interfaccia. */
@@ -74,6 +75,10 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
     latitude: coords.latitude,
     longitude: coords.longitude,
     privacy,
+    positionSource:
+      draft.positionSource !== undefined ? draft.positionSource : (existing?.positionSource ?? null),
+    trees: draft.trees ?? existing?.trees ?? [],
+    photoIds: draft.photoIds ?? existing?.photoIds ?? [],
     // I campi congelati non si riscrivono mai in aggiornamento: descrivono il momento
     // dell'inserimento, non lo stato attuale del modello.
     mpiAtEntry: existing?.mpiAtEntry ?? draft.mpiAtEntry ?? null,
@@ -137,31 +142,7 @@ export class InMemoryDiaryRepository implements DiaryRepository {
   }
 }
 
-const DB_NAME = 'fungicast'
-const DB_VERSION = 1
-const STORE = 'diary'
-
-function openDatabase(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION)
-    request.onupgradeneeded = () => {
-      const db = request.result
-      if (!db.objectStoreNames.contains(STORE)) {
-        const store = db.createObjectStore(STORE, { keyPath: 'id' })
-        store.createIndex('date', 'date')
-      }
-    }
-    request.onsuccess = () => { resolve(request.result) }
-    request.onerror = () => { reject(request.error ?? new Error('IndexedDB non disponibile')) }
-  })
-}
-
-function promisify<T>(request: IDBRequest<T>): Promise<T> {
-  return new Promise((resolve, reject) => {
-    request.onsuccess = () => { resolve(request.result) }
-    request.onerror = () => { reject(request.error ?? new Error('Operazione IndexedDB fallita')) }
-  })
-}
+const STORE = DIARY_STORE
 
 /** Implementazione su IndexedDB. Sopravvive alla chiusura del browser, non al cambio di telefono. */
 export class IndexedDbDiaryRepository implements DiaryRepository {
@@ -321,6 +302,12 @@ export async function importInto(
       latitude: entry.latitude ?? null,
       longitude: entry.longitude ?? null,
       privacy: entry.privacy ?? 'area',
+      positionSource: entry.positionSource ?? null,
+      trees: entry.trees ?? [],
+      // Le foto non viaggiano nell'esportazione (vedi il commento su photoIds in types.ts): un
+      // file importato su un altro dispositivo non le ha mai avute, quindi non c'e' nulla da
+      // riferire qui.
+      photoIds: [],
       mpiAtEntry: entry.mpiAtEntry ?? null,
       confidenceAtEntry: entry.confidenceAtEntry ?? null,
       algorithmVersionAtEntry: entry.algorithmVersionAtEntry ?? null,

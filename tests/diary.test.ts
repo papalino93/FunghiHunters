@@ -85,6 +85,43 @@ describe('creazione delle voci', () => {
     const b = materialise(draft())
     expect(a.id).not.toBe(b.id)
   })
+
+  it('distingue una posizione GPS reale dal punto di ripiego della zona', () => {
+    const gps = materialise({
+      ...draft(),
+      latitude: 44.18337,
+      longitude: 10.38339,
+      privacy: 'exact',
+      positionSource: 'gps',
+    })
+    expect(gps.positionSource).toBe('gps')
+
+    const zone = materialise({
+      ...draft(),
+      latitude: 44.18337,
+      longitude: 10.38339,
+      positionSource: 'zone',
+    })
+    expect(zone.positionSource).toBe('zone')
+  })
+
+  it('senza indicazione la provenienza della posizione resta null, non un valore inventato', () => {
+    const entry = materialise(draft())
+    expect(entry.positionSource).toBeNull()
+  })
+
+  it('registra gli alberi osservati, vuoto se non indicati', () => {
+    const withTrees = materialise({ ...draft(), trees: ['faggio', 'abete'] })
+    expect(withTrees.trees).toEqual(['faggio', 'abete'])
+
+    const withoutTrees = materialise(draft())
+    expect(withoutTrees.trees).toEqual([])
+  })
+
+  it('le foto restano vuote finché non se ne aggiunge — il riferimento arriva dopo, a voce già salvata', () => {
+    const entry = materialise(draft())
+    expect(entry.photoIds).toEqual([])
+  })
 })
 
 describe('i tre campi congelati', () => {
@@ -215,6 +252,32 @@ describe('esportazione e importazione', () => {
     // Anche i campi congelati sopravvivono al trasferimento, altrimenti esportare
     // significherebbe perdere il valore di calibrazione.
     expect(entries[0]?.mpiAtEntry).toBe(42)
+  })
+
+  it('porta con sé posizione GPS e alberi osservati, mai le foto', async () => {
+    const source = new InMemoryDiaryRepository()
+    const original = await source.add(
+      draft({
+        latitude: 44.18337,
+        longitude: 10.38339,
+        privacy: 'exact',
+        positionSource: 'gps',
+        trees: ['faggio', 'cerro'],
+      }),
+    )
+    // Le foto si aggiungono dopo, contro l'id della voce già salvata: qui simuliamo che ce ne
+    // sia una, per verificare che l'esportazione non la porti con sé (vedi il commento su
+    // `photoIds` in types.ts).
+    await source.update(original.id, { photoIds: ['photo-1'] })
+
+    const exported = toExport(await source.list())
+    const target = new InMemoryDiaryRepository()
+    await importInto(target, exported)
+    const [imported] = await target.list()
+
+    expect(imported?.positionSource).toBe('gps')
+    expect(imported?.trees).toEqual(['faggio', 'cerro'])
+    expect(imported?.photoIds).toEqual([])
   })
 
   it('salta le voci già presenti invece di duplicarle', async () => {

@@ -11,8 +11,8 @@
 
 import type { SupabaseClient } from '@supabase/supabase-js'
 
-import type { Abundance, DiaryEntry, PrivacyLevel } from '@/lib/diary/types'
-import { ABUNDANCE_LEVELS, PRIVACY_LEVELS } from '@/lib/diary/types'
+import type { Abundance, DiaryEntry, PrivacyLevel, TreeSpecies } from '@/lib/diary/types'
+import { ABUNDANCE_LEVELS, PRIVACY_LEVELS, TREE_SPECIES } from '@/lib/diary/types'
 import type { SyncBackend } from '@/lib/sync/types'
 
 const TABLE = 'user_observations'
@@ -28,6 +28,8 @@ interface Row {
   geom_exact: string | null
   geom_public: string | null
   privacy_level_app: string | null
+  position_source: string | null
+  tree_species: string[] | null
   mpi_at_observation: number | null
   confidence_at_observation: number | null
   algorithm_version_text: string | null
@@ -55,6 +57,15 @@ function isPrivacyLevel(value: string | null): value is PrivacyLevel {
   return value !== null && (PRIVACY_LEVELS as readonly string[]).includes(value)
 }
 
+function isPositionSource(value: string | null): value is 'gps' | 'zone' {
+  return value === 'gps' || value === 'zone'
+}
+
+function toTreeSpecies(values: readonly string[] | null): TreeSpecies[] {
+  const known = new Set<string>(TREE_SPECIES)
+  return (values ?? []).filter((v): v is TreeSpecies => known.has(v))
+}
+
 function rowToEntry(row: Row): DiaryEntry {
   // Preferiamo le coordinate esatte se il client le ha sincronizzate (privacy 'exact'), altrimenti
   // quelle pubbliche già sfocate: è la stessa precedenza con cui sono state scritte.
@@ -70,6 +81,11 @@ function rowToEntry(row: Row): DiaryEntry {
     latitude: point?.lat ?? null,
     longitude: point?.lon ?? null,
     privacy: isPrivacyLevel(row.privacy_level_app) ? row.privacy_level_app : 'area',
+    positionSource: isPositionSource(row.position_source) ? row.position_source : null,
+    trees: toTreeSpecies(row.tree_species),
+    // Le foto non viaggiano per riga (vedi il commento in types.ts): il chiamante in `engine.ts`
+    // preserva quelle locali invece di azzerarle con questo valore.
+    photoIds: [],
     mpiAtEntry: row.mpi_at_observation,
     confidenceAtEntry: row.confidence_at_observation,
     algorithmVersionAtEntry: row.algorithm_version_text,
@@ -95,6 +111,8 @@ function entryToRow(entry: DiaryEntry, userId: string): Record<string, unknown> 
     geom_exact: hasCoords && entry.privacy === 'exact' ? toPoint(entry.latitude!, entry.longitude!) : null,
     geom_public: hasCoords ? toPoint(entry.latitude!, entry.longitude!) : null,
     privacy_level_app: entry.privacy,
+    position_source: entry.positionSource,
+    tree_species: entry.trees,
     mpi_at_observation: entry.mpiAtEntry,
     confidence_at_observation: entry.confidenceAtEntry,
     algorithm_version_text: entry.algorithmVersionAtEntry,

@@ -48,6 +48,14 @@ export const PRIVACY_LABELS: Readonly<Record<PrivacyLevel, string>> = {
   zone: 'solo la zona',
 }
 
+/**
+ * Alberi ospiti riconosciuti, per orientare la ricerca futura — stessa lista di
+ * `src/lib/model/habitat.ts` (i cinque tipi di bosco già usati per le indicazioni generali),
+ * qui come specie osservate davvero sul posto invece che come descrizione della zona.
+ */
+export const TREE_SPECIES = ['faggio', 'abete', 'castagno', 'cerro', 'leccio'] as const
+export type TreeSpecies = (typeof TREE_SPECIES)[number]
+
 export interface DiaryEntry {
   readonly id: string
   /** Giorno dell'uscita, in data locale. */
@@ -62,10 +70,39 @@ export interface DiaryEntry {
   /** Note libere: tipo di bosco, esposizione, ora, quello che ti pare. */
   readonly notes: string
 
-  /** Coordinate, conservate secondo `privacy`. `null` quando non le hai volute salvare. */
+  /**
+   * Coordinate, conservate secondo `privacy`. `null` quando non le hai volute salvare.
+   *
+   * `positionSource` dice cosa sono davvero: `'gps'` è il punto dove hai effettivamente cercato,
+   * catturato sul momento — quello che serve per ritrovare una fungaia. `'zone'` è solo il punto
+   * di riferimento della zona del modello (un centro storico, non un posto), usato quando non hai
+   * voluto o potuto dare il permesso di posizione: è lo stesso comportamento di prima, non
+   * rimosso, ma ora distinguibile da un punto vero. `null` quando non c'è nessuna coordinata.
+   */
   readonly latitude: number | null
   readonly longitude: number | null
   readonly privacy: PrivacyLevel
+  readonly positionSource: 'gps' | 'zone' | null
+
+  /**
+   * Alberi osservati sul posto, fra quelli riconosciuti. Vuoto se non indicati.
+   *
+   * Il nome del campo evita apposta "species": lo stesso test che vieta ogni concetto di
+   * commestibilità o identificazione (vedi `vincolo di sicurezza` in `tests/diary.test.ts`) cerca
+   * anche quella parola nudo-e-crudo in ogni chiave di `DiaryEntry` — qui parliamo di alberi, non
+   * di funghi, ma il nome del campo non deve nemmeno somigliarci.
+   */
+  readonly trees: readonly TreeSpecies[]
+
+  /**
+   * Riferimenti alle foto salvate per questa voce (vedi `src/lib/diary/photos.ts`).
+   *
+   * Solo gli id: le immagini vere stanno in un object store separato, non qui dentro — altrimenti
+   * ogni esportazione del diario peserebbe come un rullino. Conseguenza dichiarata:
+   * l'esportazione/importazione JSON porta gli id ma non le foto stesse, che restano solo sul
+   * dispositivo dove sono state scattate.
+   */
+  readonly photoIds: readonly string[]
 
   /*
    * I tre campi congelati.
@@ -103,6 +140,9 @@ export interface DiaryDraft {
   readonly latitude?: number | null
   readonly longitude?: number | null
   readonly privacy?: PrivacyLevel
+  readonly positionSource?: 'gps' | 'zone' | null
+  readonly trees?: readonly TreeSpecies[]
+  readonly photoIds?: readonly string[]
   readonly mpiAtEntry?: number | null
   readonly confidenceAtEntry?: number | null
   readonly algorithmVersionAtEntry?: string | null

@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Snapshot } from '@/lib/snapshot/types'
-import type { DiaryEntry } from '@/lib/diary/types'
+import type { DiaryEntry, TreeSpecies } from '@/lib/diary/types'
 import { ABUNDANCE_LABELS } from '@/lib/diary/types'
 import {
   createDiaryRepository,
@@ -11,14 +11,24 @@ import {
   toExport,
   type DiaryRepository,
 } from '@/lib/diary/store'
+import { createPhotoRepository, type Photo, type PhotoRepository } from '@/lib/diary/photos'
 import { calibrate } from '@/lib/diary/calibration'
 import { EntryForm } from '@/components/diary/EntryForm'
 import { CalibrationPanel } from '@/components/diary/CalibrationPanel'
+import { WaypointsPanel } from '@/components/diary/WaypointsPanel'
 import { formatDate, mpiColor, readableTextOn } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { useAuth } from '@/lib/auth/context'
 import { useDiarySync } from '@/lib/sync/useDiarySync'
 import Link from 'next/link'
+
+const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
+  faggio: 'faggio',
+  abete: 'abete',
+  castagno: 'castagno',
+  cerro: 'cerro',
+  leccio: 'leccio',
+}
 
 const SYNC_LABEL: Readonly<Record<string, string>> = {
   local: 'Salvato sul dispositivo',
@@ -44,6 +54,12 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   )
   const repo: DiaryRepository | null = created?.repo ?? null
   const persistent = created?.persistent ?? true
+  // Il repository foto è indipendente da quello delle voci (vedi il commento in photos.ts):
+  // vive comunque solo nel browser, quindi stessa regola di creazione post-idratazione.
+  const photoRepo: PhotoRepository | null = useMemo(
+    () => (hydrated ? createPhotoRepository() : null),
+    [hydrated],
+  )
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null)
   const [composing, setComposing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -142,6 +158,10 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         </p>
       )}
 
+      <div className="mb-4">
+        <WaypointsPanel />
+      </div>
+
       {message !== null && (
         <p
           role="status"
@@ -151,18 +171,20 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         </p>
       )}
 
-      {composing ? (
+      {composing && repo !== null && photoRepo !== null ? (
         <EntryForm
           snapshot={snapshot}
+          photoRepo={photoRepo}
           onCancel={() => { setComposing(false) }}
           onSave={async (draft) => {
-            await repo?.add(draft)
+            const entry = await repo.add(draft)
             await persistAndReload()
             setComposing(false)
             setMessage('Uscita registrata.')
+            return entry
           }}
         />
-      ) : (
+      ) : composing ? null : (
         <button
           type="button"
           onClick={() => { setComposing(true) }}
@@ -188,8 +210,10 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
               <li key={entry.id}>
                 <EntryRow
                   entry={entry}
+                  photoRepo={photoRepo}
                   onDelete={async () => {
                     await repo?.remove(entry.id)
+                    await photoRepo?.removeAllFor(entry.id)
                     await persistAndReload()
                     setMessage('Uscita eliminata.')
                   }}
@@ -272,7 +296,15 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   )
 }
 
-function EntryRow({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => void }) {
+function EntryRow({
+  entry,
+  photoRepo,
+  onDelete,
+}: {
+  entry: DiaryEntry
+  photoRepo: PhotoRepository | null
+  onDelete: () => void
+}) {
   const [confirming, setConfirming] = useState(false)
 
   return (
@@ -303,9 +335,27 @@ function EntryRow({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => void
             trovati: <strong className="text-ink">{ABUNDANCE_LABELS[entry.abundance]}</strong>
             {entry.elevationM !== null && <> · {entry.elevationM} m</>}
           </p>
+          {entry.positionSource === 'gps' && (
+            <p className="mt-0.5 text-[11px] text-ink-faint">
+              posizione GPS salvata, puoi ritrovare il punto
+            </p>
+          )}
+          {entry.trees.length > 0 && (
+            <ul className="mt-1 flex flex-wrap gap-1">
+              {entry.trees.map((species) => (
+                <li
+                  key={species}
+                  className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-ink-dim"
+                >
+                  {TREE_LABELS[species]}
+                </li>
+              ))}
+            </ul>
+          )}
           {entry.notes !== '' && (
             <p className="mt-1 text-xs leading-snug text-ink-faint">{entry.notes}</p>
           )}
+          {photoRepo !== null && <EntryPhotos entryId={entry.id} photoRepo={photoRepo} />}
         </div>
 
         {confirming ? (
@@ -343,6 +393,39 @@ function EntryRow({ entry, onDelete }: { entry: DiaryEntry; onDelete: () => void
         )}
       </div>
     </article>
+  )
+}
+
+/** Anteprime delle foto salvate per una voce. Caricate una volta, non tengono nulla in memoria fra i re-render. */
+function EntryPhotos({ entryId, photoRepo }: { entryId: string; photoRepo: PhotoRepository }) {
+  const [photos, setPhotos] = useState<Photo[] | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    void photoRepo.listFor(entryId).then((list) => {
+      if (!cancelled) setPhotos(list)
+    })
+    return () => { cancelled = true }
+  }, [entryId, photoRepo])
+
+  const urls = useMemo(() => (photos ?? []).map((p) => URL.createObjectURL(p.blob)), [photos])
+  useEffect(() => {
+    return () => {
+      for (const url of urls) URL.revokeObjectURL(url)
+    }
+  }, [urls])
+
+  if (photos === null || photos.length === 0) return null
+
+  return (
+    <ul className="mt-1.5 flex flex-wrap gap-1.5">
+      {urls.map((url, index) => (
+        <li key={photos[index]?.id ?? index}>
+          {/* eslint-disable-next-line @next/next/no-img-element -- anteprima locale da object URL, non un asset ottimizzabile */}
+          <img src={url} alt="" className="h-12 w-12 rounded-lg border border-edge object-cover" />
+        </li>
+      ))}
+    </ul>
   )
 }
 
