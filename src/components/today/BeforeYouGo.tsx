@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import type { Suggestion } from '@/lib/recommend/rank'
@@ -94,6 +95,15 @@ export function BeforeYouGo({ topSuggestion }: { topSuggestion: Suggestion | nul
             L&apos;app non riconosce le specie e non dice mai se un fungo è commestibile. Per
             quello esistono gli ispettorati micologici delle ASL, che offrono il controllo
             gratuito.
+          </p>
+
+          <p className="text-[11px] text-ink-faint">
+            <Link
+              href="/guida#regole"
+              className="underline decoration-dotted underline-offset-2 hover:text-ink-dim"
+            >
+              Tutte le regole di utilizzo e le domande frequenti
+            </Link>
           </p>
         </div>
       )}

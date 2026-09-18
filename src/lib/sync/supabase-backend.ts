@@ -96,6 +96,12 @@ function rowToEntry(row: Row): DiaryEntry {
   }
 }
 
+/**
+ * Colonne aggiunte da `0006_diary_context.sql`, isolate perché sono le uniche che un progetto
+ * Supabase aggiornato a metà può non avere — vedi `pushRows` più sotto per cosa succede allora.
+ */
+const CONTEXT_COLUMNS = ['duration_minutes', 'searchers'] as const
+
 function entryToRow(entry: DiaryEntry, userId: string): Record<string, unknown> {
   const hasCoords = entry.latitude !== null && entry.longitude !== null
   return {
@@ -124,7 +130,32 @@ function entryToRow(entry: DiaryEntry, userId: string): Record<string, unknown> 
   }
 }
 
+/**
+ * Un progetto aggiornato a metà non deve perdere *tutto* il diario per due campi facoltativi.
+ *
+ * Se `0006_diary_context.sql` non è stata applicata, PostgREST rifiuta l'intero upsert perché non
+ * conosce `duration_minutes`/`searchers` (codice `PGRST204`): senza questa rete, il risultato
+ * sarebbe che la sincronizzazione si ferma del tutto — non che quei due campi restano indietro.
+ * Qui si riprova una volta sola senza le colonne mancanti, e da quel momento in poi si smette di
+ * inviarle: il resto del diario continua a sincronizzarsi, i due campi restano sul dispositivo
+ * finché la migrazione non viene applicata. Degradare in modo dichiarato, non sparire in silenzio.
+ */
+function isMissingColumnError(error: { code?: string; message?: string }): boolean {
+  if (error.code === 'PGRST204') return true
+  const message = error.message ?? ''
+  return CONTEXT_COLUMNS.some((column) => message.includes(column)) && /column|colonna/i.test(message)
+}
+
+function withoutContextColumns(row: Record<string, unknown>): Record<string, unknown> {
+  const copy = { ...row }
+  for (const column of CONTEXT_COLUMNS) delete copy[column]
+  return copy
+}
+
 export function createSupabaseSyncBackend(client: SupabaseClient, userId: string): SyncBackend {
+  /** Diventa `true` al primo rifiuto per colonna mancante: dopo, non si riprova più a ogni giro. */
+  let contextColumnsMissing = false
+
   return {
     async pull(sinceIso) {
       let query = client.from(TABLE).select('*').eq('user_id', userId)
@@ -135,9 +166,22 @@ export function createSupabaseSyncBackend(client: SupabaseClient, userId: string
     },
 
     async push(entries) {
-      const rows = entries.map((entry) => entryToRow(entry, userId))
+      const full = entries.map((entry) => entryToRow(entry, userId))
+      const rows = contextColumnsMissing ? full.map(withoutContextColumns) : full
+
       const { error } = await client.from(TABLE).upsert(rows, { onConflict: 'user_id,client_id' })
-      if (error !== null) throw new Error(`Scrittura fallita: ${error.message}`)
+      if (error === null) return
+
+      if (!contextColumnsMissing && isMissingColumnError(error)) {
+        contextColumnsMissing = true
+        const { error: retryError } = await client
+          .from(TABLE)
+          .upsert(full.map(withoutContextColumns), { onConflict: 'user_id,client_id' })
+        if (retryError === null) return
+        throw new Error(`Scrittura fallita: ${retryError.message}`)
+      }
+
+      throw new Error(`Scrittura fallita: ${error.message}`)
     },
   }
 }

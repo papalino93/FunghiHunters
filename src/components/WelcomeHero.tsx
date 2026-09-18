@@ -121,6 +121,20 @@ export function WelcomeHero() {
               Continua senza account
             </button>
           </div>
+
+          {/* Chi apre l'app per la prima volta è l'unico che vedrà mai questa schermata: è il
+              momento in cui la guida serve davvero, e l'unico in cui è a un tocco di distanza. */}
+          <p className="mt-3 text-center text-xs text-ink-faint">
+            Prima volta qui?{' '}
+            <Link
+              href="/guida"
+              onClick={dismiss}
+              className="text-accent underline underline-offset-2 hover:text-ink focus:outline-none
+                         focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              Leggi come funziona
+            </Link>
+          </p>
         </div>
       </div>
     </div>

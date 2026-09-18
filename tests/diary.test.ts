@@ -137,6 +137,24 @@ describe('creazione delle voci', () => {
     expect(entry.durationMinutes).toBe(90)
     expect(entry.searchers).toBe(2)
   })
+
+  it('un null esplicito cancella durata e cercatori, invece di essere letto come "non toccare"', async () => {
+    // Con `??` al posto di `!== undefined` questi due campi non si potevano più svuotare una
+    // volta scritti: la modifica sembrava andata a buon fine e il vecchio valore restava.
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft({ durationMinutes: 120, searchers: 3 }))
+    const updated = await repo.update(entry.id, { durationMinutes: null, searchers: null })
+    expect(updated?.durationMinutes).toBeNull()
+    expect(updated?.searchers).toBeNull()
+  })
+
+  it('una patch che non li nomina lascia i valori esistenti', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft({ durationMinutes: 120, searchers: 3 }))
+    const updated = await repo.update(entry.id, { notes: 'solo una nota' })
+    expect(updated?.durationMinutes).toBe(120)
+    expect(updated?.searchers).toBe(3)
+  })
 })
 
 describe('validazione di durata e cercatori', () => {
@@ -335,6 +353,52 @@ describe('esportazione e importazione', () => {
     expect(result.errors).toHaveLength(0)
     const [entry] = await repo.list()
     expect(entry).not.toHaveProperty('photoIds')
+  })
+
+  it('conserva l\'id del file, così reimportare lo stesso backup non duplica il diario', async () => {
+    // Il bug che questo test chiude: `importInto` rigenerava l'id a ogni voce, quindi il
+    // controllo anti-duplicato non poteva mai trovare corrispondenza e la seconda importazione
+    // dello stesso file raddoppiava tutto — in silenzio, e con un account collegato anche sul
+    // server, dove l'id è la chiave della sincronizzazione.
+    const file = {
+      format: 'fungicast-diary' as const,
+      version: 1 as const,
+      exportedAt: '2026-09-16T10:00:00.000Z',
+      entries: [
+        {
+          id: 'da-un-altro-telefono',
+          date: '2026-09-16',
+          zoneCode: 'amiata',
+          zoneName: 'Monte Amiata',
+          abundance: 'few' as const,
+          createdAt: '2026-09-16T08:00:00.000Z',
+        },
+      ],
+    }
+    const repo = new InMemoryDiaryRepository()
+
+    const primo = await importInto(repo, file)
+    expect(primo.imported).toBe(1)
+    const [importata] = await repo.list()
+    expect(importata?.id).toBe('da-un-altro-telefono')
+    expect(importata?.createdAt).toBe('2026-09-16T08:00:00.000Z')
+
+    const secondo = await importInto(repo, file)
+    expect(secondo.imported).toBe(0)
+    expect(secondo.skipped).toBe(1)
+    expect(await repo.list()).toHaveLength(1)
+  })
+
+  it('una voce importata risulta modificata adesso, altrimenti non verrebbe mai sincronizzata', async () => {
+    const repo = new InMemoryDiaryRepository()
+    await importInto(repo, {
+      format: 'fungicast-diary',
+      version: 1,
+      exportedAt: '2026-09-16T10:00:00.000Z',
+      entries: [{ id: 'x', date: '2026-09-16', zoneCode: 'amiata', abundance: 'few', updatedAt: '2020-01-01T00:00:00.000Z' }],
+    })
+    const [entry] = await repo.list()
+    expect(entry?.updatedAt.startsWith('2020')).toBe(false)
   })
 
   it('salta le voci già presenti invece di duplicarle', async () => {

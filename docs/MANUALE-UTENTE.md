@@ -3,6 +3,11 @@
 Guida breve, in italiano semplice. Serve a leggere l'app senza scambiare una stima per una
 garanzia — che è l'unico modo sbagliato di usarla.
 
+> Questa è la versione per chi legge il repository. La stessa guida vive **dentro l'app**, alla
+> pagina `/guida` ("Come funziona", raggiungibile dalla schermata Account): è una pagina senza
+> JavaScript, così si apre anche quando la rete va a tratti. Se modifichi uno dei due testi,
+> allinea l'altro — `src/components/guida/GuideScreen.tsx`.
+
 ## Cosa fa l'app, e cosa non fa
 
 L'app calcola, per alcune zone della Toscana, quanto le condizioni ambientali (pioggia recente,

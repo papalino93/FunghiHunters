@@ -434,7 +434,14 @@ function EntryRow({
           title="Punti dell'uscita"
           description="bivio, radura, un riferimento per questa camminata"
           emptyText="Nessun punto salvato per questa uscita."
-          kinds={['car', 'access', 'reference', 'departure']}
+          /*
+           * Niente "Partenza" qui, di proposito: un punto di partenza legato a un'uscita avrebbe
+           * un `entryId`, quindi `departurePoints()` (che cerca solo i punti liberi) non lo
+           * troverebbe mai e non comparirebbe in "Dove vado oggi" — e sparirebbe insieme
+           * all'uscita quando la cancelli. Chi vuole un punto di partenza riusabile lo salva fra
+           * i "Punti liberi", dove quella promessa è vera.
+           */
+          kinds={['car', 'access', 'reference']}
         />
       </div>
     </article>

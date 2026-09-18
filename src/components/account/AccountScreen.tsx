@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { useState } from 'react'
 
 import { useAuth } from '@/lib/auth/context'
@@ -68,6 +69,28 @@ function Shell({ children }: { children: React.ReactNode }) {
         </p>
       </header>
       {children}
+
+      {/*
+        * La guida sta qui e non in una quinta voce di navigazione: si legge una volta, non a ogni
+        * uscita, e la barra in basso deve restare fatta di bersagli larghi. È in `Shell` e non nel
+        * solo pannello di chi ha fatto accesso, perché chi non ha un account ne ha più bisogno.
+        */}
+      <Link
+        href="/guida"
+        className="mt-3 flex min-h-11 items-center justify-between gap-3 rounded-xl border
+                   border-edge bg-surface-1 px-3 py-2.5 transition-colors hover:bg-surface-2
+                   focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        <span>
+          <span className="block text-sm font-medium text-ink">Come funziona</span>
+          <span className="mt-0.5 block text-xs leading-snug text-ink-dim">
+            Regole di utilizzo, istruzioni e domande frequenti
+          </span>
+        </span>
+        <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-ink-faint">
+          <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </Link>
 
       {/*
         * Discreta ma raggiungibile dal telefono, senza strumenti da sviluppatore: è il modo per
