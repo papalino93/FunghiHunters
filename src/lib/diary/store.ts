@@ -96,6 +96,54 @@ export function sortEntries(entries: readonly DiaryEntry[]): DiaryEntry[] {
   return [...entries].sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt))
 }
 
+/**
+ * Com'è fatta davvero una riga letta da IndexedDB: tutto può mancare tranne l'identificativo.
+ *
+ * `DiaryEntry` descrive quello che il codice di oggi *scrive*, non quello che è già sul telefono
+ * di chi usa l'app da prima. Leggere le righe salvate con una semplice asserzione di tipo è una
+ * bugia al compilatore, e i campi aggiunti dopo arrivano `undefined`.
+ */
+type StoredEntry = Partial<DiaryEntry> & { readonly id: string }
+
+/**
+ * Riporta una voce salvata alla forma corrente, riempiendo i campi che la sua versione non aveva.
+ *
+ * Non è teoria: una voce registrata prima degli alberi e delle foto faceva esplodere il diario
+ * con «Cannot read properties of undefined (reading 'length')» su `entry.trees.length`, e la
+ * pagina intera non si apriva più — ma solo per chi aveva già delle uscite, cioè esattamente le
+ * persone che hanno più da perdere. Il posto giusto per rimediare è questo, la frontiera fra il
+ * disco e il resto del programma: correggerlo in ogni punto d'uso vorrebbe dire ricordarselo
+ * ogni volta, per sempre.
+ */
+export function normaliseEntry(raw: StoredEntry): DiaryEntry {
+  return {
+    id: raw.id,
+    date: raw.date ?? '',
+    zoneCode: raw.zoneCode ?? '',
+    zoneName: raw.zoneName ?? raw.zoneCode ?? '',
+    abundance: raw.abundance ?? 'none',
+    elevationM: raw.elevationM ?? null,
+    notes: raw.notes ?? '',
+    latitude: raw.latitude ?? null,
+    longitude: raw.longitude ?? null,
+    privacy: raw.privacy ?? 'area',
+    positionSource: raw.positionSource ?? null,
+    trees: raw.trees ?? [],
+    photoIds: raw.photoIds ?? [],
+    mpiAtEntry: raw.mpiAtEntry ?? null,
+    confidenceAtEntry: raw.confidenceAtEntry ?? null,
+    algorithmVersionAtEntry: raw.algorithmVersionAtEntry ?? null,
+    createdAt: raw.createdAt ?? raw.updatedAt ?? '',
+    updatedAt: raw.updatedAt ?? raw.createdAt ?? '',
+    /*
+     * Una voce salvata prima dei tombstone non ha `deletedAt`, e `list()` filtra su
+     * `deletedAt === null`: senza questo ripiego `undefined` non supera il confronto e le uscite
+     * più vecchie sparirebbero dall'elenco in silenzio, che è il modo peggiore di rompersi.
+     */
+    deletedAt: raw.deletedAt ?? null,
+  }
+}
+
 /** Implementazione in memoria: usata dai test e come ripiego se IndexedDB non è disponibile. */
 export class InMemoryDiaryRepository implements DiaryRepository {
   private entries = new Map<string, DiaryEntry>()
@@ -161,8 +209,8 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
   async listAll(): Promise<DiaryEntry[]> {
     const db = await this.connect()
     const tx = db.transaction(STORE, 'readonly')
-    const all = await promisify(tx.objectStore(STORE).getAll() as IDBRequest<DiaryEntry[]>)
-    return sortEntries(all)
+    const all = await promisify(tx.objectStore(STORE).getAll() as IDBRequest<StoredEntry[]>)
+    return sortEntries(all.map(normaliseEntry))
   }
 
   async add(draft: DiaryDraft): Promise<DiaryEntry> {
@@ -176,10 +224,12 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
   async update(id: string, patch: Partial<DiaryDraft>): Promise<DiaryEntry | null> {
     const db = await this.connect()
     const read = db.transaction(STORE, 'readonly')
-    const existing = await promisify(
-      read.objectStore(STORE).get(id) as IDBRequest<DiaryEntry | undefined>,
+    const stored = await promisify(
+      read.objectStore(STORE).get(id) as IDBRequest<StoredEntry | undefined>,
     )
-    if (existing === undefined || existing.deletedAt !== null) return null
+    if (stored === undefined) return null
+    const existing = normaliseEntry(stored)
+    if (existing.deletedAt !== null) return null
 
     const updated = materialise({ ...existing, ...patch }, existing)
     const write = db.transaction(STORE, 'readwrite')
@@ -190,10 +240,12 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
   async remove(id: string): Promise<boolean> {
     const db = await this.connect()
     const read = db.transaction(STORE, 'readonly')
-    const existing = await promisify(
-      read.objectStore(STORE).get(id) as IDBRequest<DiaryEntry | undefined>,
+    const stored = await promisify(
+      read.objectStore(STORE).get(id) as IDBRequest<StoredEntry | undefined>,
     )
-    if (existing === undefined || existing.deletedAt !== null) return false
+    if (stored === undefined) return false
+    const existing = normaliseEntry(stored)
+    if (existing.deletedAt !== null) return false
 
     const tombstoned: DiaryEntry = { ...existing, deletedAt: nowIso(), updatedAt: nowIso() }
     const write = db.transaction(STORE, 'readwrite')
