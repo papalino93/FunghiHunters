@@ -101,14 +101,14 @@ export function EntryForm({
           <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
             Quanti ne hai trovati
           </legend>
-          <div className="flex flex-wrap gap-1.5">
+          <div className="grid grid-cols-3 gap-1.5">
             {ABUNDANCE_LEVELS.map((level) => (
               <button
                 key={level}
                 type="button"
                 onClick={() => { setAbundance(level) }}
                 aria-pressed={abundance === level}
-                className={`min-h-11 flex-1 rounded-lg border px-2 text-xs font-medium
+                className={`min-h-11 rounded-lg border px-2 text-xs font-medium
                             transition-colors focus:outline-none focus-visible:ring-2
                             focus-visible:ring-accent ${
                               abundance === level
