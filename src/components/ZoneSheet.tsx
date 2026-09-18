@@ -2,8 +2,9 @@
 
 import { useState } from 'react'
 
-import type { SnapshotFactor, SnapshotZone } from '@/lib/snapshot/types'
+import type { SnapshotFactor, SnapshotSource, SnapshotZone } from '@/lib/snapshot/types'
 import { Sparkline } from '@/components/Sparkline'
+import { SourceStatusList } from '@/components/SourceStatusList'
 import { PotentialBar } from '@/components/today/PotentialBar'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
@@ -18,6 +19,7 @@ export interface ZoneSheetProps {
   readonly onClose: () => void
   readonly showStations: boolean
   readonly onToggleStations: () => void
+  readonly sources: readonly SnapshotSource[]
 }
 
 type Tab = 'sintesi' | 'meteo' | 'dove' | 'perche' | 'dati'
@@ -38,6 +40,7 @@ export function ZoneSheet({
   onClose,
   showStations,
   onToggleStations,
+  sources,
 }: ZoneSheetProps) {
   const [tab, setTab] = useState<Tab>('sintesi')
   const point = zone.series.find((p) => p.date === selectedDate) ?? zone.series[0]
@@ -152,6 +155,7 @@ export function ZoneSheet({
             zone={zone}
             showStations={showStations}
             onToggleStations={onToggleStations}
+            sources={sources}
           />
         )}
       </div>
@@ -492,15 +496,29 @@ function DataProvenance({
   zone,
   showStations,
   onToggleStations,
+  sources,
 }: {
   zone: SnapshotZone
   showStations: boolean
   onToggleStations: () => void
+  sources: readonly SnapshotSource[]
 }) {
   const unique = new Map(zone.stations.map((s) => [s.code, s]))
 
   return (
     <div className="space-y-4">
+      <div>
+        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          Fonti di questo dato
+        </h3>
+        <SourceStatusList sources={sources} />
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+          Stesse fonti di tutta l&apos;app, qui nel contesto di questa zona: se una risulta &quot;non
+          raggiungibile&quot; o &quot;in parte&quot;, si riflette nella qualità dati e nella certezza
+          di previsione mostrate nella scheda Sintesi — mai in un numero silenziosamente inventato.
+        </p>
+      </div>
+
       <Group title="Copertura">
         <Row
           label="Giorni con osservazioni"

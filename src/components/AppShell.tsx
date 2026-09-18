@@ -225,6 +225,7 @@ export function AppShell({ snapshot }: AppShellProps) {
               onClose={() => { setSelectedCode(null) }}
               showStations={showStations}
               onToggleStations={() => { setShowStations((v) => !v) }}
+              sources={snapshot.sources}
             />
           </>
         )}
