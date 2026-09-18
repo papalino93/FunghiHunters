@@ -15,7 +15,10 @@ IndexedDB (per dispositivo) ←→ runSync() ←→ Supabase (per utente, RLS)
 
 - **Login**: Google OAuth o magic link via email, entrambi Supabase Auth
   (`src/lib/auth/`). Nessun account è richiesto per consultare l'app: solo per salvare oltre il
-  dispositivo corrente.
+  dispositivo corrente. Un ritorno fallito dal redirect non resta muto: `readAuthCallbackError()`
+  in `src/lib/auth/callback.ts` lo legge dall'URL e lo mostra a schermo, perché quegli errori
+  vengono quasi sempre da una configurazione incompleta del deploy — vedi
+  [`DEPLOY-VERCEL.md`](DEPLOY-VERCEL.md).
 - **Trigger di sincronizzazione**: al login, dopo ogni modifica al diario (se già collegato), e
   al ritorno della rete (`online`). Non c'è polling: non serve, il diario cambia raramente.
 - **Stati mostrati in UI**: `local` (nessun account, o non ancora sincronizzato), `syncing`,
@@ -92,25 +95,28 @@ cancellazione la resusciterebbe alla sincronizzazione successiva.
 
 ## Cosa serve per attivarla davvero
 
-Il codice è pronto, ma **richiede un progetto Supabase e credenziali Google che questa sessione
-non ha potuto creare** (sono account di terze parti, fuori dalla portata di un agente). Passi da
-fare voi:
+Il codice è pronto, ma **richiede un progetto Supabase e credenziali Google che nessun agente può
+creare** (sono account di terze parti). La procedura completa, passo per passo e con l'elenco
+degli errori che si vedono quando qualcosa non torna, sta in
+[`DEPLOY-VERCEL.md`](DEPLOY-VERCEL.md). In sintesi:
 
-1. Creare un progetto su [supabase.com](https://supabase.com) (tier gratuito).
-2. Eseguire in ordine `db/migrations/0001_init.sql` e `db/migrations/0002_sync.sql` nell'SQL
-   Editor del progetto.
-3. In **Authentication → Providers**, abilitare Google: serve un OAuth Client ID/Secret da
-   [Google Cloud Console](https://console.cloud.google.com/apis/credentials), con redirect URI
-   `https://<il-tuo-progetto>.supabase.co/auth/v1/callback`.
-4. In **Authentication → URL Configuration**, aggiungere l'URL dell'app (es.
-   `https://fungicast.vercel.app/account` e `http://localhost:3000/account` in sviluppo) fra i
-   redirect consentiti.
-5. Impostare le variabili d'ambiente (in `.env.local` per sviluppo, nelle env var del deploy per
-   produzione):
+1. Creare un progetto su [supabase.com](https://supabase.com) (tier gratuito) ed eseguire in
+   ordine `db/migrations/0001_init.sql` e `db/migrations/0002_sync.sql` nell'SQL Editor.
+2. Creare un client OAuth su Google Cloud, con l'unico redirect URI
+   `https://<ref>.supabase.co/auth/v1/callback`, e incollare Client ID e Secret in
+   **Authentication → Sign In / Providers → Google** su Supabase.
+3. In **Authentication → URL Configuration**, impostare il Site URL di produzione e aggiungere
+   fra i Redirect URLs `https://<la-tua-app>/account`, `http://localhost:3000/account` e, se si
+   usano le anteprime di Vercel, il loro dominio con i caratteri jolly.
+4. Impostare le variabili d'ambiente (in `.env.local` per lo sviluppo, nelle env var del deploy
+   per la produzione):
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
    - `SUPABASE_SERVICE_ROLE_KEY` — **solo lato server**, mai con prefisso `NEXT_PUBLIC_`, mai nel
      repository.
+
+Le variabili `NEXT_PUBLIC_` vengono sostituite nel codice durante `next build`: aggiungerle a un
+deploy già fatto non basta, serve un nuovo deploy.
 
 Finché queste variabili non ci sono, `isSupabaseConfigured()` torna `false` e l'app mostra
 "sincronizzazione non disponibile" invece di rompersi — vedi `src/lib/supabase/client.ts`.

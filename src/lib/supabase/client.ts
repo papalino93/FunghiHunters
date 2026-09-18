@@ -36,7 +36,29 @@ export function getBrowserClient(): SupabaseClient | null {
     return null
   }
   cached = createClient(env.url, env.anonKey, {
-    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
+    auth: {
+      persistSession: true,
+      autoRefreshToken: true,
+      // Legge da solo il ritorno dal redirect (OAuth Google, link via email) e crea la sessione.
+      // In caso di errore invece non dice niente a nessuno: lo raccoglie
+      // `src/lib/auth/callback.ts`, vedi il commento in testa a quel file.
+      detectSessionInUrl: true,
+      /*
+       * Flusso implicito, fissato a mano e non lasciato al default dell'SDK.
+       *
+       * Con PKCE il verificatore resta nel `localStorage` del browser che ha iniziato l'accesso,
+       * quindi un link di accesso aperto altrove — l'email letta sul telefono, la richiesta
+       * partita dal portatile — fallirebbe con un errore che l'utente non può capire né
+       * aggirare. Qui il caso non è raro: è mobile-first e l'email si apre dove capita.
+       *
+       * Il prezzo del flusso implicito è che i token tornano nel frammento dell'URL. Restano nel
+       * browser (un frammento non viene inviato al server, non finisce nei log e non entra nella
+       * cache del service worker, che vede solo l'URL senza frammento) e l'SDK lo ripulisce
+       * appena letto. Da rivedere se un giorno una pagina dovesse essere resa lato server per
+       * utente autenticato: lì servirebbe PKCE.
+       */
+      flowType: 'implicit',
+    },
   })
   return cached
 }

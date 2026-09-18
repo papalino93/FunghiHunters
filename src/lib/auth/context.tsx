@@ -9,8 +9,18 @@
  * account, come richiesto — login solo quando l'utente vuole salvare o sincronizzare qualcosa.
  */
 
-import { createContext, useContext, useEffect, useMemo, useSyncExternalStore } from 'react'
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useSyncExternalStore,
+} from 'react'
 
+import { readAuthCallbackError, urlWithoutAuthParams } from '@/lib/auth/callback'
+import type { AuthCallbackError } from '@/lib/auth/callback'
 import { AuthController } from '@/lib/auth/controller'
 import { createSupabaseAuthBackend } from '@/lib/auth/supabase-backend'
 import type { AuthState } from '@/lib/auth/types'
@@ -23,6 +33,11 @@ type AuthContextValue = AuthState & {
   signInWithGoogle(): Promise<{ error: string | null }>
   signInWithMagicLink(email: string): Promise<{ error: string | null }>
   signOut(): Promise<{ error: string | null }>
+  /** Esito negativo dell'ultimo ritorno da Supabase, finché non viene chiuso. */
+  readonly callbackError: AuthCallbackError | null
+  dismissCallbackError(): void
+  /** L'URL su cui Supabase rimanda dopo l'accesso: va autorizzato nel progetto. */
+  readonly callbackUrl: string
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -40,6 +55,39 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return () => { controller.dispose() }
   }, [controller])
 
+  /*
+   * Esito del ritorno da Supabase.
+   *
+   * Letto durante il render e non dentro un effetto, per la stessa ragione spiegata in
+   * `useIsHydrated`: leggere uno stato esterno in un effetto e chiamare `setState` innesca un
+   * render a cascata. L'ordine però è vincolante, ed è l'unico motivo per cui questa riga sta
+   * *dopo* lo `useMemo` qui sopra: il client Supabase legge `window.location.href` in modo
+   * sincrono dentro il proprio costruttore, quindi solo da qui in poi l'URL è già stato
+   * consumato dall'SDK e si può leggere — e poi ripulire — senza togliergli niente.
+   *
+   * Chi rende questo valore deve aspettare l'idratazione (`useIsHydrated`), altrimenti il
+   * markup del server e quello del browser non coinciderebbero.
+   */
+  const [callbackError, setCallbackError] = useState<AuthCallbackError | null>(() =>
+    typeof window === 'undefined' ? null : readAuthCallbackError(window.location.href),
+  )
+
+  /*
+   * Ripulire l'URL non è cosmesi: dopo un errore l'SDK lascia i parametri nella barra degli
+   * indirizzi, e ogni ricaricamento ripresenterebbe lo stesso errore all'infinito. Dopo un
+   * accesso riuscito ci pensa già l'SDK, e qui non c'è niente da togliere.
+   */
+  useEffect(() => {
+    if (callbackError === null) return
+    window.history.replaceState(
+      window.history.state,
+      '',
+      urlWithoutAuthParams(window.location.href),
+    )
+  }, [callbackError])
+
+  const dismissCallbackError = useCallback(() => { setCallbackError(null) }, [])
+
   const state = useSyncExternalStore(
     (listener) => controller.subscribe(listener),
     () => controller.getState(),
@@ -56,8 +104,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signInWithGoogle: () => controller.signInWithGoogle(redirectTo),
       signInWithMagicLink: (email: string) => controller.signInWithMagicLink(email, redirectTo),
       signOut: () => controller.signOut(),
+      callbackError,
+      dismissCallbackError,
+      callbackUrl: redirectTo,
     }),
-    [state, controller, redirectTo],
+    [state, controller, redirectTo, callbackError, dismissCallbackError],
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
