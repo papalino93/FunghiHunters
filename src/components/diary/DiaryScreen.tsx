@@ -61,6 +61,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
     [hydrated],
   )
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null)
+  const [loadError, setLoadError] = useState<string | null>(null)
   const [composing, setComposing] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
@@ -86,7 +87,20 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
     if (repo === null) return
     // L'aggiornamento è asincrono, quindi non provoca il render a cascata che la regola
     // `set-state-in-effect` intercetta.
-    void repo.list().then(setEntries).catch(() => { setEntries([]) })
+    //
+    // In caso di errore l'elenco resta vuoto ma il motivo va detto: mostrare "nessuna uscita" a
+    // chi non riesce ad aprire l'archivio significa annunciargli che ha perso il diario.
+    void repo
+      .list()
+      .then(setEntries)
+      .catch((error: unknown) => {
+        setEntries([])
+        setLoadError(
+          error instanceof Error
+            ? error.message
+            : 'Non riesco ad aprire il diario salvato su questo dispositivo.',
+        )
+      })
   }, [repo])
 
   const report = useMemo(() => calibrate(entries ?? []), [entries])
@@ -158,6 +172,19 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         </p>
       )}
 
+      {loadError !== null && (
+        <div
+          role="alert"
+          className="mb-3 rounded-lg border border-danger/30 bg-danger/10 px-3 py-2 text-xs leading-snug text-danger"
+        >
+          <strong className="font-semibold">Il diario non si è aperto.</strong> {loadError}
+          <span className="mt-1 block text-ink-dim">
+            Le uscite salvate non sono perse: restano sul dispositivo e ricompaiono appena
+            l&apos;archivio si apre.
+          </span>
+        </div>
+      )}
+
       <div className="mb-4">
         <WaypointsPanel />
       </div>
@@ -174,14 +201,25 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       {composing && repo !== null && photoRepo !== null ? (
         <EntryForm
           snapshot={snapshot}
-          photoRepo={photoRepo}
           onCancel={() => { setComposing(false) }}
-          onSave={async (draft) => {
+          onSave={async (draft, photos) => {
             const entry = await repo.add(draft)
+            // Le foto si collegano alla voce appena creata: prima non esiste un id a cui
+            // appartenere. Gli id tornano dentro la voce, così `photoIds` descrive davvero le
+            // foto salvate invece di restare un elenco vuoto che nessuno riempie mai.
+            if (photos.length > 0) {
+              const saved = []
+              for (const file of photos) saved.push(await photoRepo.add(entry.id, file))
+              await repo.update(entry.id, { photoIds: saved.map((p) => p.id) })
+            }
             await persistAndReload()
             setComposing(false)
-            setMessage('Uscita registrata.')
-            return entry
+            // "foto" è invariabile in italiano: nessun plurale da gestire.
+            setMessage(
+              photos.length === 0
+                ? 'Uscita registrata.'
+                : `Uscita registrata, con ${photos.length} foto.`,
+            )
           }}
         />
       ) : composing ? null : (
@@ -402,9 +440,12 @@ function EntryPhotos({ entryId, photoRepo }: { entryId: string; photoRepo: Photo
 
   useEffect(() => {
     let cancelled = false
-    void photoRepo.listFor(entryId).then((list) => {
-      if (!cancelled) setPhotos(list)
-    })
+    void photoRepo
+      .listFor(entryId)
+      .then((list) => { if (!cancelled) setPhotos(list) })
+      // Senza questo un archivio che non si apre diventa un rifiuto non gestito in console: qui
+      // le miniature sono un di piu', la voce di diario resta leggibile lo stesso.
+      .catch(() => { if (!cancelled) setPhotos([]) })
     return () => { cancelled = true }
   }, [entryId, photoRepo])
 

@@ -101,10 +101,11 @@ degli errori che si vedono quando qualcosa non torna, sta in
 [`DEPLOY-VERCEL.md`](DEPLOY-VERCEL.md). In sintesi:
 
 1. Creare un progetto su [supabase.com](https://supabase.com) (tier gratuito) ed eseguire in
-   ordine `db/migrations/0001_init.sql`, `db/migrations/0002_sync.sql` e
-   `db/migrations/0003_grants.sql` nell'SQL Editor. Il terzo esiste perché su un progetto reale i
-   permessi di base sullo schema `public` non c'erano — la RLS da sola non basta, vedi il
-   commento in testa a quel file.
+   ordine **tutte** le migrazioni di `db/migrations/` nell'SQL Editor. Il terzo file
+   (`0003_grants.sql`) esiste perché su un progetto reale i permessi di base sullo schema
+   `public` non c'erano — la RLS da sola non basta. Il quinto (`0005_grants_narrow.sql`) corregge
+   il terzo, che quei permessi li concedeva su ogni tabella dello schema invece che sulle sole
+   tre protette da policy: chi ha già eseguito `0003` deve eseguire anche `0005`.
 2. Creare un client OAuth su Google Cloud, con l'unico redirect URI
    `https://<ref>.supabase.co/auth/v1/callback`, e incollare Client ID e Secret in
    **Authentication → Sign In / Providers → Google** su Supabase.

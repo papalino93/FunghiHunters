@@ -146,11 +146,11 @@ const STORE = DIARY_STORE
 
 /** Implementazione su IndexedDB. Sopravvive alla chiusura del browser, non al cambio di telefono. */
 export class IndexedDbDiaryRepository implements DiaryRepository {
-  private db: Promise<IDBDatabase> | null = null
-
+  // Nessuna cache qui: `openDatabase()` ha gia' la sua, ed e' l'unica che sa invalidarsi quando
+  // la connessione viene chiusa o l'apertura fallisce. Tenerne una seconda a questo livello
+  // significherebbe restare attaccati a un database chiuso senza accorgersene.
   private connect(): Promise<IDBDatabase> {
-    this.db ??= openDatabase()
-    return this.db
+    return openDatabase()
   }
 
   async list(): Promise<DiaryEntry[]> {
