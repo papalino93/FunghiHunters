@@ -12,6 +12,7 @@ import {
   InMemoryDiaryRepository,
   importInto,
   materialise,
+  normaliseEntry,
   sortEntries,
   toExport,
 } from '@/lib/diary/store'
@@ -403,5 +404,56 @@ describe('ordinamento', () => {
     const a = materialise(draft({ date: '2026-09-16' }))
     const b = { ...materialise(draft({ date: '2026-09-16' })), createdAt: '2030-01-01T00:00:00Z' }
     expect(sortEntries([a, b])[0]?.id).toBe(b.id)
+  })
+})
+
+describe('voci salvate da versioni precedenti dell app', () => {
+  /*
+   * Il caso che ha rotto il diario in produzione. Chi aveva gia' delle uscite salvate apriva la
+   * scheda e trovava la pagina bianca: le voci scritte prima degli alberi e delle foto non hanno
+   * quei campi, e `entry.trees.length` sollevava "Cannot read properties of undefined". Chi il
+   * diario non l'aveva mai usato non vedeva niente di strano — cioe' il bug colpiva solo chi
+   * aveva qualcosa da perdere.
+   */
+  const vecchia = {
+    id: 'voce-di-prima',
+    date: '2026-09-10',
+    zoneCode: 'garfagnana',
+    zoneName: 'Garfagnana',
+    abundance: 'some' as const,
+    elevationM: null,
+    notes: 'uscita registrata prima del rilascio',
+    latitude: null,
+    longitude: null,
+    privacy: 'area' as const,
+    mpiAtEntry: 20,
+    confidenceAtEntry: 70,
+    algorithmVersionAtEntry: '1.1.0-porcino',
+    createdAt: '2026-09-10T08:00:00.000Z',
+    updatedAt: '2026-09-10T08:00:00.000Z',
+    deletedAt: null,
+  }
+
+  it('riempie i campi che quella versione non aveva, invece di lasciarli indefiniti', () => {
+    const entry = normaliseEntry(vecchia)
+    expect(entry.trees).toEqual([])
+    expect(entry.photoIds).toEqual([])
+    expect(entry.positionSource).toBeNull()
+  })
+
+  it('non tocca quello che la voce dichiara gia', () => {
+    const entry = normaliseEntry(vecchia)
+    expect(entry.notes).toBe('uscita registrata prima del rilascio')
+    expect(entry.abundance).toBe('some')
+    expect(entry.mpiAtEntry).toBe(20)
+    expect(entry.createdAt).toBe('2026-09-10T08:00:00.000Z')
+  })
+
+  it('una voce anteriore ai tombstone resta visibile invece di sparire in silenzio', () => {
+    // `list()` filtra su `deletedAt === null`: con `undefined` il confronto e' falso e la voce
+    // non comparirebbe piu', senza nessun errore a dirlo.
+    const senzaTombstone: Omit<typeof vecchia, 'deletedAt'> & { deletedAt?: null } = { ...vecchia }
+    delete senzaTombstone.deletedAt
+    expect(normaliseEntry(senzaTombstone).deletedAt).toBeNull()
   })
 })
