@@ -17,8 +17,10 @@ sempre.
 ## 1. Progetto Supabase
 
 1. Creare un progetto su [supabase.com](https://supabase.com) (il piano gratuito basta).
-2. Nell'**SQL Editor**, eseguire in ordine `db/migrations/0001_init.sql` e
-   `db/migrations/0002_sync.sql`.
+2. Nell'**SQL Editor**, eseguire in ordine `db/migrations/0001_init.sql`,
+   `db/migrations/0002_sync.sql` e `db/migrations/0003_grants.sql`. Il terzo file esiste perché su
+   almeno un progetto reale i primi due non bastavano: vedi il caso `permission denied for schema
+   public` più sotto se lo hai già saltato.
 3. Da **Project Settings → API** annotare:
    - **Project URL** → sarà `NEXT_PUBLIC_SUPABASE_URL`
    - chiave **anon / public** → sarà `NEXT_PUBLIC_SUPABASE_ANON_KEY`
@@ -160,6 +162,15 @@ tradotti in `src/lib/auth/callback.ts`):
 | `otp_expired` | link via email scaduto o già usato | chiederne un altro; ogni link vale una volta |
 | `bad_oauth_state`, `flow_state_not_found` | accesso iniziato su un browser e concluso su un altro | ripetere l'accesso su un solo browser |
 | `over_email_send_rate_limit` | troppe email di accesso di fila | il servizio email integrato di Supabase è pensato solo per le prove e consente pochi invii l'ora: per l'uso vero va configurato un SMTP proprio (**Authentication → Emails**) |
+
+L'accesso può riuscire (email in alto su `/account`) e la sincronizzazione fallire comunque —
+quello non è più un errore del redirect, è un problema del database, e l'app lo scrive nella
+schermata Account, non come striscia in alto:
+
+| Cosa si vede in Account | Causa | Rimedio |
+| --- | --- | --- |
+| *"Lettura fallita: permission denied for schema public"* o *"Scrittura fallita: permission denied for schema public"* | `anon`/`authenticated` non hanno `USAGE` sullo schema `public`: succede quando il progetto non aveva i permessi di base che Supabase concede di norma a un progetto nuovo. Le policy RLS da sole non bastano — filtrano le righe *dopo* che l'accesso alla tabella è già concesso | eseguire `db/migrations/0003_grants.sql` nell'SQL Editor |
+| *"permission denied for table user_observations"* (senza "schema") | i permessi sullo schema ci sono, mancano quelli sulla tabella specifica | stesso file, `0003_grants.sql` |
 
 E i due casi che **non** danno errore, ma non sono quello che ci si aspetta:
 
