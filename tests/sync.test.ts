@@ -128,6 +128,30 @@ describe('conflitto: vince la modifica più recente', () => {
     const stored = (await repo.list())[0]
     expect(stored?.notes).toBe('da telefono B, già sincronizzato')
   })
+
+  it('quando vince il server, le foto locali restano: non sono mai nel backend', async () => {
+    // Le foto non lasciano il dispositivo (vedi il commento su photoIds in diary/types.ts): il
+    // backend le restituisce sempre vuote. Se il pull applicasse la voce remota così com'è,
+    // ogni conflitto vinto dal server cancellerebbe il riferimento a foto salvate solo qui.
+    const repo = new InMemoryDiaryRepository()
+    const original = materialise(draft())
+    await repo.upsertRaw(
+      at('2026-09-10T07:00:00.000Z', { ...original, photoIds: ['photo-locale-1'] }),
+    )
+    const backend = new FakeBackend()
+    backend.rows.set(original.id, {
+      ...original,
+      notes: 'modificato da un altro telefono',
+      updatedAt: '2026-09-10T09:00:00.000Z',
+      photoIds: [],
+    })
+
+    await runSync(repo, backend, '2026-09-09T00:00:00.000Z')
+
+    const stored = (await repo.list())[0]
+    expect(stored?.notes).toBe('modificato da un altro telefono')
+    expect(stored?.photoIds).toEqual(['photo-locale-1'])
+  })
 })
 
 describe('tombstone: la cancellazione si propaga', () => {
