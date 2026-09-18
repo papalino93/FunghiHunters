@@ -130,7 +130,9 @@ export function EntryForm({
       notes: notes.trim(),
       latitude: capturedPosition?.latitude ?? zone.latitude,
       longitude: capturedPosition?.longitude ?? zone.longitude,
-      privacy,
+      // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto della
+      // zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello onesto qui.
+      privacy: capturedPosition === null ? 'zone' : privacy,
       positionSource: capturedPosition !== null ? 'gps' : 'zone',
       trees,
       mpiAtEntry: point?.mpi ?? null,
@@ -368,27 +370,36 @@ export function EntryForm({
             Precisione della posizione salvata
           </legend>
           <div className="flex gap-1.5">
-            {PRIVACY_LEVELS.map((level) => (
-              <button
-                key={level}
-                type="button"
-                onClick={() => { setPrivacy(level) }}
-                aria-pressed={privacy === level}
-                className={`min-h-11 flex-1 rounded-lg border px-2 text-[11px] font-medium
-                            transition-colors focus:outline-none focus-visible:ring-2
-                            focus-visible:ring-accent ${
-                              privacy === level
-                                ? 'border-accent bg-accent/15 text-ink'
-                                : 'border-edge bg-surface-2 text-ink-dim hover:text-ink'
-                            }`}
-              >
-                {PRIVACY_LABELS[level]}
-              </button>
-            ))}
+            {PRIVACY_LEVELS.map((level) => {
+              // Senza posizione GPS reale, "esatte" e "area" arrotonderebbero comunque solo il
+              // punto della zona: offrirli sarebbe promettere una precisione che non c'è.
+              const disabled = capturedPosition === null && level !== 'zone'
+              const active = privacy === level && !disabled
+              return (
+                <button
+                  key={level}
+                  type="button"
+                  onClick={() => { setPrivacy(level) }}
+                  disabled={disabled}
+                  aria-pressed={active}
+                  className={`min-h-11 flex-1 rounded-lg border px-2 text-[11px] font-medium
+                              transition-colors focus:outline-none focus-visible:ring-2
+                              focus-visible:ring-accent disabled:cursor-not-allowed
+                              disabled:opacity-40 ${
+                                active
+                                  ? 'border-accent bg-accent/15 text-ink'
+                                  : 'border-edge bg-surface-2 text-ink-dim hover:text-ink'
+                              }`}
+                >
+                  {PRIVACY_LABELS[level]}
+                </button>
+              )
+            })}
           </div>
           <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
-            L&apos;arrotondamento è definitivo: una volta salvata l&apos;area, le coordinate
-            precise non esistono più.
+            {capturedPosition === null
+              ? 'Acquisisci la posizione qui sopra per poter salvare più di "solo la zona".'
+              : 'L’arrotondamento è definitivo: una volta salvata l’area, le coordinate precise non esistono più.'}
           </p>
         </fieldset>
 
