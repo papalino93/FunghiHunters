@@ -17,7 +17,14 @@ import {
   toExport,
 } from '@/lib/diary/store'
 import { MIN_ENTRIES_FOR_SIGNAL, calibrate, spearman } from '@/lib/diary/calibration'
-import { ABUNDANCE_LABELS, applyPrivacy, type Abundance, type DiaryEntry } from '@/lib/diary/types'
+import {
+  ABUNDANCE_LABELS,
+  applyPrivacy,
+  isValidDurationMinutes,
+  isValidSearchers,
+  type Abundance,
+  type DiaryEntry,
+} from '@/lib/diary/types'
 
 function draft(overrides: Partial<Parameters<InMemoryDiaryRepository['add']>[0]> = {}) {
   return {
@@ -119,9 +126,36 @@ describe('creazione delle voci', () => {
     expect(withoutTrees.trees).toEqual([])
   })
 
-  it('le foto restano vuote finché non se ne aggiunge — il riferimento arriva dopo, a voce già salvata', () => {
+  it('durata e numero di cercatori sono facoltativi, null se non indicati', () => {
     const entry = materialise(draft())
-    expect(entry.photoIds).toEqual([])
+    expect(entry.durationMinutes).toBeNull()
+    expect(entry.searchers).toBeNull()
+  })
+
+  it('registra durata e numero di cercatori quando indicati', () => {
+    const entry = materialise({ ...draft(), durationMinutes: 90, searchers: 2 })
+    expect(entry.durationMinutes).toBe(90)
+    expect(entry.searchers).toBe(2)
+  })
+})
+
+describe('validazione di durata e cercatori', () => {
+  it('accetta interi dentro l\'intervallo dichiarato', () => {
+    expect(isValidDurationMinutes(5)).toBe(true)
+    expect(isValidDurationMinutes(720)).toBe(true)
+    expect(isValidDurationMinutes(90)).toBe(true)
+    expect(isValidSearchers(1)).toBe(true)
+    expect(isValidSearchers(20)).toBe(true)
+  })
+
+  it('rifiuta valori fuori intervallo, non interi o non finiti', () => {
+    expect(isValidDurationMinutes(4)).toBe(false)
+    expect(isValidDurationMinutes(721)).toBe(false)
+    expect(isValidDurationMinutes(45.5)).toBe(false)
+    expect(isValidDurationMinutes(Number.NaN)).toBe(false)
+    expect(isValidSearchers(0)).toBe(false)
+    expect(isValidSearchers(21)).toBe(false)
+    expect(isValidSearchers(2.5)).toBe(false)
   })
 })
 
@@ -255,21 +289,19 @@ describe('esportazione e importazione', () => {
     expect(entries[0]?.mpiAtEntry).toBe(42)
   })
 
-  it('porta con sé posizione GPS e alberi osservati, mai le foto', async () => {
+  it('porta con sé posizione GPS, alberi osservati, durata e cercatori', async () => {
     const source = new InMemoryDiaryRepository()
-    const original = await source.add(
+    await source.add(
       draft({
         latitude: 44.18337,
         longitude: 10.38339,
         privacy: 'exact',
         positionSource: 'gps',
         trees: ['faggio', 'cerro'],
+        durationMinutes: 120,
+        searchers: 3,
       }),
     )
-    // Le foto si aggiungono dopo, contro l'id della voce già salvata: qui simuliamo che ce ne
-    // sia una, per verificare che l'esportazione non la porti con sé (vedi il commento su
-    // `photoIds` in types.ts).
-    await source.update(original.id, { photoIds: ['photo-1'] })
 
     const exported = toExport(await source.list())
     const target = new InMemoryDiaryRepository()
@@ -278,7 +310,31 @@ describe('esportazione e importazione', () => {
 
     expect(imported?.positionSource).toBe('gps')
     expect(imported?.trees).toEqual(['faggio', 'cerro'])
-    expect(imported?.photoIds).toEqual([])
+    expect(imported?.durationMinutes).toBe(120)
+    expect(imported?.searchers).toBe(3)
+  })
+
+  it('un vecchio export con "photoIds" si importa senza errori, senza foto', async () => {
+    // Le foto sono state rimosse dall'app (erano una funzione reale, in produzione): un file
+    // esportato mentre esistevano deve continuare a importarsi, ignorando quella chiave.
+    const repo = new InMemoryDiaryRepository()
+    const result = await importInto(repo, {
+      format: 'fungicast-diary',
+      version: 1,
+      entries: [
+        {
+          id: 'con-foto',
+          date: '2026-09-16',
+          zoneCode: 'amiata',
+          abundance: 'few',
+          photoIds: ['photo-1', 'photo-2'],
+        },
+      ],
+    })
+    expect(result.imported).toBe(1)
+    expect(result.errors).toHaveLength(0)
+    const [entry] = await repo.list()
+    expect(entry).not.toHaveProperty('photoIds')
   })
 
   it('salta le voci già presenti invece di duplicarle', async () => {
@@ -373,6 +429,48 @@ describe('calibrazione', () => {
     expect(report.verdict).toMatch(/invertita|ricalibrato/)
   })
 
+  it('conta le uscite con contesto sufficiente (durata registrata)', () => {
+    const withDuration = materialise({ ...draft({ date: '2026-09-01' }), mpiAtEntry: 30, durationMinutes: 60 })
+    const withoutDuration = materialise({ ...draft({ date: '2026-09-02' }), mpiAtEntry: 40 })
+    const report = calibrate([withDuration, withoutDuration])
+    expect(report.usable).toBe(2)
+    expect(report.contextual).toBe(1)
+  })
+
+  it('avvisa quando ci sono "niente trovato" senza durata: lo zero non si può leggere', () => {
+    const empty = materialise({ ...draft({ date: '2026-09-01' }), mpiAtEntry: 30, abundance: 'none' })
+    const report = calibrate([empty])
+    expect(report.shortSearchCaveat).toMatch(/durata della ricerca/)
+  })
+
+  it('non avvisa se il "niente trovato" ha la durata, o se non ci sono "niente trovato"', () => {
+    const emptyWithDuration = materialise({
+      ...draft({ date: '2026-09-01' }),
+      mpiAtEntry: 30,
+      abundance: 'none',
+      durationMinutes: 180,
+    })
+    expect(calibrate([emptyWithDuration]).shortSearchCaveat).toBeNull()
+
+    const found = materialise({ ...draft({ date: '2026-09-01' }), mpiAtEntry: 30, abundance: 'many' })
+    expect(calibrate([found]).shortSearchCaveat).toBeNull()
+  })
+
+  it('sotto la soglia minima non si esprime sulla direzione dell\'errore', () => {
+    const entries = [entry(30, 'few', 1), entry(70, 'many', 2)]
+    expect(calibrate(entries).biasDirection).toBeNull()
+  })
+
+  it('riconosce la sovrastima: punteggi alti, esiti quasi sempre vuoti', () => {
+    const entries = Array.from({ length: 14 }, (_, i) => entry(90, 'none', i + 1))
+    expect(calibrate(entries).biasDirection).toBe('sovrastima')
+  })
+
+  it('riconosce la sottostima: punteggi bassi, esiti quasi sempre positivi', () => {
+    const entries = Array.from({ length: 14 }, (_, i) => entry(5, 'many', i + 1))
+    expect(calibrate(entries).biasDirection).toBe('sottostima')
+  })
+
   it('raggruppa per fascia di punteggio con il conteggio', () => {
     const report = calibrate([entry(15, 'none', 1), entry(85, 'many', 2), entry(88, 'some', 3)])
     const low = report.bands.find((b) => b.from === 0)
@@ -437,8 +535,17 @@ describe('voci salvate da versioni precedenti dell app', () => {
   it('riempie i campi che quella versione non aveva, invece di lasciarli indefiniti', () => {
     const entry = normaliseEntry(vecchia)
     expect(entry.trees).toEqual([])
-    expect(entry.photoIds).toEqual([])
     expect(entry.positionSource).toBeNull()
+    expect(entry.durationMinutes).toBeNull()
+    expect(entry.searchers).toBeNull()
+  })
+
+  it('una riga con un "photoIds" residuo (da quando le foto esistevano) si legge senza errori', () => {
+    // Non teorico: le foto sono state in produzione (vedi PR #5) prima di essere rimosse. Chi le
+    // ha usate ha righe IndexedDB reali con questa chiave, che oggi non significa più niente.
+    const conFoto = { ...vecchia, id: 'voce-con-foto-vecchia', photoIds: ['photo-1'] }
+    expect(() => normaliseEntry(conFoto)).not.toThrow()
+    expect(normaliseEntry(conFoto)).not.toHaveProperty('photoIds')
   })
 
   it('non tocca quello che la voce dichiara gia', () => {

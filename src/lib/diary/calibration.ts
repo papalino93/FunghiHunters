@@ -32,6 +32,12 @@ export interface CalibrationReport {
   readonly total: number
   /** Uscite utilizzabili: quelle che hanno il punteggio congelato. */
   readonly usable: number
+  /**
+   * Uscite utilizzabili che hanno anche la durata della ricerca: solo per queste uno "zero" è
+   * interpretabile — senza sapere quanto si è cercato, un esito nullo può voler dire "non c'era
+   * niente" o "sono state cinque minuti distratti", e sono due informazioni diverse.
+   */
+  readonly contextual: number
   readonly hasSignal: boolean
   readonly bands: readonly BandStat[]
   /**
@@ -51,6 +57,19 @@ export interface CalibrationReport {
   /** Non nullo se troppe uscite vengono dalla stessa zona per generalizzare. */
   readonly geographicWarning: string | null
   readonly byAlgorithmVersion: readonly SplitStat[]
+  /**
+   * Non nullo quando esistono uscite senza niente trovato e senza durata registrata: quegli zeri
+   * non si possono distinguere da una ricerca lunga e vuota o da una capatina di cinque minuti.
+   * Un avviso di qualità del dato, non una statistica — compare a prescindere dalla soglia minima.
+   */
+  readonly shortSearchCaveat: string | null
+  /**
+   * Direzione dell'errore sistematico, solo quando il campione basta a dirla (`hasSignal`):
+   * confronta la probabilità media che il modello assegna (`mpiAtEntry / 100`) con il tasso di
+   * successo osservato davvero. `null` sotto soglia — non una mancanza di segnale, ma la stessa
+   * cautela di ogni altra statistica qui: con poche uscite la direzione può ribaltarsi da sola.
+   */
+  readonly biasDirection: 'sovrastima' | 'sottostima' | 'nessuna' | null
 }
 
 /** Soglia sotto cui una metà di uno split (temporale, geografico, di versione) non dice nulla. */
@@ -288,10 +307,43 @@ function byAlgorithmVersion(usable: readonly (DiaryEntry & { mpiAtEntry: number 
   return [...byVersion.entries()].map(([version, list]) => splitStat(version, list))
 }
 
+/**
+ * Soglia di "sbilanciamento", in punti di probabilità (0-1). Sotto, la differenza fra previsto e
+ * osservato è nel rumore che un campione piccolo produce comunque; sopra, vale la pena dirla.
+ */
+const BIAS_THRESHOLD = 0.1
+
+function biasDirectionFor(
+  usable: readonly (DiaryEntry & { mpiAtEntry: number })[],
+  hasSignal: boolean,
+): 'sovrastima' | 'sottostima' | 'nessuna' | null {
+  if (!hasSignal || usable.length === 0) return null
+  const meanPredicted = usable.reduce((acc, e) => acc + e.mpiAtEntry / 100, 0) / usable.length
+  const observedRate = usable.filter(isSuccess).length / usable.length
+  const gap = meanPredicted - observedRate
+  if (gap > BIAS_THRESHOLD) return 'sovrastima'
+  if (gap < -BIAS_THRESHOLD) return 'sottostima'
+  return 'nessuna'
+}
+
+function shortSearchCaveatFor(usable: readonly DiaryEntry[]): string | null {
+  const emptyWithoutDuration = usable.filter(
+    (e) => rankOf(e.abundance) === 0 && e.durationMinutes === null,
+  )
+  if (emptyWithoutDuration.length === 0) return null
+  return (
+    `${emptyWithoutDuration.length} ${emptyWithoutDuration.length === 1 ? 'uscita' : 'uscite'} ` +
+    'senza niente trovato non hanno la durata della ricerca: uno zero dopo dieci minuti e uno ' +
+    'zero dopo mezza giornata non dicono la stessa cosa, ma qui non si possono distinguere. ' +
+    'Indicarla nelle prossime uscite rende questi numeri più leggibili.'
+  )
+}
+
 export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
   const usable = entries.filter(
     (e): e is DiaryEntry & { mpiAtEntry: number } => e.mpiAtEntry !== null,
   )
+  const contextual = usable.filter((e) => e.durationMinutes !== null).length
 
   const bands: BandStat[] = BANDS.map((band) => {
     const inBand = usable.filter((e) => e.mpiAtEntry >= band.from && e.mpiAtEntry < band.to)
@@ -316,6 +368,7 @@ export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
   return {
     total: entries.length,
     usable: usable.length,
+    contextual,
     hasSignal,
     bands,
     rankCorrelation: correlation,
@@ -326,6 +379,8 @@ export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
     geographicSplit: geoSplit,
     geographicWarning: geographicWarningFor(usable, geoSplit),
     byAlgorithmVersion: byAlgorithmVersion(usable),
+    shortSearchCaveat: shortSearchCaveatFor(usable),
+    biasDirection: biasDirectionFor(usable, hasSignal),
   }
 }
 

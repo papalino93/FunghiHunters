@@ -11,8 +11,8 @@ import {
   toExport,
   type DiaryRepository,
 } from '@/lib/diary/store'
-import { createPhotoRepository, type Photo, type PhotoRepository } from '@/lib/diary/photos'
 import { calibrate } from '@/lib/diary/calibration'
+import { createWaypointRepository, type WaypointRepository } from '@/lib/waypoints/store'
 import { EntryForm } from '@/components/diary/EntryForm'
 import { CalibrationPanel } from '@/components/diary/CalibrationPanel'
 import { WaypointsPanel } from '@/components/diary/WaypointsPanel'
@@ -54,10 +54,11 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   )
   const repo: DiaryRepository | null = created?.repo ?? null
   const persistent = created?.persistent ?? true
-  // Il repository foto è indipendente da quello delle voci (vedi il commento in photos.ts):
-  // vive comunque solo nel browser, quindi stessa regola di creazione post-idratazione.
-  const photoRepo: PhotoRepository | null = useMemo(
-    () => (hydrated ? createPhotoRepository() : null),
+  // I punti salvati sono un archivio indipendente da quello delle voci (vedi il commento in
+  // `lib/waypoints/types.ts`): vivono comunque solo nel browser, stessa regola di creazione
+  // post-idratazione, e non entrano mai nella sincronizzazione.
+  const waypointRepo: WaypointRepository | null = useMemo(
+    () => (hydrated ? createWaypointRepository() : null),
     [hydrated],
   )
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null)
@@ -186,7 +187,14 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       )}
 
       <div className="mb-4">
-        <WaypointsPanel />
+        <WaypointsPanel
+          entryId={null}
+          title="Punti liberi"
+          description="auto, accessi, riferimenti e punti di partenza, non legati a un'uscita"
+          emptyText="Nessun punto libero salvato. Un punto di partenza salvato qui compare anche in
+                      «Dove vado oggi», per calcolare la distanza. Resta solo su questo dispositivo,
+                      non viene mai sincronizzato."
+        />
       </div>
 
       {message !== null && (
@@ -198,28 +206,15 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         </p>
       )}
 
-      {composing && repo !== null && photoRepo !== null ? (
+      {composing && repo !== null ? (
         <EntryForm
           snapshot={snapshot}
           onCancel={() => { setComposing(false) }}
-          onSave={async (draft, photos) => {
-            const entry = await repo.add(draft)
-            // Le foto si collegano alla voce appena creata: prima non esiste un id a cui
-            // appartenere. Gli id tornano dentro la voce, così `photoIds` descrive davvero le
-            // foto salvate invece di restare un elenco vuoto che nessuno riempie mai.
-            if (photos.length > 0) {
-              const saved = []
-              for (const file of photos) saved.push(await photoRepo.add(entry.id, file))
-              await repo.update(entry.id, { photoIds: saved.map((p) => p.id) })
-            }
+          onSave={async (draft) => {
+            await repo.add(draft)
             await persistAndReload()
             setComposing(false)
-            // "foto" è invariabile in italiano: nessun plurale da gestire.
-            setMessage(
-              photos.length === 0
-                ? 'Uscita registrata.'
-                : `Uscita registrata, con ${photos.length} foto.`,
-            )
+            setMessage('Uscita registrata.')
           }}
         />
       ) : composing ? null : (
@@ -248,10 +243,9 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
               <li key={entry.id}>
                 <EntryRow
                   entry={entry}
-                  photoRepo={photoRepo}
                   onDelete={async () => {
                     await repo?.remove(entry.id)
-                    await photoRepo?.removeAllFor(entry.id)
+                    await waypointRepo?.removeAllFor(entry.id)
                     await persistAndReload()
                     setMessage('Uscita eliminata.')
                   }}
@@ -278,7 +272,9 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         ) : auth.status === 'signed-in' ? (
           <p className="mt-1.5 text-xs leading-snug text-ink-dim">
             Sincronizzato con il tuo account: ritrovi queste uscite su ogni dispositivo dove
-            accedi. L&apos;esportazione resta utile come copia di sicurezza portabile.
+            accedi. I punti salvati (auto, accessi, punti di partenza) restano invece solo su
+            questo dispositivo — non fanno parte della sincronizzazione. L&apos;esportazione resta
+            utile come copia di sicurezza portabile del diario.
           </p>
         ) : auth.status === 'unavailable' ? (
           <p className="mt-1.5 text-xs leading-snug text-ink-dim">
@@ -336,11 +332,9 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
 
 function EntryRow({
   entry,
-  photoRepo,
   onDelete,
 }: {
   entry: DiaryEntry
-  photoRepo: PhotoRepository | null
   onDelete: () => void
 }) {
   const [confirming, setConfirming] = useState(false)
@@ -372,6 +366,10 @@ function EntryRow({
           <p className="mt-0.5 text-xs text-ink-dim">
             trovati: <strong className="text-ink">{ABUNDANCE_LABELS[entry.abundance]}</strong>
             {entry.elevationM !== null && <> · {entry.elevationM} m</>}
+            {entry.durationMinutes !== null && <> · {entry.durationMinutes} min</>}
+            {entry.searchers !== null && (
+              <> · {entry.searchers} {entry.searchers === 1 ? 'persona' : 'persone'}</>
+            )}
           </p>
           {entry.positionSource === 'gps' && (
             <p className="mt-0.5 text-[11px] text-ink-faint">
@@ -393,7 +391,6 @@ function EntryRow({
           {entry.notes !== '' && (
             <p className="mt-1 text-xs leading-snug text-ink-faint">{entry.notes}</p>
           )}
-          {photoRepo !== null && <EntryPhotos entryId={entry.id} photoRepo={photoRepo} />}
         </div>
 
         {confirming ? (
@@ -430,43 +427,17 @@ function EntryRow({
           </button>
         )}
       </div>
+
+      <div className="mt-2.5">
+        <WaypointsPanel
+          entryId={entry.id}
+          title="Punti dell'uscita"
+          description="bivio, radura, un riferimento per questa camminata"
+          emptyText="Nessun punto salvato per questa uscita."
+          kinds={['car', 'access', 'reference', 'departure']}
+        />
+      </div>
     </article>
-  )
-}
-
-/** Anteprime delle foto salvate per una voce. Caricate una volta, non tengono nulla in memoria fra i re-render. */
-function EntryPhotos({ entryId, photoRepo }: { entryId: string; photoRepo: PhotoRepository }) {
-  const [photos, setPhotos] = useState<Photo[] | null>(null)
-
-  useEffect(() => {
-    let cancelled = false
-    void photoRepo
-      .listFor(entryId)
-      .then((list) => { if (!cancelled) setPhotos(list) })
-      // Senza questo un archivio che non si apre diventa un rifiuto non gestito in console: qui
-      // le miniature sono un di piu', la voce di diario resta leggibile lo stesso.
-      .catch(() => { if (!cancelled) setPhotos([]) })
-    return () => { cancelled = true }
-  }, [entryId, photoRepo])
-
-  const urls = useMemo(() => (photos ?? []).map((p) => URL.createObjectURL(p.blob)), [photos])
-  useEffect(() => {
-    return () => {
-      for (const url of urls) URL.revokeObjectURL(url)
-    }
-  }, [urls])
-
-  if (photos === null || photos.length === 0) return null
-
-  return (
-    <ul className="mt-1.5 flex flex-wrap gap-1.5">
-      {urls.map((url, index) => (
-        <li key={photos[index]?.id ?? index}>
-          {/* eslint-disable-next-line @next/next/no-img-element -- anteprima locale da object URL, non un asset ottimizzabile */}
-          <img src={url} alt="" className="h-12 w-12 rounded-lg border border-edge object-cover" />
-        </li>
-      ))}
-    </ul>
   )
 }
 

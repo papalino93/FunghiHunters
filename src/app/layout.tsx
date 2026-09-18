@@ -72,8 +72,12 @@ export const viewport: Viewport = {
   ],
   width: 'device-width',
   initialScale: 1,
-  // La mappa gestisce lo zoom da sola: quello del browser sopra crea solo confusione.
-  maximumScale: 1,
+  /*
+   * Niente `maximumScale: 1`: impediva a chi ha bisogno di ingrandire testo o interfaccia di
+   * farlo, che è una barriera di accessibilità reale, non un dettaglio — su un telefono al sole,
+   * con gli occhiali sbagliati o no, è la differenza fra leggere l'app e non leggerla. La mappa
+   * (`MapView`) gestisce comunque il proprio zoom internamente, senza bisogno di questo blocco.
+   */
 }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {

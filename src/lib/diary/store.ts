@@ -20,6 +20,8 @@ import {
   type DiaryEntry,
   type DiaryExport,
   applyPrivacy,
+  isValidDurationMinutes,
+  isValidSearchers,
 } from '@/lib/diary/types'
 import { DIARY_STORE, openDatabase, promisify } from '@/lib/diary/db'
 
@@ -78,7 +80,8 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
     positionSource:
       draft.positionSource !== undefined ? draft.positionSource : (existing?.positionSource ?? null),
     trees: draft.trees ?? existing?.trees ?? [],
-    photoIds: draft.photoIds ?? existing?.photoIds ?? [],
+    durationMinutes: draft.durationMinutes ?? existing?.durationMinutes ?? null,
+    searchers: draft.searchers ?? existing?.searchers ?? null,
     // I campi congelati non si riscrivono mai in aggiornamento: descrivono il momento
     // dell'inserimento, non lo stato attuale del modello.
     mpiAtEntry: existing?.mpiAtEntry ?? draft.mpiAtEntry ?? null,
@@ -129,7 +132,8 @@ export function normaliseEntry(raw: StoredEntry): DiaryEntry {
     privacy: raw.privacy ?? 'area',
     positionSource: raw.positionSource ?? null,
     trees: raw.trees ?? [],
-    photoIds: raw.photoIds ?? [],
+    durationMinutes: raw.durationMinutes ?? null,
+    searchers: raw.searchers ?? null,
     mpiAtEntry: raw.mpiAtEntry ?? null,
     confidenceAtEntry: raw.confidenceAtEntry ?? null,
     algorithmVersionAtEntry: raw.algorithmVersionAtEntry ?? null,
@@ -356,10 +360,17 @@ export async function importInto(
       privacy: entry.privacy ?? 'area',
       positionSource: entry.positionSource ?? null,
       trees: entry.trees ?? [],
-      // Le foto non viaggiano nell'esportazione (vedi il commento su photoIds in types.ts): un
-      // file importato su un altro dispositivo non le ha mai avute, quindi non c'e' nulla da
-      // riferire qui.
-      photoIds: [],
+      // Sanificati, non rifiutati: un valore fuori intervallo (o un residuo "photoIds" da un
+      // export scritto quando le foto esistevano ancora, ignorato perché `entry` non lo tipizza
+      // più) non deve far perdere l'intera voce — solo il singolo dato dubbio torna a "non detto".
+      durationMinutes:
+        typeof entry.durationMinutes === 'number' && isValidDurationMinutes(entry.durationMinutes)
+          ? entry.durationMinutes
+          : null,
+      searchers:
+        typeof entry.searchers === 'number' && isValidSearchers(entry.searchers)
+          ? entry.searchers
+          : null,
       mpiAtEntry: entry.mpiAtEntry ?? null,
       confidenceAtEntry: entry.confidenceAtEntry ?? null,
       algorithmVersionAtEntry: entry.algorithmVersionAtEntry ?? null,

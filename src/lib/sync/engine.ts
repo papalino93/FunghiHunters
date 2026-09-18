@@ -57,15 +57,7 @@ export async function runSync(
       const localEntry = localBefore.find((e) => e.id === remoteEntry.id)
       const remoteWins = localEntry === undefined || remoteEntry.updatedAt > localEntry.updatedAt
       if (remoteWins) {
-        /*
-         * Le foto non lasciano mai il dispositivo (vedi `DiaryEntry.photoIds` in
-         * `lib/diary/types.ts`): il backend le restituisce sempre vuote. Applicare
-         * `remoteEntry` così com'è cancellerebbe il riferimento alle foto già salvate qui,
-         * anche se il resto della voce ha davvero bisogno della versione remota più recente —
-         * le foto stesse non sono in conflitto fra i due dispositivi, sono locali per
-         * definizione, quindi non entrano nel confronto "chi vince".
-         */
-        await repo.upsertRaw({ ...remoteEntry, photoIds: localEntry?.photoIds ?? remoteEntry.photoIds })
+        await repo.upsertRaw(remoteEntry)
         pulled += 1
         candidates.delete(remoteEntry.id)
       }

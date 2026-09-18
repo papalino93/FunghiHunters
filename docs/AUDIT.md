@@ -1,5 +1,68 @@
 # Audit — FungiCast Toscana
 
+Questo file ha due parti, e vanno lette in modo diverso. **"Stato attuale"** qui sotto è quello che
+vale oggi, verificato in questa sessione: se contraddice qualcosa più in basso, questa sezione ha
+ragione. **"Cronologia degli interventi"** (dopo il separatore) è un registro storico — ogni voce è
+la fotografia di una sessione passata, non aggiornata quando il codice cambia sotto di lei. Utile
+per capire perché una scelta è stata fatta, non affidabile come descrizione di oggi.
+
+## Stato attuale (18 settembre 2026, sessione "roadmap outdoor")
+
+**Diario uscite**: niente foto (rimosse — vedi sotto il perché), posizione GPS reale distinta dal
+ripiego di zona (`positionSource`), alberi osservati, durata della ricerca e numero di cercatori
+(facoltativi, validati `5-720` min e `1-20` persone). Calibrazione estesa: conta le uscite con
+"contesto sufficiente" (durata registrata), avvisa quando uno zero non è interpretabile per
+mancanza di durata, e — solo sopra soglia minima — dice se il modello tende a sovra o sottostimare.
+
+**Perché le foto sono state tolte**: erano state costruite in una sessione precedente (funzionanti,
+non un prototipo), ma non servivano al modello e complicavano spazio locale, privacy, export e
+sincronizzazione senza un beneficio dichiarato. Rimosse su richiesta esplicita. Compatibilità
+mantenuta: un vecchio export con `photoIds`, o una riga IndexedDB residua con quella chiave, si
+leggono senza errori (vedi `tests/diary.test.ts`, sezione "compatibilità"). L'object store
+`photos` di IndexedDB resta sui dispositivi che l'avevano già usato — non cancellato, semplicemente
+non più scritto né letto.
+
+**Punti salvati (waypoint)**: modello esteso da due categorie (`car`, `point`) a quattro (`car`,
+`access`, `reference`, `departure`), con associazione facoltativa a una voce del diario
+(`entryId`). Un punto vive nella sezione "Punti dell'uscita" (dentro una voce) oppure "Punti
+liberi" (nel Diario, in cima), mai in entrambe. I punti di partenza preferiti sono punti liberi di
+categoria `departure`, selezionabili in "Dove vado oggi" per calcolare la distanza. Restano
+**esclusivamente locali**: nessuna riga Supabase, nessuna sincronizzazione, mai. Compatibilità: un
+punto salvato prima di questo modello (`kind: 'point'`, senza `entryId`) si legge come punto libero
+di categoria `reference` — vedi `normaliseWaypoint` in `src/lib/waypoints/types.ts`.
+
+**Integrità dello snapshot**: `algorithmVersionMismatch()` confronta la versione del modello
+dichiarata nello snapshot con `ALGORITHM_V1.version` del codice deployato e lo mostra a schermo se
+diversi (`SourceHealth.tsx`) — può succedere perché snapshot e codice si aggiornano in momenti
+indipendenti (cron giornaliero vs deploy). `loadSnapshot()` verifica anche la forma minima del
+file prima di fidarsene: un JSON strutturalmente diverso da uno snapshot (campi mancanti, tipi
+sbagliati) produce lo snapshot vuoto dichiarato, non un crash né dati inventati. La freschezza dei
+dati (`SourceHealth.tsx`, avviso oltre un giorno) esisteva già da una sessione precedente.
+
+**Accessibilità**: rimosso `maximumScale: 1` dal viewport — impediva a chi ne ha bisogno di
+ingrandire testo e interfaccia dal browser, una barriera reale su un'app pensata per l'esterno.
+
+### Rischi aperti, in ordine di priorità
+
+1. **Nessuna delle nuove funzioni (waypoint estesi, punti di partenza, contesto del diario) ha un
+   test end-to-end in un browser reale**, solo test di logica e alcune verifiche manuali con
+   Playwright durante lo sviluppo. Un giro reale su dispositivo fisico non è stato fatto.
+2. **Le aree salvate (`user_locations`) hanno ancora solo lo schema di sync, zero UI.** Diverso dai
+   punti di partenza (locali, non sincronizzati): questa resta la funzione "salva un'area sul
+   server" mai costruita. Non è un bug, è scope non coperto.
+3. **Nuove fonti dati (copertura forestale, DTM/DEM, umidità del suolo)**: valutate a livello di
+   requisiti e licenza in `docs/CATALOGO-FONTI.md`, **nessuna integrata**. Farlo richiede
+   individuare un dataset reale con licenza verificata, non semplicemente aggiungere un adattatore
+   — è la differenza fra "pronto" e "onesto" che questo progetto si è dato come regola.
+4. **Adapter Supabase reale**: verificato dal vivo con un progetto reale in questa sessione (login
+   Google, sincronizzazione, permessi corretti dopo due giri di correzione — vedi cronologia), ma
+   `duration_minutes`/`searchers` (nuovi in `0006_diary_context.sql`) non sono ancora stati
+   sincronizzati contro quel progetto reale, solo contro il backend finto dei test.
+
+---
+
+## Cronologia degli interventi (storico — leggi come registro, non come stato attuale)
+
 ## Aggiornamento — vento: doppio conteggio corretto, sicurezza separata (18 settembre 2026)
 
 Trovato e corretto un doppio conteggio reale: il vento entrava nel bilancio idrico sia tramite

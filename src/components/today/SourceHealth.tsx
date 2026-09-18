@@ -1,6 +1,6 @@
 'use client'
 
-import type { Snapshot } from '@/lib/snapshot/types'
+import { algorithmVersionMismatch, type Snapshot } from '@/lib/snapshot/types'
 import { SourceStatusList } from '@/components/SourceStatusList'
 import { formatDate } from '@/lib/ui/scale'
 
@@ -14,6 +14,7 @@ import { formatDate } from '@/lib/ui/scale'
 export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
   const ageDays = daysSince(snapshot.referenceDate)
   const stale = ageDays > 1
+  const versionMismatch = algorithmVersionMismatch(snapshot)
 
   return (
     <section className="rounded-xl border border-edge bg-surface-1 p-3">
@@ -26,6 +27,14 @@ export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
           ? `Ultimo calcolo ${ageDays} giorni fa (${formatDate(snapshot.referenceDate)}): i numeri potrebbero non riflettere il meteo recente.`
           : `Calcolato il ${formatDate(snapshot.referenceDate)} · modello ${snapshot.algorithmVersion}`}
       </p>
+
+      {versionMismatch && (
+        <p role="alert" className="mt-1.5 text-xs text-warn">
+          Questo snapshot è stato calcolato con il modello {snapshot.algorithmVersion}, ma l&apos;app
+          pubblicata ne descrive uno diverso: la spiegazione dei punteggi può non corrispondere
+          esattamente a questi numeri finché non arriva il prossimo calcolo giornaliero.
+        </p>
+      )}
 
       <div className="mt-2">
         <SourceStatusList sources={snapshot.sources} />

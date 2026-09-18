@@ -1,9 +1,12 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import type { UserPosition } from '@/lib/recommend/rank'
 import type { SnapshotZone } from '@/lib/snapshot/types'
+import { departurePoints, type Waypoint } from '@/lib/waypoints/types'
+import { createWaypointRepository } from '@/lib/waypoints/store'
+import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 
 /**
  * Posizione: opzionale, con consenso esplicito, revocabile.
@@ -26,6 +29,21 @@ export function LocationPrompt({
 }) {
   const [state, setState] = useState<'idle' | 'asking' | 'denied' | 'unavailable'>('idle')
   const [manual, setManual] = useState(false)
+  const hydrated = useIsHydrated()
+  const [saved, setSaved] = useState<readonly Waypoint[]>([])
+
+  // I punti di partenza preferiti si salvano dal Diario ("Punti liberi"): qui si leggono soltanto,
+  // per offrirli come terza scelta accanto al GPS e ai riferimenti di zona. Restano locali, come
+  // ogni punto salvato — vedi `lib/waypoints/types.ts`.
+  useEffect(() => {
+    if (!hydrated) return
+    let cancelled = false
+    void createWaypointRepository()
+      .list()
+      .then((all) => { if (!cancelled) setSaved(departurePoints(all)) })
+      .catch(() => { if (!cancelled) setSaved([]) })
+    return () => { cancelled = true }
+  }, [hydrated])
 
   const requestLocation = (): void => {
     if (typeof navigator === 'undefined' || navigator.geolocation === undefined) {
@@ -116,9 +134,37 @@ export function LocationPrompt({
 
       {manual && (
         <div className="mt-2.5">
-          <p className="mb-1.5 text-[11px] text-ink-faint">
-            Parto da vicino a…
-          </p>
+          {saved.length > 0 && (
+            <>
+              <p className="mb-1.5 text-[11px] text-ink-faint">
+                Da un punto di partenza salvato…
+              </p>
+              <ul className="mb-3 flex flex-wrap gap-1.5">
+                {saved.map((point) => (
+                  <li key={point.id}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onChange({ latitude: point.latitude, longitude: point.longitude })
+                        setManual(false)
+                      }}
+                      className="min-h-11 rounded-lg border border-accent/40 bg-accent/15 px-3 text-xs
+                                 font-medium text-ink transition-colors hover:bg-accent/25
+                                 focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                    >
+                      {point.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <p className="mb-1.5 text-[11px] text-ink-faint">…oppure da vicino a</p>
+            </>
+          )}
+          {saved.length === 0 && (
+            <p className="mb-1.5 text-[11px] text-ink-faint">
+              Parto da vicino a…
+            </p>
+          )}
           <ul className="flex flex-wrap gap-1.5">
             {zones.map((zone) => (
               <li key={zone.code}>
@@ -141,6 +187,10 @@ export function LocationPrompt({
             L&apos;elenco è quello delle località di riferimento delle aree coperte. Inserire un
             indirizzo qualsiasi richiederebbe un servizio di geocodifica, che non è ancora
             collegato.
+            {saved.length === 0 && (
+              <> Salva un punto di partenza (casa, un parcheggio abituale) dal Diario → Punti
+              liberi: comparirà qui come scelta rapida.</>
+            )}
           </p>
         </div>
       )}

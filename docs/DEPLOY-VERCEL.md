@@ -18,9 +18,12 @@ sempre.
 
 1. Creare un progetto su [supabase.com](https://supabase.com) (il piano gratuito basta).
 2. Nell'**SQL Editor**, eseguire **in ordine** tutti i file di `db/migrations/`:
-   `0001_init.sql`, `0002_sync.sql`, `0003_grants.sql`, `0004_diary_location.sql` e
-   `0005_grants_narrow.sql`. Il terzo esiste perché su almeno un progetto reale i primi due non
-   bastavano: vedi il caso `permission denied for schema public` più sotto se lo hai già saltato.
+   `0001_init.sql`, `0002_sync.sql`, `0003_grants.sql`, `0004_diary_location.sql`,
+   `0005_grants_narrow.sql` e `0006_diary_context.sql`. Il terzo esiste perché su almeno un
+   progetto reale i primi due non bastavano: vedi il caso `permission denied for schema public`
+   più sotto se lo hai già saltato. Il sesto aggiunge due colonne facoltative (durata della
+   ricerca, numero di cercatori) al diario: senza, quei due campi restano solo sul dispositivo e
+   non si sincronizzano, senza errori.
 
    > **Se hai già eseguito `0003_grants.sql`, esegui anche `0005_grants_narrow.sql`: non è
    > facoltativo.** Il terzo file concedeva scrittura su *tutte* le tabelle dello schema `public`
