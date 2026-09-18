@@ -122,8 +122,12 @@ progetto Supabase vero per essere verificata.
   modo per salvare un'area nell'app, quindi non c'è cosa sincronizzare. Non è un bug, è scope non
   coperto: va dichiarato, non nascosto.
 - **Nessun test E2E reale del flusso di login** (browser vero, redirect OAuth vero). I test
-  esistenti verificano la macchina a stati, non l'integrazione col popup di Google o con l'email
-  del magic link.
+  esistenti verificano la macchina a stati e la lettura dell'esito del redirect
+  (`tests/auth-callback.test.ts`), non l'integrazione col consenso di Google o con l'email del
+  magic link. Il ritorno dal redirect, però, non è più muto quando fallisce: l'errore viene letto
+  dall'URL e mostrato a schermo con il suo codice, e `docs/DEPLOY-VERCEL.md` dice cosa significa
+  ciascuno. È ciò che rende la verifica manuale eseguibile da chi collega il progetto, invece di
+  richiedere la console del browser.
 - **Mapping fra vocabolario privacy dell'app e schema DB.** Lo schema iniziale (`0001_init.sql`)
   aveva un `privacy_level` pensato per la condivisione pubblica futura (`private/municipality/
   zone/public`), diverso dal vocabolario di precisione del diario (`exact/area/zone`). Ho aggiunto

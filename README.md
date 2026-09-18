@@ -18,6 +18,8 @@ taratura toscane.
 - [`docs/DECISIONS.md`](docs/DECISIONS.md) — le decisioni vincolanti per l'implementazione
 - [`docs/AUDIT.md`](docs/AUDIT.md) — cosa è stato verificato, cosa manca, priorità aperte
 - [`docs/SYNC.md`](docs/SYNC.md) — come funziona la sincronizzazione, cosa serve per attivarla
+- [`docs/DEPLOY-VERCEL.md`](docs/DEPLOY-VERCEL.md) — accesso con Google su Vercel: Supabase, Google
+  Cloud, variabili d'ambiente, e cosa significa ogni errore
 
 ## Stack
 

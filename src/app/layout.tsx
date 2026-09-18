@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
 
+import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { AuthProvider } from '@/lib/auth/context'
@@ -79,6 +80,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           Vai al contenuto
         </a>
         <AuthProvider>
+          {/* Nulla quando l'accesso non è appena fallito: vedi il commento nel componente. */}
+          <AuthCallbackNotice />
           <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
             {children}
           </main>
