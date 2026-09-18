@@ -5,6 +5,7 @@ import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { AuthProvider } from '@/lib/auth/context'
+import { APP_VERSION, BUILD_TIME } from '@/lib/ui/version'
 import './globals.css'
 
 const sans = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
@@ -52,6 +53,15 @@ export const metadata: Metadata = {
   other: {
     // I dati osservati sono CC-BY-SA: l'attribuzione viaggia anche nei metadati, non solo in UI.
     'dcterms.rights': 'Dati SIR Regione Toscana (CC BY-SA), Open-Meteo (CC BY 4.0)',
+    /*
+     * Versione della build, nell'HTML e non solo in pagina.
+     *
+     * Così si può verificare quale copia sta servendo un dispositivo senza toccarlo — basta un
+     * `curl -s https://<dominio> | grep fungicast-version` — che è l'unico modo di distinguere
+     * "il deploy non è passato" da "il telefono ha ancora la vecchia in cache".
+     */
+    'fungicast-version': APP_VERSION,
+    'fungicast-build-time': BUILD_TIME,
   },
 }
 
