@@ -3,6 +3,7 @@ import { Inter, JetBrains_Mono } from 'next/font/google'
 
 import { BottomNav } from '@/components/BottomNav'
 import { ServiceWorker } from '@/components/ServiceWorker'
+import { AuthProvider } from '@/lib/auth/context'
 import './globals.css'
 
 const sans = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
@@ -12,14 +13,41 @@ const mono = JetBrains_Mono({
   display: 'swap',
 })
 
+const DESCRIPTION =
+  'Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino ' +
+  'in Toscana. Non indica la presenza di funghi.'
+
+/**
+ * Serve un URL assoluto per generare i link `og:image`/`twitter:image` che WhatsApp, Telegram e
+ * simili leggono dall'HTML — senza, Next li risolverebbe su `localhost` in produzione. Su Vercel
+ * `VERCEL_PROJECT_PRODUCTION_URL` è già il dominio giusto; `NEXT_PUBLIC_SITE_URL` resta il modo
+ * per fissarlo a mano su un altro host.
+ */
+const SITE_URL =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL !== undefined
+    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
+    : 'http://localhost:3000')
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: 'FungiCast Toscana',
-  description:
-    'Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino ' +
-    'in Toscana. Non indica la presenza di funghi.',
+  description: DESCRIPTION,
   applicationName: 'FungiCast Toscana',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'FungiCast', statusBarStyle: 'black-translucent' },
+  openGraph: {
+    title: 'FungiCast Toscana',
+    description: DESCRIPTION,
+    siteName: 'FungiCast Toscana',
+    locale: 'it_IT',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'FungiCast Toscana',
+    description: DESCRIPTION,
+  },
   other: {
     // I dati osservati sono CC-BY-SA: l'attribuzione viaggia anche nei metadati, non solo in UI.
     'dcterms.rights': 'Dati SIR Regione Toscana (CC BY-SA), Open-Meteo (CC BY 4.0)',
@@ -50,10 +78,12 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
         >
           Vai al contenuto
         </a>
-        <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
-          {children}
-        </main>
-        <BottomNav />
+        <AuthProvider>
+          <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
+            {children}
+          </main>
+          <BottomNav />
+        </AuthProvider>
         <ServiceWorker />
       </body>
     </html>

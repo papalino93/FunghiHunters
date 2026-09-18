@@ -91,23 +91,78 @@ export function bestDayFrom(
   return { date: best.date, mpi: best.mpi }
 }
 
+/**
+ * Perché una zona non compare, in una frase pronta per l'utente. `null` se non c'è motivo:
+ * la zona passa tutti i filtri.
+ *
+ * Un'area scartata in silenzio è indistinguibile da un'area che non esiste. Chi imposta "quota
+ * minima 1000 m" e vede sparire l'Amiata (910 m) deve poterlo scoprire, non dedurlo.
+ */
+function exclusionReason(
+  zone: SnapshotZone,
+  distance: number | null,
+  dataQuality: number,
+  options: RankOptions,
+): string | null {
+  if (options.maxDistanceKm != null && distance !== null && distance > options.maxDistanceKm) {
+    return (
+      `a ${distance.toFixed(0)} km in linea d'aria, oltre il limite di ${options.maxDistanceKm} km`
+    )
+  }
+  if (options.minElevationM != null && zone.elevationM < options.minElevationM) {
+    return `a ${zone.elevationM} m, sotto la quota minima di ${options.minElevationM} m`
+  }
+  if (options.maxElevationM != null && zone.elevationM > options.maxElevationM) {
+    return `a ${zone.elevationM} m, sopra la quota massima di ${options.maxElevationM} m`
+  }
+  if (options.minDataQuality != null && dataQuality < options.minDataQuality) {
+    return `qualità dei dati ${Math.round(dataQuality)}, sotto la soglia minima di ${options.minDataQuality}`
+  }
+
+  const wanted = options.forestTypes ?? []
+  if (wanted.length > 0 && !zone.forest.some((f) => wanted.includes(f))) {
+    return `bosco di tipo ${zone.forest.join('/')}, non fra quelli scelti`
+  }
+
+  return null
+}
+
 function passesFilters(
   zone: SnapshotZone,
   distance: number | null,
   dataQuality: number,
   options: RankOptions,
 ): boolean {
-  if (options.maxDistanceKm != null && distance !== null && distance > options.maxDistanceKm) {
-    return false
+  return exclusionReason(zone, distance, dataQuality, options) === null
+}
+
+export interface ExcludedZone {
+  readonly zone: SnapshotZone
+  /** Perché questa zona non compare fra i suggerimenti, in chiaro. */
+  readonly reason: string
+}
+
+/**
+ * Le zone escluse dai filtri correnti, con il motivo — il contraltare di `rankZones`. Le due
+ * funzioni condividono la stessa logica di esclusione (`exclusionReason`) apposta: non deve
+ * poter esistere un caso in cui una zona sparisce da `rankZones` senza comparire qui con un
+ * motivo, o viceversa.
+ */
+export function excludedZones(zones: readonly SnapshotZone[], options: RankOptions): ExcludedZone[] {
+  const out: ExcludedZone[] = []
+  for (const zone of zones) {
+    const distance =
+      options.from === null
+        ? null
+        : Math.round(
+            distanceKm(options.from.latitude, options.from.longitude, zone.latitude, zone.longitude) *
+              10,
+          ) / 10
+    const confidence = confidenceOn(zone, options.date)
+    const reason = exclusionReason(zone, distance, confidence, options)
+    if (reason !== null) out.push({ zone, reason })
   }
-  if (options.minElevationM != null && zone.elevationM < options.minElevationM) return false
-  if (options.maxElevationM != null && zone.elevationM > options.maxElevationM) return false
-  if (options.minDataQuality != null && dataQuality < options.minDataQuality) return false
-
-  const wanted = options.forestTypes ?? []
-  if (wanted.length > 0 && !zone.forest.some((f) => wanted.includes(f))) return false
-
-  return true
+  return out
 }
 
 /**

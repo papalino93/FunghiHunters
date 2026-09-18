@@ -16,6 +16,8 @@ export interface SnapshotFactor {
   readonly value: string
   readonly provenance: 'sourced' | 'calibrate'
   readonly source?: string
+  /** Perché la fonte non è (o non è del tutto) una misura toscana, quando è il caso. */
+  readonly transferabilityCaution?: string
 }
 
 export interface SnapshotSeriesPoint {
@@ -28,6 +30,8 @@ export interface SnapshotSeriesPoint {
   readonly rainMm: number | null
   readonly tMinC: number | null
   readonly tMaxC: number | null
+  /** Massimo giornaliero, non una media — vedi il commento su `windMean7d` in `model/features.ts`. */
+  readonly windMs: number | null
 }
 
 export interface SnapshotStation {
@@ -67,6 +71,13 @@ export interface SnapshotZone {
   readonly name: string
   readonly reference: string
   readonly province: string
+  /**
+   * Comune reale che contiene il centro della zona, verificato contro i confini ISTAT
+   * (`src/lib/sources/istat-boundaries.ts`). `null` solo se `public/data/admin-boundaries.json`
+   * non è stato generato (`npx tsx scripts/ingest-admin-boundaries.ts`) — non dovrebbe succedere
+   * in un deploy normale, ma lo snapshot non deve rompersi se succede.
+   */
+  readonly municipality: string | null
   readonly latitude: number
   readonly longitude: number
   readonly elevationM: number
@@ -109,6 +120,21 @@ export interface SnapshotZone {
   readonly lastObservedDate: string | null
   readonly thermalOptimumC: number
   readonly lapseRateCPerKm: number | null
+
+  /**
+   * Comuni reali entro 15 km dal punto di riferimento della zona, verificati contro i confini
+   * ISTAT (`scripts/ingest-nearby-comuni.ts`). Non è il confine della zona — le sette zone sono
+   * punti, non poligoni — ma toponimi reali per orientarsi, mai coordinate esatte fabbricate.
+   * Array vuoto se `public/data/nearby-comuni.json` non è stato generato.
+   */
+  readonly nearbyMunicipalities: readonly SnapshotNearbyMunicipality[]
+}
+
+export interface SnapshotNearbyMunicipality {
+  readonly municipality: string
+  readonly province: string
+  readonly provinceAcronym: string
+  readonly distanceKm: number
 }
 
 export interface SnapshotSource {

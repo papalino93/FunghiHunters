@@ -11,7 +11,7 @@
  * di inventare soglie biologiche.
  */
 
-import { ALGORITHM_V1, type AlgorithmConfig, type Param } from '@/lib/config/algorithm'
+import { ALGORITHM_V1, evidenceForSource, type AlgorithmConfig, type Param } from '@/lib/config/algorithm'
 import type { CellFeatures } from '@/lib/model/features'
 import { mpiLabel, type MpiResult } from '@/lib/model/mpi'
 
@@ -24,6 +24,12 @@ export interface Factor {
   readonly value: string
   readonly provenance: 'sourced' | 'calibrate'
   readonly source?: string
+  /**
+   * Presente solo quando la fonte del parametro non e' pienamente trasferibile alla Toscana
+   * (es. studiata altrove, o su un'altra specie/habitat): il motivo, in una frase, cosi' il
+   * limite compare esattamente dove influenza il punteggio che l'utente sta guardando.
+   */
+  readonly transferabilityCaution?: string
 }
 
 export interface ConfidenceFactor {
@@ -49,10 +55,18 @@ export interface MpiExplanation {
 const POSITIVE_THRESHOLD = 2
 const NEGATIVE_THRESHOLD = -2
 
-function provenanceOf(param: Param): { provenance: 'sourced' | 'calibrate'; source?: string } {
-  return param.source === undefined
-    ? { provenance: param.provenance }
-    : { provenance: param.provenance, source: param.source }
+function provenanceOf(
+  param: Param,
+): { provenance: 'sourced' | 'calibrate'; source?: string; transferabilityCaution?: string } {
+  if (param.source === undefined) return { provenance: param.provenance }
+  const evidence = evidenceForSource(param.source)
+  const caution =
+    evidence !== undefined && evidence.status !== 'applicable'
+      ? evidence.transferability
+      : undefined
+  return caution === undefined
+    ? { provenance: param.provenance, source: param.source }
+    : { provenance: param.provenance, source: param.source, transferabilityCaution: caution }
 }
 
 /**

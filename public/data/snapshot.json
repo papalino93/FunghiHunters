@@ -33,7 +33,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.88976627456861,
-     "tMaxC": 28.603351190999692
+     "tMaxC": 28.603351190999692,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -44,7 +45,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.385578838956695,
-     "tMaxC": 30.51102195699757
+     "tMaxC": 30.51102195699757,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -55,7 +57,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.181824289004574,
-     "tMaxC": 29.61014275799762
+     "tMaxC": 29.61014275799762,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -66,7 +69,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.935008882532166,
-     "tMaxC": 29.815601705964326
+     "tMaxC": 29.815601705964326,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -77,7 +81,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.00003720500528414661,
      "tMinC": 17.438616754443405,
-     "tMaxC": 30.20563719307001
+     "tMaxC": 30.20563719307001,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -88,7 +93,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.000058450397854819115,
      "tMinC": 17.293818816932937,
-     "tMaxC": 30.15223900658894
+     "tMaxC": 30.15223900658894,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -99,7 +105,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.2573073304520422,
      "tMinC": 14.902123263300355,
-     "tMaxC": 26.66213295707854
+     "tMaxC": 26.66213295707854,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -110,7 +117,8 @@
      "provenance": "OBSERVED",
      "rainMm": 15.50604850025541,
      "tMinC": 14.231622576207918,
-     "tMaxC": 21.511136184371974
+     "tMaxC": 21.511136184371974,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -121,7 +129,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.004504549313287522,
      "tMinC": 12.913826592804451,
-     "tMaxC": 24.364592063410498
+     "tMaxC": 24.364592063410498,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -132,7 +141,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.18687281050821133,
      "tMinC": 12.126814961140218,
-     "tMaxC": 23.738386970611185
+     "tMaxC": 23.738386970611185,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -143,7 +153,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.0005619438470293407,
      "tMinC": 10.654454428018779,
-     "tMaxC": 23.387897740972612
+     "tMaxC": 23.387897740972612,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -154,7 +165,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 11.400084715712266,
-     "tMaxC": 24.988561462302606
+     "tMaxC": 24.988561462302606,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -165,7 +177,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.000003994111049082824,
      "tMinC": 11.641279278835107,
-     "tMaxC": 24.296134304376945
+     "tMaxC": 24.296134304376945,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -176,7 +189,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 12.953964140405356,
-     "tMaxC": 25.813221133723765
+     "tMaxC": 25.813221133723765,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -187,7 +201,8 @@
      "provenance": "MODELLED",
      "rainMm": 0,
      "tMinC": 14.7,
-     "tMaxC": 22.5
+     "tMaxC": 22.5,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -198,7 +213,8 @@
      "provenance": "FORECAST",
      "rainMm": 0.2,
      "tMinC": 14.5,
-     "tMaxC": 22.1
+     "tMaxC": 22.1,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -209,7 +225,8 @@
      "provenance": "FORECAST",
      "rainMm": 2.9,
      "tMinC": 14.5,
-     "tMaxC": 21.1
+     "tMaxC": 21.1,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -220,7 +237,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.5,
-     "tMaxC": 23.4
+     "tMaxC": 23.4,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -231,7 +249,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.8,
-     "tMaxC": 24.7
+     "tMaxC": 24.7,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -242,7 +261,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.3,
-     "tMaxC": 22.2
+     "tMaxC": 22.2,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -253,7 +273,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 9.5,
-     "tMaxC": 20.3
+     "tMaxC": 20.3,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -264,7 +285,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.2,
-     "tMaxC": 21.6
+     "tMaxC": 21.6,
+     "windMs": null
     }
    ],
    "weather": {
@@ -501,7 +523,64 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Abbadia San Salvatore",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Abbadia San Salvatore",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 2.3
+    },
+    {
+     "municipality": "Piancastagnaio",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 6.4
+    },
+    {
+     "municipality": "Santa Fiora",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 8.1
+    },
+    {
+     "municipality": "Radicofani",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 9
+    },
+    {
+     "municipality": "Seggiano",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 9.3
+    },
+    {
+     "municipality": "Castiglione d'Orcia",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 11.4
+    },
+    {
+     "municipality": "Castell'Azzara",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 12.5
+    },
+    {
+     "municipality": "Castel del Piano",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 13.5
+    },
+    {
+     "municipality": "Arcidosso",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 15
+    }
+   ]
   },
   {
    "code": "casentino",
@@ -533,7 +612,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.398376871682046,
-     "tMaxC": 28.147952263166275
+     "tMaxC": 28.147952263166275,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -544,7 +624,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.8026050620079,
-     "tMaxC": 31.28296883986478
+     "tMaxC": 31.28296883986478,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -555,7 +636,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 17.617238416267586,
-     "tMaxC": 29.364194638912057
+     "tMaxC": 29.364194638912057,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -566,7 +648,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 17.185524667365115,
-     "tMaxC": 29.439226544850385
+     "tMaxC": 29.439226544850385,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -577,7 +660,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 18.396139597946142,
-     "tMaxC": 30.298608149793154
+     "tMaxC": 30.298608149793154,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -588,7 +672,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 18.198473022822228,
-     "tMaxC": 30.383098973463486
+     "tMaxC": 30.383098973463486,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -599,7 +684,8 @@
      "provenance": "OBSERVED",
      "rainMm": 13.995369014617332,
      "tMinC": 16.095501582779228,
-     "tMaxC": 24.251413422309483
+     "tMaxC": 24.251413422309483,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -610,7 +696,8 @@
      "provenance": "OBSERVED",
      "rainMm": 38.09400841580857,
      "tMinC": 15.424302254341764,
-     "tMaxC": 19.216930789303923
+     "tMaxC": 19.216930789303923,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -621,7 +708,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.8818976583486825,
      "tMinC": 14.147046208904149,
-     "tMaxC": 21.981759522355418
+     "tMaxC": 21.981759522355418,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -632,7 +720,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 13.658186291414546,
-     "tMaxC": 20.940041348925117
+     "tMaxC": 20.940041348925117,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -643,7 +732,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 12.380671571902687,
-     "tMaxC": 22.728109619500692
+     "tMaxC": 22.728109619500692,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -654,7 +744,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 13.855660875693431,
-     "tMaxC": 23.74511138903886
+     "tMaxC": 23.74511138903886,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -665,7 +756,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.000016722012375991318,
      "tMinC": 13.119914831226422,
-     "tMaxC": 23.589602713957937
+     "tMaxC": 23.589602713957937,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -676,7 +768,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 13.87905803141295,
-     "tMaxC": 24.27137963549589
+     "tMaxC": 24.27137963549589,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -687,7 +780,8 @@
      "provenance": "MODELLED",
      "rainMm": 0,
      "tMinC": 14.6,
-     "tMaxC": 20.1
+     "tMaxC": 20.1,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -698,7 +792,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14.5,
-     "tMaxC": 19.1
+     "tMaxC": 19.1,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -709,7 +804,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.9,
-     "tMaxC": 19.9
+     "tMaxC": 19.9,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -720,7 +816,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13,
-     "tMaxC": 23.4
+     "tMaxC": 23.4,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -731,7 +828,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14.3,
-     "tMaxC": 25.1
+     "tMaxC": 25.1,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -742,7 +840,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 9.2,
-     "tMaxC": 19.3
+     "tMaxC": 19.3,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -753,7 +852,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 8.1,
-     "tMaxC": 21.8
+     "tMaxC": 21.8,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -764,7 +864,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 11.8,
-     "tMaxC": 21.7
+     "tMaxC": 21.7,
+     "windMs": null
     }
    ],
    "weather": {
@@ -1001,7 +1102,40 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13.6,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Bibbiena",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Poppi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 2.8
+    },
+    {
+     "municipality": "Bibbiena",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 6.2
+    },
+    {
+     "municipality": "Chiusi della Verna",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 9.1
+    },
+    {
+     "municipality": "Pratovecchio Stia",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.4
+    },
+    {
+     "municipality": "Chitignano",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 14
+    }
+   ]
   },
   {
    "code": "pratomagno",
@@ -1033,7 +1167,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 17.560698456362495,
-     "tMaxC": 28.44189908439858
+     "tMaxC": 28.44189908439858,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -1044,7 +1179,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.564459384345238,
-     "tMaxC": 30.135147089383953
+     "tMaxC": 30.135147089383953,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -1055,7 +1191,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 18.97244518749048,
-     "tMaxC": 27.78360007180459
+     "tMaxC": 27.78360007180459,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -1066,7 +1203,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 18.90637777168552,
-     "tMaxC": 29.902248007799038
+     "tMaxC": 29.902248007799038,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -1077,7 +1215,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.645754091613444,
-     "tMaxC": 29.75576736447248
+     "tMaxC": 29.75576736447248,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -1088,7 +1227,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.006960519582645499,
      "tMinC": 18.78710059335542,
-     "tMaxC": 28.775256605845456
+     "tMaxC": 28.775256605845456,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -1099,7 +1239,8 @@
      "provenance": "OBSERVED",
      "rainMm": 26.068526747367393,
      "tMinC": 14.819608672310945,
-     "tMaxC": 24.879320242345134
+     "tMaxC": 24.879320242345134,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -1110,7 +1251,8 @@
      "provenance": "OBSERVED",
      "rainMm": 20.35653250525237,
      "tMinC": 13.69042999399486,
-     "tMaxC": 18.479634162699785
+     "tMaxC": 18.479634162699785,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -1121,7 +1263,8 @@
      "provenance": "OBSERVED",
      "rainMm": 4.488232605578363,
      "tMinC": 12.96208466327803,
-     "tMaxC": 20.272150280252905
+     "tMaxC": 20.272150280252905,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -1132,7 +1275,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.02643470839025772,
      "tMinC": 13.84963596899246,
-     "tMaxC": 20.523574057380362
+     "tMaxC": 20.523574057380362,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -1143,7 +1287,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.013570651527661593,
      "tMinC": 13.352709908663106,
-     "tMaxC": 22.473106028199012
+     "tMaxC": 22.473106028199012,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -1154,7 +1299,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.003168023485673,
-     "tMaxC": 22.946204673472984
+     "tMaxC": 22.946204673472984,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -1165,7 +1311,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.002392993322290948,
      "tMinC": 14.716680841787662,
-     "tMaxC": 23.550381709218875
+     "tMaxC": 23.550381709218875,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -1176,7 +1323,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.721730764537998,
-     "tMaxC": 22.2789345242973
+     "tMaxC": 22.2789345242973,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -1187,7 +1335,8 @@
      "provenance": "MODELLED",
      "rainMm": 0,
      "tMinC": 15.1,
-     "tMaxC": 17.8
+     "tMaxC": 17.8,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -1198,7 +1347,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.9,
-     "tMaxC": 17.5
+     "tMaxC": 17.5,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -1209,7 +1359,8 @@
      "provenance": "FORECAST",
      "rainMm": 0.1,
      "tMinC": 11.8,
-     "tMaxC": 19.3
+     "tMaxC": 19.3,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -1220,7 +1371,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13,
-     "tMaxC": 22.6
+     "tMaxC": 22.6,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -1231,7 +1383,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14.8,
-     "tMaxC": 23
+     "tMaxC": 23,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -1242,7 +1395,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.2,
-     "tMaxC": 20
+     "tMaxC": 20,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -1253,7 +1407,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.6,
-     "tMaxC": 19.9
+     "tMaxC": 19.9,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -1264,7 +1419,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.9,
-     "tMaxC": 20
+     "tMaxC": 20,
+     "windMs": null
     }
    ],
    "weather": {
@@ -1501,7 +1657,82 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Loro Ciuffenna",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Castelfranco Piandiscò",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 5.7
+    },
+    {
+     "municipality": "Loro Ciuffenna",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 6.9
+    },
+    {
+     "municipality": "Ortignano Raggiolo",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 8.7
+    },
+    {
+     "municipality": "Castel San Niccolò",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 9.2
+    },
+    {
+     "municipality": "Reggello",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 9.2
+    },
+    {
+     "municipality": "Talla",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 10.7
+    },
+    {
+     "municipality": "Terranuova Bracciolini",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 10.9
+    },
+    {
+     "municipality": "Montemignaio",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 11.9
+    },
+    {
+     "municipality": "Castel Focognano",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 12.1
+    },
+    {
+     "municipality": "Poppi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.1
+    },
+    {
+     "municipality": "San Giovanni Valdarno",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 13.3
+    },
+    {
+     "municipality": "Castiglion Fibocchi",
+     "province": "Arezzo",
+     "provinceAcronym": "AR",
+     "distanceKm": 14.7
+    }
+   ]
   },
   {
    "code": "garfagnana",
@@ -1533,7 +1764,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.836052853604798,
-     "tMaxC": 27.020140231097276
+     "tMaxC": 27.020140231097276,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -1544,7 +1776,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.424247155822087,
-     "tMaxC": 28.3992378151725
+     "tMaxC": 28.3992378151725,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -1555,7 +1788,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.01572316428635,
-     "tMaxC": 26.960935291802
+     "tMaxC": 26.960935291802,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -1566,7 +1800,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 17.532261630947957,
-     "tMaxC": 28.62378433294369
+     "tMaxC": 28.62378433294369,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -1577,7 +1812,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 17.8567324319237,
-     "tMaxC": 28.495882380885455
+     "tMaxC": 28.495882380885455,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -1588,7 +1824,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.009124394052095045,
      "tMinC": 16.85937861023789,
-     "tMaxC": 27.958762550416186
+     "tMaxC": 27.958762550416186,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -1599,7 +1836,8 @@
      "provenance": "OBSERVED",
      "rainMm": 45.48354635475346,
      "tMinC": 14.321993392346396,
-     "tMaxC": 19.066212371215364
+     "tMaxC": 19.066212371215364,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -1610,7 +1848,8 @@
      "provenance": "OBSERVED",
      "rainMm": 13.29196322016528,
      "tMinC": 12.921090836299388,
-     "tMaxC": 19.495135018549366
+     "tMaxC": 19.495135018549366,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -1621,7 +1860,8 @@
      "provenance": "OBSERVED",
      "rainMm": 2.959620238125339,
      "tMinC": 12.013141386528696,
-     "tMaxC": 19.976580057914607
+     "tMaxC": 19.976580057914607,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -1632,7 +1872,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.07634364033410287,
      "tMinC": 11.96544911754142,
-     "tMaxC": 22.085012994307597
+     "tMaxC": 22.085012994307597,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -1643,7 +1884,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.011222706390364868,
      "tMinC": 11.248154372244876,
-     "tMaxC": 22.540228800591297
+     "tMaxC": 22.540228800591297,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -1654,7 +1896,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 12.931072913616042,
-     "tMaxC": 23.06718278540312
+     "tMaxC": 23.06718278540312,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -1665,7 +1908,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.021162937605146228,
      "tMinC": 13.491806237393646,
-     "tMaxC": 23.873497521237933
+     "tMaxC": 23.873497521237933,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -1676,7 +1920,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 13.261119423782628,
-     "tMaxC": 21.087443377782503
+     "tMaxC": 21.087443377782503,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -1687,7 +1932,8 @@
      "provenance": "MODELLED",
      "rainMm": 56.8,
      "tMinC": 13.2,
-     "tMaxC": 17.2
+     "tMaxC": 17.2,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -1698,7 +1944,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 11.4,
-     "tMaxC": 18.1
+     "tMaxC": 18.1,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -1709,7 +1956,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.3,
-     "tMaxC": 20.8
+     "tMaxC": 20.8,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -1720,7 +1968,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.5,
-     "tMaxC": 22.7
+     "tMaxC": 22.7,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -1731,7 +1980,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.6,
-     "tMaxC": 23.9
+     "tMaxC": 23.9,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -1742,7 +1992,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.9,
-     "tMaxC": 22.1
+     "tMaxC": 22.1,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -1753,7 +2004,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 11.5,
-     "tMaxC": 20.7
+     "tMaxC": 20.7,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -1764,7 +2016,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.1,
-     "tMaxC": 20.7
+     "tMaxC": 20.7,
+     "windMs": null
     }
    ],
    "weather": {
@@ -2002,7 +2255,100 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Villa Collemandina",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Villa Collemandina",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 1.8
+    },
+    {
+     "municipality": "San Romano in Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 2.5
+    },
+    {
+     "municipality": "Castiglione di Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 4.9
+    },
+    {
+     "municipality": "Camporgiano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 5.9
+    },
+    {
+     "municipality": "Pieve Fosciana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 6.4
+    },
+    {
+     "municipality": "Piazza al Serchio",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 7.6
+    },
+    {
+     "municipality": "Castelnuovo di Garfagnana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 8.8
+    },
+    {
+     "municipality": "Sillano Giuncugnano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 9.4
+    },
+    {
+     "municipality": "Fosciandora",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 10.3
+    },
+    {
+     "municipality": "Careggine",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 10.6
+    },
+    {
+     "municipality": "Vagli Sotto",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Gallicano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Minucciano",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 12.6
+    },
+    {
+     "municipality": "Molazzana",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 12.9
+    },
+    {
+     "municipality": "Barga",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 13.6
+    }
+   ]
   },
   {
    "code": "pistoiese",
@@ -2034,7 +2380,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.705845756081814,
-     "tMaxC": 26.699656902375725
+     "tMaxC": 26.699656902375725,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -2045,7 +2392,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.925526943018216,
-     "tMaxC": 28.288440411404473
+     "tMaxC": 28.288440411404473,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -2056,7 +2404,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 14.88591915448257,
-     "tMaxC": 26.322166359846786
+     "tMaxC": 26.322166359846786,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -2067,7 +2416,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.225568682664523,
-     "tMaxC": 28.06866687120356
+     "tMaxC": 28.06866687120356,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -2078,7 +2428,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.41027794158891,
-     "tMaxC": 28.608049899318132
+     "tMaxC": 28.608049899318132,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -2089,7 +2440,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.003629381657384959,
      "tMinC": 16.26135406577633,
-     "tMaxC": 27.575680458230792
+     "tMaxC": 27.575680458230792,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -2100,7 +2452,8 @@
      "provenance": "OBSERVED",
      "rainMm": 24.747511155300685,
      "tMinC": 13.942579614276962,
-     "tMaxC": 18.574803301171286
+     "tMaxC": 18.574803301171286,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -2111,7 +2464,8 @@
      "provenance": "OBSERVED",
      "rainMm": 10.723050612529486,
      "tMinC": 13.29810341659614,
-     "tMaxC": 19.294777900947167
+     "tMaxC": 19.294777900947167,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -2122,7 +2476,8 @@
      "provenance": "OBSERVED",
      "rainMm": 1.5354530149580738,
      "tMinC": 11.773777085643415,
-     "tMaxC": 20.280721858380957
+     "tMaxC": 20.280721858380957,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -2133,7 +2488,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.06851892632273635,
      "tMinC": 11.759792205994986,
-     "tMaxC": 21.690393755276375
+     "tMaxC": 21.690393755276375,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -2144,7 +2500,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.017250584948694792,
      "tMinC": 10.040525792750111,
-     "tMaxC": 22.442844807886264
+     "tMaxC": 22.442844807886264,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -2155,7 +2512,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 12.102109650204442,
-     "tMaxC": 23.089554356256706
+     "tMaxC": 23.089554356256706,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -2166,7 +2524,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.0011536937661958341,
      "tMinC": 12.006446250970077,
-     "tMaxC": 23.752708949818157
+     "tMaxC": 23.752708949818157,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -2177,7 +2536,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 11.97659244039385,
-     "tMaxC": 21.943888921892658
+     "tMaxC": 21.943888921892658,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -2188,7 +2548,8 @@
      "provenance": "MODELLED",
      "rainMm": 19.6,
      "tMinC": 12,
-     "tMaxC": 17.7
+     "tMaxC": 17.7,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -2199,7 +2560,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.2,
-     "tMaxC": 19.2
+     "tMaxC": 19.2,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -2210,7 +2572,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.9,
-     "tMaxC": 20.1
+     "tMaxC": 20.1,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -2221,7 +2584,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.3,
-     "tMaxC": 21.8
+     "tMaxC": 21.8,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -2232,7 +2596,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.4,
-     "tMaxC": 23.2
+     "tMaxC": 23.2,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -2243,7 +2608,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.2,
-     "tMaxC": 19.8
+     "tMaxC": 19.8,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -2254,7 +2620,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 9.7,
-     "tMaxC": 20.4
+     "tMaxC": 20.4,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -2265,7 +2632,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 11.4,
-     "tMaxC": 21.7
+     "tMaxC": 21.7,
+     "windMs": null
     }
    ],
    "weather": {
@@ -2502,7 +2870,34 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Abetone Cutigliano",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Abetone Cutigliano",
+     "province": "Pistoia",
+     "provinceAcronym": "PT",
+     "distanceKm": 5.3
+    },
+    {
+     "municipality": "San Marcello Piteglio",
+     "province": "Pistoia",
+     "provinceAcronym": "PT",
+     "distanceKm": 6.8
+    },
+    {
+     "municipality": "Bagni di Lucca",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 11.1
+    },
+    {
+     "municipality": "Coreglia Antelminelli",
+     "province": "Lucca",
+     "provinceAcronym": "LU",
+     "distanceKm": 14
+    }
+   ]
   },
   {
    "code": "mugello",
@@ -2534,7 +2929,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.012892807498637434,
      "tMinC": 18.482539211147223,
-     "tMaxC": 26.99896743197256
+     "tMaxC": 26.99896743197256,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -2545,7 +2941,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.114940414664428,
-     "tMaxC": 29.18601198167674
+     "tMaxC": 29.18601198167674,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -2556,7 +2953,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 18.03580698690155,
-     "tMaxC": 26.186026571689478
+     "tMaxC": 26.186026571689478,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -2567,7 +2965,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.545625729297715,
-     "tMaxC": 28.056452030119967
+     "tMaxC": 28.056452030119967,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -2578,7 +2977,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.905941145042593,
-     "tMaxC": 29.81008116615516
+     "tMaxC": 29.81008116615516,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -2589,7 +2989,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.004294106949093796,
      "tMinC": 18.123855846257776,
-     "tMaxC": 27.928935799164144
+     "tMaxC": 27.928935799164144,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -2600,7 +3001,8 @@
      "provenance": "OBSERVED",
      "rainMm": 15.719716305333021,
      "tMinC": 15.967333932952974,
-     "tMaxC": 19.496400993206745
+     "tMaxC": 19.496400993206745,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -2611,7 +3013,8 @@
      "provenance": "OBSERVED",
      "rainMm": 36.512762983909326,
      "tMinC": 14.38513760996536,
-     "tMaxC": 18.38913648784814
+     "tMaxC": 18.38913648784814,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -2622,7 +3025,8 @@
      "provenance": "OBSERVED",
      "rainMm": 3.7131942881783937,
      "tMinC": 12.786553858803806,
-     "tMaxC": 20.704341353984816
+     "tMaxC": 20.704341353984816,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -2633,7 +3037,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.01571743779633155,
      "tMinC": 14.198989559090514,
-     "tMaxC": 20.31465726441502
+     "tMaxC": 20.31465726441502,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -2644,7 +3049,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.02292490296693301,
      "tMinC": 13.10227966004166,
-     "tMaxC": 22.836732104926227
+     "tMaxC": 22.836732104926227,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -2655,7 +3061,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.013048924549770968,
      "tMinC": 15.541215327476078,
-     "tMaxC": 22.850606547513586
+     "tMaxC": 22.850606547513586,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -2666,7 +3073,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.0012428627841525282,
      "tMinC": 15.032519215288769,
-     "tMaxC": 23.293409785634633
+     "tMaxC": 23.293409785634633,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -2677,7 +3085,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.380548237380387,
-     "tMaxC": 22.1341533161847
+     "tMaxC": 22.1341533161847,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -2688,7 +3097,8 @@
      "provenance": "MODELLED",
      "rainMm": 2.1,
      "tMinC": 15.8,
-     "tMaxC": 17.5
+     "tMaxC": 17.5,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -2699,7 +3109,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14,
-     "tMaxC": 18.2
+     "tMaxC": 18.2,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -2710,7 +3121,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.7,
-     "tMaxC": 19.6
+     "tMaxC": 19.6,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -2721,7 +3133,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 13.2,
-     "tMaxC": 22.7
+     "tMaxC": 22.7,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -2732,7 +3145,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14.2,
-     "tMaxC": 23.4
+     "tMaxC": 23.4,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -2743,7 +3157,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.9,
-     "tMaxC": 19
+     "tMaxC": 19,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -2754,7 +3169,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 9.8,
-     "tMaxC": 20.9
+     "tMaxC": 20.9,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -2765,7 +3181,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 10.9,
-     "tMaxC": 20.9
+     "tMaxC": 20.9,
+     "windMs": null
     }
    ],
    "weather": {
@@ -3002,13 +3419,46 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 13,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Firenzuola",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Firenzuola",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 7.1
+    },
+    {
+     "municipality": "Barberino di Mugello",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 8.2
+    },
+    {
+     "municipality": "Scarperia e San Piero",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 10.3
+    },
+    {
+     "municipality": "Vernio",
+     "province": "Prato",
+     "provinceAcronym": "PO",
+     "distanceKm": 13
+    },
+    {
+     "municipality": "Borgo San Lorenzo",
+     "province": "Firenze",
+     "provinceAcronym": "FI",
+     "distanceKm": 14.9
+    }
+   ]
   },
   {
    "code": "metallifere",
    "name": "Colline Metallifere",
    "reference": "Chiusdino e Montieri",
-   "province": "SI",
+   "province": "GR",
    "latitude": 43.14,
    "longitude": 11.05,
    "elevationM": 600,
@@ -3034,7 +3484,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.00003099686403450207,
      "tMinC": 17.21259748103051,
-     "tMaxC": 31.358369014415324
+     "tMaxC": 31.358369014415324,
+     "windMs": null
     },
     {
      "date": "2026-09-04",
@@ -3045,7 +3496,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 20.419530208421737,
-     "tMaxC": 31.95438136011012
+     "tMaxC": 31.95438136011012,
+     "windMs": null
     },
     {
      "date": "2026-09-05",
@@ -3056,7 +3508,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.427517726784473,
-     "tMaxC": 30.440309066940053
+     "tMaxC": 30.440309066940053,
+     "windMs": null
     },
     {
      "date": "2026-09-06",
@@ -3067,7 +3520,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 19.259219127052575,
-     "tMaxC": 31.827606708526258
+     "tMaxC": 31.827606708526258,
+     "windMs": null
     },
     {
      "date": "2026-09-07",
@@ -3078,7 +3532,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.08996633465291115,
      "tMinC": 20.97407253386744,
-     "tMaxC": 30.484526005261287
+     "tMaxC": 30.484526005261287,
+     "windMs": null
     },
     {
      "date": "2026-09-08",
@@ -3089,7 +3544,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.018961163246234484,
      "tMinC": 19.49006382511035,
-     "tMaxC": 30.350254790401053
+     "tMaxC": 30.350254790401053,
+     "windMs": null
     },
     {
      "date": "2026-09-09",
@@ -3100,7 +3556,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.2629496716332565,
      "tMinC": 18.143331370096863,
-     "tMaxC": 27.419640964229494
+     "tMaxC": 27.419640964229494,
+     "windMs": null
     },
     {
      "date": "2026-09-10",
@@ -3111,7 +3568,8 @@
      "provenance": "OBSERVED",
      "rainMm": 45.0440785309884,
      "tMinC": 16.01836571793414,
-     "tMaxC": 22.75735768696886
+     "tMaxC": 22.75735768696886,
+     "windMs": null
     },
     {
      "date": "2026-09-11",
@@ -3122,7 +3580,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.28578858468174434,
      "tMinC": 15.474674280240343,
-     "tMaxC": 23.87032025530592
+     "tMaxC": 23.87032025530592,
+     "windMs": null
     },
     {
      "date": "2026-09-12",
@@ -3133,7 +3592,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.0034197961349780636,
      "tMinC": 15.089491515789533,
-     "tMaxC": 24.841117415949757
+     "tMaxC": 24.841117415949757,
+     "windMs": null
     },
     {
      "date": "2026-09-13",
@@ -3144,7 +3604,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0.0028020668877990354,
      "tMinC": 15.041157981657832,
-     "tMaxC": 25.36091957939279
+     "tMaxC": 25.36091957939279,
+     "windMs": null
     },
     {
      "date": "2026-09-14",
@@ -3155,7 +3616,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 15.461550390152372,
-     "tMaxC": 25.675866460981464
+     "tMaxC": 25.675866460981464,
+     "windMs": null
     },
     {
      "date": "2026-09-15",
@@ -3166,7 +3628,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.542271601981817,
-     "tMaxC": 26.600716922310163
+     "tMaxC": 26.600716922310163,
+     "windMs": null
     },
     {
      "date": "2026-09-16",
@@ -3177,7 +3640,8 @@
      "provenance": "OBSERVED",
      "rainMm": 0,
      "tMinC": 16.053592073977452,
-     "tMaxC": 25.83522831033348
+     "tMaxC": 25.83522831033348,
+     "windMs": null
     },
     {
      "date": "2026-09-17",
@@ -3188,7 +3652,8 @@
      "provenance": "MODELLED",
      "rainMm": 0.5,
      "tMinC": 15.5,
-     "tMaxC": 24.3
+     "tMaxC": 24.3,
+     "windMs": null
     },
     {
      "date": "2026-09-18",
@@ -3199,7 +3664,8 @@
      "provenance": "FORECAST",
      "rainMm": 8.8,
      "tMinC": 15.9,
-     "tMaxC": 22.1
+     "tMaxC": 22.1,
+     "windMs": null
     },
     {
      "date": "2026-09-19",
@@ -3210,7 +3676,8 @@
      "provenance": "FORECAST",
      "rainMm": 1.2,
      "tMinC": 14.6,
-     "tMaxC": 23
+     "tMaxC": 23,
+     "windMs": null
     },
     {
      "date": "2026-09-20",
@@ -3221,7 +3688,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14.5,
-     "tMaxC": 25.1
+     "tMaxC": 25.1,
+     "windMs": null
     },
     {
      "date": "2026-09-21",
@@ -3232,7 +3700,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 15.6,
-     "tMaxC": 26.1
+     "tMaxC": 26.1,
+     "windMs": null
     },
     {
      "date": "2026-09-22",
@@ -3243,7 +3712,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 15.2,
-     "tMaxC": 24.3
+     "tMaxC": 24.3,
+     "windMs": null
     },
     {
      "date": "2026-09-23",
@@ -3254,7 +3724,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 12.1,
-     "tMaxC": 22.2
+     "tMaxC": 22.2,
+     "windMs": null
     },
     {
      "date": "2026-09-24",
@@ -3265,7 +3736,8 @@
      "provenance": "FORECAST",
      "rainMm": 0,
      "tMinC": 14,
-     "tMaxC": 22.4
+     "tMaxC": 22.4,
+     "windMs": null
     }
    ],
    "weather": {
@@ -3502,7 +3974,40 @@
    "windowDays": 61,
    "lastObservedDate": "2026-09-16",
    "thermalOptimumC": 19,
-   "lapseRateCPerKm": -9.02
+   "lapseRateCPerKm": -9.02,
+   "municipality": "Montieri",
+   "nearbyMunicipalities": [
+    {
+     "municipality": "Montieri",
+     "province": "Grosseto",
+     "provinceAcronym": "GR",
+     "distanceKm": 2.4
+    },
+    {
+     "municipality": "Chiusdino",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 8.7
+    },
+    {
+     "municipality": "Radicondoli",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 10.6
+    },
+    {
+     "municipality": "Monticiano",
+     "province": "Siena",
+     "provinceAcronym": "SI",
+     "distanceKm": 14.8
+    },
+    {
+     "municipality": "Castelnuovo di Val di Cecina",
+     "province": "Pisa",
+     "provinceAcronym": "PI",
+     "distanceKm": 14.8
+    }
+   ]
   }
  ],
  "sources": [
@@ -3525,6 +4030,16 @@
    "url": "https://open-meteo.com/en/terms",
    "attribution": "Open-Meteo.com, su dati ECMWF IFS, DWD ICON, NOAA GFS ed ERA5",
    "lastUpdate": "2026-09-17"
+  },
+  {
+   "status": "ok",
+   "recordsFetched": 7,
+   "coverage": "Toscana, confini comunali",
+   "name": "ISTAT - confini amministrativi",
+   "license": "CC-BY",
+   "url": "https://github.com/guglielmo/geojson-italy",
+   "attribution": "ISTAT (confini comunali), via guglielmo/geojson-italy",
+   "lastUpdate": null
   }
  ],
  "uncalibratedParams": [

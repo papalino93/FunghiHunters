@@ -104,7 +104,12 @@ export const ZONES: readonly Zone[] = [
     code: 'metallifere',
     name: 'Colline Metallifere',
     reference: 'Chiusdino e Montieri',
-    province: 'SI',
+    // Era 'SI': sbagliato. Le coordinate di questa zona cadono a Montieri, che e' in provincia
+    // di Grosseto, non di Siena — Chiusdino (SI) e' il paese confinante che da' il nome alla
+    // zona insieme a Montieri, ma non e' dove sta il punto usato per tutti i calcoli. Trovato
+    // il 17 settembre 2026 verificando il punto contro i confini comunali ISTAT reali
+    // (`src/lib/sources/istat-boundaries.ts`), non a occhio.
+    province: 'GR',
     latitude: 43.14,
     longitude: 11.05,
     elevationM: 600,

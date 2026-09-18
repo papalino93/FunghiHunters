@@ -240,7 +240,9 @@ export function computePenalties(
     severity: windSeverity,
     factor: withWeight(windSeverity, p.wind.floor.value, p.wind.weight.value),
     applied: p.wind.weight.value > 0,
-    detail: wind === null ? 'vento non disponibile' : `vento medio 7 giorni ${wind.toFixed(1)} m/s`,
+    // "Massimi giornalieri", non "medio": vedi il commento su penalties.wind in algorithm.ts.
+    detail:
+      wind === null ? 'vento non disponibile' : `media dei massimi giornalieri, 7 gg: ${wind.toFixed(1)} m/s`,
   })
 
   /*

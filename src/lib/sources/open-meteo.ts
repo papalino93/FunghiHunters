@@ -51,6 +51,10 @@ const DAILY_PARAMS: Readonly<Partial<Record<Variable, string>>> = {
   temperature_min: 'temperature_2m_min',
   et0: 'et0_fao_evapotranspiration',
   shortwave_radiation: 'shortwave_radiation_sum',
+  // Il nome della nostra variabile ("mean") e' fuorviante: Open-Meteo non offre una vera media
+  // giornaliera del vento nell'endpoint daily, solo il massimo. E' il valore giusto per un
+  // segnale di sicurezza (raffiche), sbagliato se letto come "quanto tira vento in media" — vedi
+  // `src/lib/model/wind.ts` e il commento su `penalties.wind` in `config/algorithm.ts`.
   wind_speed_mean: 'wind_speed_10m_max',
 }
 

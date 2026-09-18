@@ -41,6 +41,60 @@ export interface CalibrationReport {
   readonly rankCorrelation: number | null
   /** Frase leggibile su cosa dicono i dati finora. */
   readonly verdict: string
+
+  readonly brier: BrierReport
+  readonly classification: ClassificationReport
+  /** `null` sotto la soglia minima per dividere il campione in due metà temporali. */
+  readonly temporalSplit: { readonly earlier: SplitStat; readonly later: SplitStat } | null
+  /** Una riga per zona che compare nel diario, anche con pochissime uscite. */
+  readonly geographicSplit: readonly SplitStat[]
+  /** Non nullo se troppe uscite vengono dalla stessa zona per generalizzare. */
+  readonly geographicWarning: string | null
+  readonly byAlgorithmVersion: readonly SplitStat[]
+}
+
+/** Soglia sotto cui una metà di uno split (temporale, geografico, di versione) non dice nulla. */
+export const MIN_ENTRIES_FOR_SPLIT = 6
+
+/**
+ * Soglia di punteggio da cui in su il verdetto testuale (`src/lib/recommend/verdict.ts`,
+ * `toneFor`) inizia a dire "ci sta andare" invece di "si può tentare". Duplicata qui invece che
+ * importata per non far dipendere il modulo di calibrazione da quello di raccomandazione — sono
+ * due cose diverse (uno guarda al passato, l'altro consiglia il futuro) che non devono avere un
+ * ciclo di dipendenza fra loro. Se cambia lì, deve cambiare anche qui: c'è un test che lo verifica.
+ */
+export const RECOMMENDATION_THRESHOLD = 40
+
+export interface BrierReport {
+  /** Media di (previsto/100 − esito)², esito = 1 se trovato qualcosa. `null` senza dati. */
+  readonly modelScore: number | null
+  /**
+   * Stesso punteggio per una previsione costante, pari al tasso di successo osservato — il
+   * confronto "senza modello" richiesto esplicitamente. Più basso è meglio, come per il modello.
+   */
+  readonly baselineScore: number | null
+  /** 1 − modello/baseline. Positivo: il modello batte il non-modello. Negativo: lo peggiora. */
+  readonly skillScore: number | null
+  readonly baseRate: number | null
+}
+
+export interface ClassificationReport {
+  readonly threshold: number
+  readonly truePositive: number
+  readonly falsePositive: number
+  readonly trueNegative: number
+  readonly falseNegative: number
+  readonly precision: number | null
+  readonly recall: number | null
+  /** Quota di uscite consigliate (punteggio sopra soglia) che non hanno dato nulla. */
+  readonly falseRecommendationRate: number | null
+}
+
+export interface SplitStat {
+  readonly label: string
+  readonly count: number
+  readonly hasSignal: boolean
+  readonly rankCorrelation: number | null
 }
 
 const BANDS: ReadonlyArray<{ from: number; to: number; label: string }> = [
@@ -104,6 +158,136 @@ export function spearman(xs: readonly number[], ys: readonly number[]): number |
   return num / Math.sqrt(dx * dy)
 }
 
+function isSuccess(entry: DiaryEntry): boolean {
+  return rankOf(entry.abundance) > 0
+}
+
+function splitStat(label: string, entries: readonly (DiaryEntry & { mpiAtEntry: number })[]): SplitStat {
+  const correlation = spearman(entries.map((e) => e.mpiAtEntry), entries.map((e) => rankOf(e.abundance)))
+  return {
+    label,
+    count: entries.length,
+    hasSignal: entries.length >= MIN_ENTRIES_FOR_SPLIT,
+    rankCorrelation: correlation,
+  }
+}
+
+/**
+ * Brier score: media di (previsto − osservato)². Tratta `mpiAtEntry / 100` come la probabilità
+ * che il modello assegna a "trovi qualcosa" — coerente con cosa l'MPI dichiara di essere, un
+ * indice di compatibilità, non una cifra a caso.
+ *
+ * Il confronto che conta non è il numero da solo, ma contro una previsione costante pari al tasso
+ * di successo osservato: è il modello "senza modello" più onesto possibile, e batterlo è la barra
+ * minima perché l'MPI valga qualcosa in più di guardare quante volte in media si trova qualcosa.
+ */
+function brierReport(usable: readonly (DiaryEntry & { mpiAtEntry: number })[]): BrierReport {
+  if (usable.length === 0) {
+    return { modelScore: null, baselineScore: null, skillScore: null, baseRate: null }
+  }
+  const outcomes: number[] = usable.map((e) => (isSuccess(e) ? 1 : 0))
+  const baseRate = outcomes.reduce((a, b) => a + b, 0) / outcomes.length
+
+  const modelScore =
+    usable.reduce((acc, e, i) => acc + ((e.mpiAtEntry / 100) - (outcomes[i] ?? 0)) ** 2, 0) / usable.length
+  const baselineScore = outcomes.reduce((acc, o) => acc + (baseRate - o) ** 2, 0) / outcomes.length
+
+  return {
+    modelScore,
+    baselineScore,
+    skillScore: baselineScore === 0 ? null : 1 - modelScore / baselineScore,
+    baseRate,
+  }
+}
+
+/**
+ * Precisione, richiamo e tasso di falsi consigli, con la stessa soglia che il verdetto testuale
+ * usa per dire "ci sta andare" — vedi `RECOMMENDATION_THRESHOLD`.
+ */
+function classificationReport(
+  usable: readonly (DiaryEntry & { mpiAtEntry: number })[],
+): ClassificationReport {
+  let tp = 0
+  let fp = 0
+  let tn = 0
+  let fn = 0
+  for (const entry of usable) {
+    const recommended = entry.mpiAtEntry >= RECOMMENDATION_THRESHOLD
+    const success = isSuccess(entry)
+    if (recommended && success) tp += 1
+    else if (recommended && !success) fp += 1
+    else if (!recommended && success) fn += 1
+    else tn += 1
+  }
+  return {
+    threshold: RECOMMENDATION_THRESHOLD,
+    truePositive: tp,
+    falsePositive: fp,
+    trueNegative: tn,
+    falseNegative: fn,
+    precision: tp + fp === 0 ? null : tp / (tp + fp),
+    recall: tp + fn === 0 ? null : tp / (tp + fn),
+    falseRecommendationRate: tp + fp === 0 ? null : fp / (tp + fp),
+  }
+}
+
+/**
+ * Prima metà contro seconda metà per data: è validazione temporale, non solo una correlazione
+ * unica che potrebbe nascondere un modello che ha smesso di funzionare (o ha iniziato) a metà
+ * strada. `null` se non c'è abbastanza per dividere in due metà entrambe sopra soglia.
+ */
+function temporalSplit(
+  usable: readonly (DiaryEntry & { mpiAtEntry: number })[],
+): { earlier: SplitStat; later: SplitStat } | null {
+  if (usable.length < MIN_ENTRIES_FOR_SPLIT * 2) return null
+  const sorted = [...usable].sort((a, b) => a.date.localeCompare(b.date))
+  const mid = Math.floor(sorted.length / 2)
+  return {
+    earlier: splitStat('prima metà', sorted.slice(0, mid)),
+    later: splitStat('seconda metà', sorted.slice(mid)),
+  }
+}
+
+/**
+ * Una riga per zona, anche con una sola uscita: il conteggio da solo dice già se il campione è
+ * concentrato in un posto — non serve aspettare `hasSignal` per mostrarlo.
+ */
+function geographicSplit(usable: readonly (DiaryEntry & { mpiAtEntry: number })[]): SplitStat[] {
+  const byZone = new Map<string, (DiaryEntry & { mpiAtEntry: number })[]>()
+  for (const entry of usable) {
+    const list = byZone.get(entry.zoneName) ?? []
+    list.push(entry)
+    byZone.set(entry.zoneName, list)
+  }
+  return [...byZone.entries()]
+    .map(([zoneName, list]) => splitStat(zoneName, list))
+    .sort((a, b) => b.count - a.count)
+}
+
+function geographicWarningFor(usable: readonly DiaryEntry[], split: readonly SplitStat[]): string | null {
+  if (usable.length < MIN_ENTRIES_FOR_SPLIT || split.length === 0) return null
+  const top = split[0]
+  if (top === undefined) return null
+  const share = top.count / usable.length
+  if (share < 0.8) return null
+  return (
+    `${Math.round(share * 100)}% delle uscite utilizzabili vengono da ${top.label}: qualunque ` +
+    'correlazione qui sopra descrive quella zona, non "la Toscana" — serve diario da altre zone ' +
+    'prima di generalizzare.'
+  )
+}
+
+function byAlgorithmVersion(usable: readonly (DiaryEntry & { mpiAtEntry: number })[]): SplitStat[] {
+  const byVersion = new Map<string, (DiaryEntry & { mpiAtEntry: number })[]>()
+  for (const entry of usable) {
+    const version = entry.algorithmVersionAtEntry ?? 'versione non registrata'
+    const list = byVersion.get(version) ?? []
+    list.push(entry)
+    byVersion.set(version, list)
+  }
+  return [...byVersion.entries()].map(([version, list]) => splitStat(version, list))
+}
+
 export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
   const usable = entries.filter(
     (e): e is DiaryEntry & { mpiAtEntry: number } => e.mpiAtEntry !== null,
@@ -127,6 +311,7 @@ export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
   )
 
   const hasSignal = usable.length >= MIN_ENTRIES_FOR_SIGNAL
+  const geoSplit = geographicSplit(usable)
 
   return {
     total: entries.length,
@@ -135,6 +320,12 @@ export function calibrate(entries: readonly DiaryEntry[]): CalibrationReport {
     bands,
     rankCorrelation: correlation,
     verdict: verdictFor(usable.length, correlation, hasSignal),
+    brier: brierReport(usable),
+    classification: classificationReport(usable),
+    temporalSplit: temporalSplit(usable),
+    geographicSplit: geoSplit,
+    geographicWarning: geographicWarningFor(usable, geoSplit),
+    byAlgorithmVersion: byAlgorithmVersion(usable),
   }
 }
 

@@ -131,9 +131,18 @@ describe('decadimento dell acqua', () => {
   it('resta limitato anche in condizioni estreme', () => {
     // Un giorno torrido e ventoso non deve azzerare l acqua di tre settimane.
     const extreme = dailyDecay({ temperatureC: 45, et0Mm: 15, windMs: 25 }, ALGORITHM_V1)
-    // I tre modulatori sono limitati a 3, 2.5 e 1.6: il prodotto non puo' superare 12 volte
-    // il decadimento di base, qualunque cosa faccia il meteo.
-    expect(extreme).toBeCloseTo(ALGORITHM_V1.water.lambdaBase.value * 12, 10)
+    // Il modulatore di temperatura e' limitato a 3, quello di ET0 a 2.5: il prodotto non puo'
+    // superare 7.5 volte il decadimento di base. Il vento non compare piu' in questo conto: il
+    // suo coefficiente e' disattivato (era ridondante con ET0, vedi water.lambdaWindCoeff in
+    // config/algorithm.ts), quindi il suo modulatore resta sempre neutro a 1 qualunque sia
+    // `windMs`.
+    expect(extreme).toBeCloseTo(ALGORITHM_V1.water.lambdaBase.value * 7.5, 10)
+  })
+
+  it('il vento non modula piu il decadimento per conto suo: e neutro qualunque sia windMs', () => {
+    const calmDay = dailyDecay({ temperatureC: 15, et0Mm: 2, windMs: 0 }, ALGORITHM_V1)
+    const gustyDay = dailyDecay({ temperatureC: 15, et0Mm: 2, windMs: 30 }, ALGORITHM_V1)
+    expect(gustyDay).toBe(calmDay)
   })
 })
 
@@ -294,7 +303,16 @@ describe('scenari meteorologici richiesti dalla specifica', () => {
     expect(mpiOf(afterDrought)).toBeLessThan(mpiOf(onWetSoil))
   })
 
-  it('il vento forte riduce il punteggio', () => {
+  /*
+   * Questi due test rimpiazzano un unico test precedente ("il vento forte riduce il
+   * punteggio") che isolava il vento dall'ET0 — impostava vento a 11 m/s lasciando ET0 al
+   * valore di base, una combinazione fisicamente incoerente (più vento significa più ET0,
+   * non meno) — e verificava che il solo vento abbassasse l'MPI. Era il doppio conteggio
+   * descritto in `water.lambdaWindCoeff`, testato come se fosse il comportamento corretto.
+   * Ora il vento riduce il bilancio idrico solo attraverso l'ET0 che lo riflette davvero, e
+   * non ha più un canale separato: i due test sotto verificano esattamente questo.
+   */
+  it('il vento da solo, a parita di ET0, non riduce piu il punteggio (doppio conteggio corretto)', () => {
     const windy = scenario({
       rainByDaysAgo: { 20: 22, 19: 14, 14: 18, 13: 9, 8: 16, 7: 11 },
       tMax: 18,
@@ -303,7 +321,35 @@ describe('scenari meteorologici richiesti dalla specifica', () => {
       wind: 11,
       soilMoisture: 0.33,
     })
-    expect(mpiOf(windy)).toBeLessThan(mpiOf(idealScenario()))
+    const calm = scenario({
+      rainByDaysAgo: { 20: 22, 19: 14, 14: 18, 13: 9, 8: 16, 7: 11 },
+      tMax: 18,
+      tMin: 8,
+      et0: 1.8,
+      wind: 2,
+      soilMoisture: 0.33,
+    })
+    expect(mpiOf(windy)).toBe(mpiOf(calm))
+  })
+
+  it('vento e ET0 elevati insieme (coerenti fisicamente) riducono il bilancio idrico', () => {
+    const windyAndDry = scenario({
+      rainByDaysAgo: { 20: 22, 19: 14, 14: 18, 13: 9, 8: 16, 7: 11 },
+      tMax: 18,
+      tMin: 8,
+      et0: 5.5, // ET0 alta e coerente con vento forte, non scollegata come nel vecchio test
+      wind: 11,
+      soilMoisture: 0.33,
+    })
+    const calmAndHumid = scenario({
+      rainByDaysAgo: { 20: 22, 19: 14, 14: 18, 13: 9, 8: 16, 7: 11 },
+      tMax: 18,
+      tMin: 8,
+      et0: 1.8,
+      wind: 2,
+      soilMoisture: 0.33,
+    })
+    expect(mpiOf(windyAndDry)).toBeLessThan(mpiOf(calmAndHumid))
   })
 
   it('la gelata precoce riduce fortemente ma non annulla', () => {

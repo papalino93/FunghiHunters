@@ -12,7 +12,14 @@ import { formatDate, mpiColor, mpiGradientCss } from '@/lib/ui/scale'
 // MapLibre tocca `window` all'import: non puo' essere renderizzata sul server.
 const MapView = dynamic(() => import('@/components/MapView').then((m) => m.MapView), {
   ssr: false,
-  loading: () => <div className="h-full w-full bg-surface-0" />,
+  loading: () => (
+    <div className="grid h-full w-full place-items-center bg-surface-0" aria-hidden="true">
+      <div className="flex flex-col items-center gap-3">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-edge border-t-accent" />
+        <p className="text-xs text-ink-faint">Sto caricando la mappa…</p>
+      </div>
+    </div>
+  ),
 })
 
 export interface AppShellProps {
@@ -81,54 +88,63 @@ export function AppShell({ snapshot }: AppShellProps) {
         theme="dark"
       />
 
-      {/* Intestazione: cosa stai guardando, e il promemoria che non e' una promessa. */}
-      <header className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3">
-        <div className="pointer-events-auto inline-flex max-w-full flex-col rounded-xl border border-edge bg-surface-1/90 px-3 py-2 backdrop-blur-xl">
-          <div className="flex items-center gap-2">
-            <h1 className="text-sm font-semibold text-ink">FungiCast Toscana</h1>
-            <span className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-dim">
-              porcino
-            </span>
-          </div>
-          <p className="mt-0.5 max-w-[46ch] text-[11px] leading-snug text-ink-dim">
-            Compatibilità delle condizioni ambientali con una possibile fruttificazione.
-            <strong className="font-medium text-ink"> Non indica la presenza di funghi.</strong>
-          </p>
-        </div>
-      </header>
+      {/*
+       * Intestazione e classifica restano solo finché non è aperta una scheda: con la scheda
+       * sopra, il nome della zona e il suo contesto sono già lì. Tenerle visibili insieme
+       * significava tre pannelli sovrapposti nello stesso schermo — il controllo primario deve
+       * essere uno solo per volta.
+       */}
+      {selectedZone === null && (
+        <>
+          <header className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3">
+            <div className="pointer-events-auto inline-flex max-w-full flex-col rounded-xl border border-edge bg-surface-1/90 px-3 py-2 backdrop-blur-xl">
+              <div className="flex items-center gap-2">
+                <h1 className="text-sm font-semibold text-ink">FungiCast Toscana</h1>
+                <span className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-dim">
+                  porcino
+                </span>
+              </div>
+              <p className="mt-0.5 max-w-[46ch] text-[11px] leading-snug text-ink-dim">
+                Compatibilità delle condizioni ambientali con una possibile fruttificazione.
+                <strong className="font-medium text-ink"> Non indica la presenza di funghi.</strong>
+              </p>
+            </div>
+          </header>
 
-      {/* Classifica compatta: risponde a "dove conviene andare" senza aprire nulla. */}
-      <div className="pointer-events-none absolute inset-x-0 top-[104px] z-10 overflow-x-auto px-3 pb-1">
-        <ul className="pointer-events-auto flex gap-1.5">
-          {ranked.map((zone) => {
-            const score = scores[zone.code]?.mpi ?? 0
-            const active = zone.code === selectedCode
-            return (
-              <li key={zone.code}>
-                <button
-                  type="button"
-                  onClick={() => { setSelectedCode(zone.code) }}
-                  className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 py-1
-                              text-[11px] backdrop-blur-xl transition-colors
-                              focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
-                                active
-                                  ? 'border-edge-strong bg-surface-3 text-ink'
-                                  : 'border-edge bg-surface-1/90 text-ink-dim hover:text-ink'
-                              }`}
-                >
-                  <span
-                    className="inline-block h-2 w-2 rounded-full"
-                    style={{ backgroundColor: mpiColor(score) }}
-                    aria-hidden="true"
-                  />
-                  {zone.name}
-                  <span className="tabular font-semibold">{score.toFixed(0)}</span>
-                </button>
-              </li>
-            )
-          })}
-        </ul>
-      </div>
+          {/* Classifica compatta: risponde a "dove conviene andare" senza aprire nulla. */}
+          <div className="pointer-events-none absolute inset-x-0 top-[104px] z-10 overflow-x-auto px-3 pb-1">
+            <ul className="pointer-events-auto flex gap-1.5">
+              {ranked.map((zone) => {
+                const score = scores[zone.code]?.mpi ?? 0
+                const active = zone.code === selectedCode
+                return (
+                  <li key={zone.code}>
+                    <button
+                      type="button"
+                      onClick={() => { setSelectedCode(zone.code) }}
+                      className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 py-1
+                                  text-[11px] backdrop-blur-xl transition-colors
+                                  focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
+                                    active
+                                      ? 'border-edge-strong bg-surface-3 text-ink'
+                                      : 'border-edge bg-surface-1/90 text-ink-dim hover:text-ink'
+                                  }`}
+                    >
+                      <span
+                        className="inline-block h-2 w-2 rounded-full"
+                        style={{ backgroundColor: mpiColor(score) }}
+                        aria-hidden="true"
+                      />
+                      {zone.name}
+                      <span className="tabular font-semibold">{score.toFixed(0)}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          </div>
+        </>
+      )}
 
       {/* Legenda, a scomparsa: utile la prima volta, ingombrante dalla seconda. */}
       <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-2 p-3 pb-6">
@@ -209,6 +225,7 @@ export function AppShell({ snapshot }: AppShellProps) {
               onClose={() => { setSelectedCode(null) }}
               showStations={showStations}
               onToggleStations={() => { setShowStations((v) => !v) }}
+              sources={snapshot.sources}
             />
           </>
         )}

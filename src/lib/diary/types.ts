@@ -81,6 +81,15 @@ export interface DiaryEntry {
 
   readonly createdAt: string
   readonly updatedAt: string
+  /**
+   * Tombstone di cancellazione. `null` per una voce viva.
+   *
+   * La cancellazione non toglie subito la riga: la marca. Un secondo dispositivo, offline al
+   * momento della cancellazione, deve poter scoprire che la voce non c'è più invece di
+   * risincronizzarla come se fosse nuova. `list()` filtra i tombstone; `listAll()` no, ed è quello
+   * che usa il motore di sincronizzazione.
+   */
+  readonly deletedAt: string | null
 }
 
 /** Quanto serve per creare una voce: il resto lo mette il repository. */

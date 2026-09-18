@@ -12,7 +12,7 @@
  * Il formato e' gia' quello che prenderanno le righe del database quando ci sara'.
  */
 
-import { mkdir, writeFile } from 'node:fs/promises'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname } from 'node:path'
 
 import { ALGORITHM_V1, uncalibratedParams } from '@/lib/config/algorithm'
@@ -38,6 +38,7 @@ import {
 import type {
   Snapshot,
   SnapshotFactor,
+  SnapshotNearbyMunicipality,
   SnapshotSeriesPoint,
   SnapshotStation,
   SnapshotZone,
@@ -211,6 +212,9 @@ async function main(): Promise<void> {
   const observationsByDate = new Map<string, DailySamples>()
   for (const [date, samples] of byDate) observationsByDate.set(date, samples)
 
+  const municipalityByZone = await loadAdminBoundaries()
+  const nearbyByZone = await loadNearbyComuni()
+
   const zones: SnapshotZone[] = []
 
   for (const [index, zone] of ZONES.entries()) {
@@ -275,6 +279,9 @@ async function main(): Promise<void> {
         rainMm: day?.precipitationMm ?? null,
         tMinC: day?.temperatureMinC ?? null,
         tMaxC: day?.temperatureMaxC ?? null,
+        // Massimo giornaliero (Open-Meteo non offre una vera media nell'endpoint daily), non
+        // "vento medio": vedi il commento su windMean7d in model/features.ts.
+        windMs: day?.windMs ?? null,
       })
 
       if (offset >= 0) {
@@ -327,6 +334,7 @@ async function main(): Promise<void> {
       name: zone.name,
       reference: zone.reference,
       province: zone.province,
+      municipality: municipalityByZone.get(zone.code) ?? null,
       latitude: zone.latitude,
       longitude: zone.longitude,
       elevationM: zone.elevationM,
@@ -381,6 +389,7 @@ async function main(): Promise<void> {
         tmaxInterpolation?.lapseRatePerM === null || tmaxInterpolation === undefined
           ? null
           : Math.round(tmaxInterpolation.lapseRatePerM * 1000 * 100) / 100,
+      nearbyMunicipalities: nearbyByZone.get(zone.code) ?? [],
     })
 
     console.log(
@@ -416,6 +425,19 @@ async function main(): Promise<void> {
         attribution: LICENSES.openMeteo.attribution,
         lastUpdate: todayIso,
       },
+      {
+        // Non fa parte del giro giornaliero: risolto una volta da `ingest-admin-boundaries.ts`
+        // e letto da un file. "ok" se il file esiste ed e' stato letto, "down" altrimenti — non
+        // "degraded", perche' non c'e' una via di mezzo per un file che c'e' o non c'e'.
+        status: municipalityByZone.size > 0 ? 'ok' : 'down',
+        recordsFetched: municipalityByZone.size,
+        coverage: 'Toscana, confini comunali',
+        name: 'ISTAT - confini amministrativi',
+        license: LICENSES.istatBoundaries.code,
+        url: LICENSES.istatBoundaries.url,
+        attribution: LICENSES.istatBoundaries.attribution,
+        lastUpdate: null,
+      },
     ],
     uncalibratedParams: uncalibratedParams(),
   }
@@ -432,15 +454,54 @@ function toSnapshotFactor(factor: {
   value: string
   provenance: 'sourced' | 'calibrate'
   source?: string
+  transferabilityCaution?: string
 }): SnapshotFactor {
-  const base = {
+  return {
     key: factor.key,
     label: factor.label,
     contribution: Math.round(factor.contribution * 10) / 10,
     value: factor.value,
     provenance: factor.provenance,
+    ...(factor.source === undefined ? {} : { source: factor.source }),
+    ...(factor.transferabilityCaution === undefined
+      ? {}
+      : { transferabilityCaution: factor.transferabilityCaution }),
   }
-  return factor.source === undefined ? base : { ...base, source: factor.source }
+}
+
+/**
+ * Legge il comune reale per zona, precalcolato da `scripts/ingest-admin-boundaries.ts`.
+ * Non rifà la risoluzione punto-in-poligono a ogni build: quel file cambia solo quando cambiano
+ * le zone, non ogni giorno insieme allo snapshot meteo.
+ */
+async function loadAdminBoundaries(): Promise<Map<string, string>> {
+  try {
+    const raw = await readFile('public/data/admin-boundaries.json', 'utf-8')
+    const parsed = JSON.parse(raw) as { zones?: Array<{ zoneCode: string; municipality: string }> }
+    return new Map((parsed.zones ?? []).map((z) => [z.zoneCode, z.municipality]))
+  } catch {
+    // File non ancora generato: lo snapshot esce comunque, con municipality null per tutte le
+    // zone invece di fallire. Vedi il commento su SnapshotZone.municipality.
+    return new Map()
+  }
+}
+
+/**
+ * Legge i comuni reali entro raggio per zona, precalcolati da `scripts/ingest-nearby-comuni.ts`.
+ * Stesso motivo di `loadAdminBoundaries`: i confini comunali non cambiano ogni giorno, non ha
+ * senso rifare la query geometrica a ogni build dello snapshot meteo.
+ */
+async function loadNearbyComuni(): Promise<Map<string, SnapshotNearbyMunicipality[]>> {
+  try {
+    const raw = await readFile('public/data/nearby-comuni.json', 'utf-8')
+    const parsed = JSON.parse(raw) as {
+      zones?: Record<string, SnapshotNearbyMunicipality[]>
+    }
+    return new Map(Object.entries(parsed.zones ?? {}))
+  } catch {
+    // File non ancora generato: nearbyMunicipalities resta un array vuoto per tutte le zone.
+    return new Map()
+  }
 }
 
 function average(values: readonly number[]): number {
