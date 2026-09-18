@@ -55,6 +55,8 @@ export function WaypointsPanel() {
   const [addingLabel, setAddingLabel] = useState(false)
   const [label, setLabel] = useState('')
   const [error, setError] = useState<string | null>(null)
+  /** Quale punto ha chiesto conferma di cancellazione: uno solo per volta. */
+  const [confirmingId, setConfirmingId] = useState<string | null>(null)
   const [here, setHere] = useState<{ latitude: number; longitude: number } | null>(null)
 
   const reload = useCallback(async () => {
@@ -232,28 +234,56 @@ export function WaypointsPanel() {
                         )}
                       </p>
                     </div>
-                    <a
-                      href={directionsUrl(point)}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="min-h-11 shrink-0 rounded-lg px-2 text-[11px] font-medium text-accent
-                                 transition-colors hover:underline focus:outline-none
-                                 focus-visible:ring-2 focus-visible:ring-accent"
-                    >
-                      apri in mappe
-                    </a>
-                    <button
-                      type="button"
-                      onClick={() => { void remove(point.id) }}
-                      aria-label={`Elimina il punto ${point.label}`}
-                      className="min-h-11 shrink-0 rounded-lg px-2 text-ink-faint transition-colors
-                                 hover:text-danger focus:outline-none focus-visible:ring-2
-                                 focus-visible:ring-accent"
-                    >
-                      <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
-                        <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-                      </svg>
-                    </button>
+                    {/*
+                      * Due tocchi per cancellare, come nel diario: qui un tocco sbagliato
+                      * cancella il punto dell'auto, cioè proprio la cosa che serve quando si è
+                      * disorientati — e si tocca male, spesso con i guanti.
+                      */}
+                    {confirmingId === point.id ? (
+                      <div className="flex shrink-0 gap-1">
+                        <button
+                          type="button"
+                          onClick={() => { setConfirmingId(null); void remove(point.id) }}
+                          className="min-h-11 rounded-lg px-2 text-[11px] font-medium text-danger
+                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
+                        >
+                          elimina
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => { setConfirmingId(null) }}
+                          className="min-h-11 rounded-lg px-2 text-[11px] text-ink-faint
+                                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          annulla
+                        </button>
+                      </div>
+                    ) : (
+                      <>
+                        <a
+                          href={directionsUrl(point)}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="min-h-11 shrink-0 rounded-lg px-2 text-[11px] font-medium text-accent
+                                     transition-colors hover:underline focus:outline-none
+                                     focus-visible:ring-2 focus-visible:ring-accent"
+                        >
+                          apri in mappe
+                        </a>
+                        <button
+                          type="button"
+                          onClick={() => { setConfirmingId(point.id) }}
+                          aria-label={`Elimina il punto ${point.label}`}
+                          className="min-h-11 shrink-0 rounded-lg px-2 text-ink-faint transition-colors
+                                     hover:text-danger focus:outline-none focus-visible:ring-2
+                                     focus-visible:ring-accent"
+                        >
+                          <svg width="12" height="12" viewBox="0 0 16 16" aria-hidden="true">
+                            <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                          </svg>
+                        </button>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>

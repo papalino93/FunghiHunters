@@ -7,6 +7,7 @@ import { createDiaryRepository, toExport } from '@/lib/diary/store'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { useDiarySync } from '@/lib/sync/useDiarySync'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
+import { versionLabel } from '@/lib/ui/version'
 
 const SYNC_LABEL: Readonly<Record<string, string>> = {
   local: 'Salvato solo su questo dispositivo',
@@ -67,6 +68,13 @@ function Shell({ children }: { children: React.ReactNode }) {
         </p>
       </header>
       {children}
+
+      {/*
+        * Discreta ma raggiungibile dal telefono, senza strumenti da sviluppatore: è il modo per
+        * sapere se l'app che si ha davanti è davvero l'ultima pubblicata, o una copia rimasta in
+        * cache. Un numero che non serve a nessuno finché non serve moltissimo.
+        */}
+      <p className="mt-8 text-center text-[10px] text-ink-faint">versione {versionLabel()}</p>
     </div>
   )
 }
