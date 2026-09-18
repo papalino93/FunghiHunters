@@ -134,7 +134,7 @@ export function ZoneSheet({
         ))}
       </nav>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-3">
+      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3">
         {tab === 'sintesi' && (
           <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} onSelectDate={onSelectDate} />
         )}
@@ -167,14 +167,25 @@ function Summary({
   return (
     <div className="space-y-4">
       {zone.bestWindow !== null && (
-        <p className="text-sm leading-relaxed text-ink">{zone.bestWindow.narrative}</p>
+        <div className="min-w-0 space-y-1.5">
+          {splitSentences(zone.bestWindow.narrative).map((sentence, index) => (
+            <p
+              key={index}
+              className="min-w-0 break-words text-sm leading-relaxed text-ink"
+            >
+              {sentence}
+            </p>
+          ))}
+        </div>
       )}
 
-      <div>
-        <div className="mb-1 flex items-baseline justify-between text-[11px] text-ink-faint">
-          <span>{formatDate(zone.series[0]?.date ?? todayDate)}</span>
-          <span>oggi</span>
-          <span>{formatDate(zone.series[zone.series.length - 1]?.date ?? todayDate)}</span>
+      <div className="min-w-0">
+        <div className="mb-1 flex items-baseline justify-between gap-2 text-[11px] text-ink-faint">
+          <span className="truncate">{formatDate(zone.series[0]?.date ?? todayDate)}</span>
+          <span className="shrink-0">oggi</span>
+          <span className="truncate text-right">
+            {formatDate(zone.series[zone.series.length - 1]?.date ?? todayDate)}
+          </span>
         </div>
         <Sparkline
           points={zone.series}
@@ -185,7 +196,7 @@ function Summary({
       </div>
 
       <dl className="grid grid-cols-3 gap-2">
-        <Stat label="Tendenza" value={signed(zone.development)} hint="prossimi 4 giorni" />
+        <Stat label="Tendenza" value={`${signed(zone.development)} pt`} hint="prossimi 4 giorni" />
         <Stat
           label="Limite"
           value={zone.limitingFactor === null ? '—' : shorten(zone.limitingFactor)}
@@ -202,15 +213,15 @@ function Summary({
       <dl className="grid grid-cols-2 gap-2">
         <Stat
           label="Qualità dati"
-          value={zone.dataQuality.toFixed(0)}
+          value={`${zone.dataQuality.toFixed(0)}/100`}
           hint="stazioni e copertura"
         />
         <Stat
           label="Certezza previsione"
-          value={(
+          value={`${(
             zone.series.find((p) => p.date === selectedDate)?.forecastCertainty ??
             zone.forecastCertainty
-          ).toFixed(0)}
+          ).toFixed(0)}/100`}
           hint="orizzonte del giorno"
         />
       </dl>
@@ -218,6 +229,19 @@ function Summary({
       <Wind zone={zone} selectedDate={selectedDate} />
     </div>
   )
+}
+
+/**
+ * Il testo composto in `narrative.ts` incatena piu' fatti in un unico periodo lungo: corretto per
+ * mantenere le frasi test-abili come stringa unica, ma denso da leggere su schermo stretto. Qui si
+ * spezza solo per la presentazione, una riga per frase, senza toccare il testo o i test che lo
+ * verificano.
+ */
+function splitSentences(text: string): string[] {
+  return text
+    .split(/(?<=[.!?])\s+(?=[A-ZÀÈÉÌÒÙ])/)
+    .map((s) => s.trim())
+    .filter((s) => s.length > 0)
 }
 
 /**

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 // MapLibre 6 non ha un default export: si importa il namespace.
 import * as maplibregl from 'maplibre-gl'
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
@@ -55,6 +55,14 @@ export function MapView({
   const mapRef = useRef<MapLibreMap | null>(null)
   const zoneMarkers = useRef(new Map<string, maplibregl.Marker>())
   const stationMarkers = useRef<maplibregl.Marker[]>([])
+  /*
+   * Stato di caricamento della cartografia, mostrato all'utente invece di restare solo nel
+   * `console.error`: uno stile che non carica (rete assente, CDN irraggiungibile) dava prima una
+   * tela nera indistinguibile da un bug, senza modo di distinguere "sto ancora caricando" da
+   * "non ci riuscirò". `retryToken` fa ripartire l'effetto di creazione mappa da zero.
+   */
+  const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading')
+  const [retryToken, setRetryToken] = useState(0)
   // Il callback cambia a ogni render: lo teniamo in un ref per non ricreare i marker a ogni
   // render del genitore. La sincronizzazione va in un effetto, perche' scrivere su un ref
   // durante il render e' proprio cio' che rende imprevedibile quale valore leggera' l'handler.
@@ -66,6 +74,8 @@ export function MapView({
   useEffect(() => {
     const container = containerRef.current
     if (container === null) return
+
+    setMapStatus('loading')
 
     const map = new maplibregl.Map({
       container,
@@ -79,13 +89,18 @@ export function MapView({
       dragRotate: false,
     })
     /*
-     * Gli errori della mappa vanno in console, sempre.
-     * MapLibre fallisce in silenzio: uno stile che non carica o un worker che non parte danno
-     * una tela nera e nessun messaggio, e senza questo listener si perde tempo a cercare il
-     * problema nel posto sbagliato.
+     * Gli errori della mappa vanno in console, sempre — e se arrivano prima che lo stile sia
+     * pronto, anche a schermo: senza rete o con il CDN irraggiungibile la mappa restava una tela
+     * nera indistinguibile da un bug, senza modo per l'utente di capire cosa sta succedendo.
+     * Dopo che lo stile è caricato un errore isolato (una tessera persa) non è più fatale: si
+     * logga e basta, rifare apparire l'intero stato d'errore per una tessera sarebbe fuorviante.
      */
     map.on('error', (event) => {
       console.error('[maplibre]', event.error?.message ?? event)
+      setMapStatus((current) => (current === 'ready' ? current : 'error'))
+    })
+    map.on('load', () => {
+      setMapStatus('ready')
     })
     if (process.env.NODE_ENV === 'development') {
       ;(window as unknown as { __map?: MapLibreMap }).__map = map
@@ -128,7 +143,7 @@ export function MapView({
       zones.clear()
       stations.length = 0
     }
-  }, [theme])
+  }, [theme, retryToken])
 
   // Marker delle zone: ricreati quando cambiano i punteggi, che e' a ogni spostamento dello slider.
   useEffect(() => {
@@ -237,5 +252,52 @@ export function MapView({
    * smetteva di applicarsi e il contenitore collassava a zero di altezza. La mappa si costruiva
    * senza errori, WebGL funzionava, e restava semplicemente nera.
    */
-  return <div ref={containerRef} className="h-full w-full" />
+  return (
+    <div className="relative h-full w-full">
+      <div ref={containerRef} className="h-full w-full" />
+      {mapStatus === 'loading' && <MapSkeleton />}
+      {mapStatus === 'error' && (
+        <MapErrorState onRetry={() => { setRetryToken((n) => n + 1) }} />
+      )}
+    </div>
+  )
+}
+
+/** Riempie l'attesa dello stile con qualcosa di riconoscibile, non un rettangolo scuro muto. */
+function MapSkeleton() {
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 grid place-items-center bg-surface-0"
+      aria-hidden="true"
+    >
+      <div className="flex flex-col items-center gap-3">
+        <span className="h-8 w-8 animate-spin rounded-full border-2 border-edge border-t-accent" />
+        <p className="text-xs text-ink-faint">Sto caricando la mappa…</p>
+      </div>
+    </div>
+  )
+}
+
+/** Errore visibile invece di una tela nera: dice cosa è successo e offre un modo di riprovare. */
+function MapErrorState({ onRetry }: { onRetry: () => void }) {
+  return (
+    <div className="absolute inset-0 grid place-items-center bg-surface-0 px-6">
+      <div className="max-w-xs text-center">
+        <p className="text-sm font-semibold text-ink">La mappa non si carica</p>
+        <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">
+          Non riesco a raggiungere la cartografia di base. Controlla la connessione: i dati delle
+          zone restano comunque disponibili nell&apos;elenco.
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="mt-3 rounded-lg border border-edge bg-surface-2 px-3 py-1.5 text-xs
+                     font-medium text-ink transition-colors hover:bg-surface-3
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          Riprova
+        </button>
+      </div>
+    </div>
+  )
 }
