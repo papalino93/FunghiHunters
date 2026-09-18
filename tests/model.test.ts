@@ -591,6 +591,42 @@ describe('innesco da pioggia intensa', () => {
     expect(ALGORITHM_V1.trigger.lagDays.value).toBe(12)
     expect(ALGORITHM_V1.trigger.lagDays.tier).toBe('peer-reviewed')
   })
+
+  it('compare come fattore spiegato quando e attivo, non solo dentro il punteggio', () => {
+    // Prima della correzione, `explainScore` neutralizzava acqua/temperatura/stagione tenendo
+    // fermo un trigger.factor implicito a 1, invece di quello vero: con un innesco forte (al
+    // giorno 12, dove closeness=1 e factor=1.35) il fattore 'trigger' non compariva affatto fra
+    // quelli spiegati, e le altre neutralizzazioni usavano un moltiplicatore diverso da quello
+    // del punteggio reale.
+    const days = withEventDaysAgo(12)
+    const features = buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1)
+    const result = computeMpi({ features, cell: AUTUMN_CELL })
+    expect(result.components.trigger.factor).toBeCloseTo(1.35, 2)
+
+    const explanation = explainScore(result, features, 80)
+    const all = [
+      ...explanation.positiveFactors,
+      ...explanation.negativeFactors,
+      ...explanation.neutralFactors,
+    ]
+    const trigger = all.find((f) => f.key === 'trigger')
+    expect(trigger).toBeDefined()
+    expect(trigger?.contribution).toBeGreaterThan(5)
+  })
+
+  it('senza innesco il fattore resta neutro, a contributo pressoche nullo', () => {
+    const debole = scenario({ rainByDaysAgo: { 12: 8 }, soilMoisture: 0.3 })
+    const features = buildFeatures(debole, AUTUMN_CELL, ALGORITHM_V1)
+    const result = computeMpi({ features, cell: AUTUMN_CELL })
+    expect(result.components.trigger.factor).toBe(1)
+
+    const explanation = explainScore(result, features, 80)
+    const trigger = explanation.neutralFactors.find((f) => f.key === 'trigger')
+    expect(trigger).toBeDefined()
+    // L'arrotondamento di result.mpi a un decimale lascia un residuo minimo: il punto è che resti
+    // sotto la soglia di rilevanza (±2, vedi POSITIVE/NEGATIVE_THRESHOLD), non che sia zero esatto.
+    expect(Math.abs(trigger?.contribution ?? 100)).toBeLessThan(0.1)
+  })
 })
 
 describe('shock di caldo', () => {

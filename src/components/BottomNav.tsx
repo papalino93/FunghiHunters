@@ -78,6 +78,7 @@ export function BottomNav() {
             <li key={tab.href} className="flex-1">
               <Link
                 href={tab.href}
+                prefetch={false}
                 aria-current={active ? 'page' : undefined}
                 className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[11px]
                             font-medium transition-colors focus:outline-none

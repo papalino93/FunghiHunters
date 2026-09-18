@@ -87,10 +87,14 @@ export function explainScore(
   const penaltyProduct = c.penalties.reduce((acc, p) => acc * p.factor, 1)
   const clamped = Math.min(1, Math.max(0, c.core))
 
-  // Punteggio che si otterrebbe neutralizzando un singolo fattore, tenendo fermi gli altri.
-  const withoutWater = 100 * Math.min(1, c.thermal.score * c.phenology) * penaltyProduct
-  const withoutThermal = 100 * Math.min(1, c.water * c.phenology) * penaltyProduct
-  const withoutPhenology = 100 * Math.min(1, c.water * c.thermal.score) * penaltyProduct
+  // Punteggio che si otterrebbe neutralizzando un singolo fattore, tenendo fermi gli altri. Il
+  // core vero è water * thermal * phenology * trigger.factor (vedi computeMpi in mpi.ts): ogni
+  // neutralizzazione deve tenere fermo anche trigger.factor, altrimenti su un giorno con innesco
+  // attivo il confronto userebbe un moltiplicatore diverso da quello del punteggio reale.
+  const withoutWater = 100 * Math.min(1, c.thermal.score * c.phenology * c.trigger.factor) * penaltyProduct
+  const withoutThermal = 100 * Math.min(1, c.water * c.phenology * c.trigger.factor) * penaltyProduct
+  const withoutPhenology = 100 * Math.min(1, c.water * c.thermal.score * c.trigger.factor) * penaltyProduct
+  const withoutTrigger = 100 * Math.min(1, c.water * c.thermal.score * c.phenology) * penaltyProduct
   const withoutPenalties = 100 * clamped
 
   const factors: Factor[] = [
@@ -130,6 +134,13 @@ export function explainScore(
             ? 'regime estivo di bassa quota'
             : 'fra regime estivo e autunnale',
       ...provenanceOf(config.phenology.autumnPeakDay),
+    },
+    {
+      key: 'trigger',
+      label: 'Innesco da pioggia intensa',
+      contribution: result.mpi - withoutTrigger,
+      value: c.trigger.detail,
+      ...provenanceOf(config.trigger.lagDays),
     },
   ]
 

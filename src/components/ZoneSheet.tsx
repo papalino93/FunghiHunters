@@ -631,6 +631,19 @@ function signed(value: number): string {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
 }
 
+/**
+ * Le quattro etichette che `limitingFactorOf` in `explain.ts` può restituire, accorciate per
+ * stare su una riga nella scheda statistica larga un terzo della scheda: a 375px "Temperatura" e
+ * "Penalità meteorologiche" (con l'accento sbagliato nel confronto precedente, mai corrispondeva
+ * davvero) uscivano tagliate a metà parola, "Temperat…", invece di essere leggibili.
+ */
+const LIMITING_FACTOR_SHORT: Readonly<Record<string, string>> = {
+  'Acqua disponibile nel suolo': 'Acqua',
+  Temperatura: 'Temp.',
+  'Stagione e quota': 'Stagione',
+  'Penalità meteorologiche': 'Meteo',
+}
+
 function shorten(factor: string): string {
-  return factor.replace('Acqua disponibile nel suolo', 'Acqua').replace('Penalita meteorologiche', 'Meteo')
+  return LIMITING_FACTOR_SHORT[factor] ?? factor
 }
