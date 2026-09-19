@@ -80,8 +80,12 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
     positionSource:
       draft.positionSource !== undefined ? draft.positionSource : (existing?.positionSource ?? null),
     trees: draft.trees ?? existing?.trees ?? [],
-    durationMinutes: draft.durationMinutes ?? existing?.durationMinutes ?? null,
-    searchers: draft.searchers ?? existing?.searchers ?? null,
+    // `!== undefined` e non `??`, come per `positionSource` qui sopra: con `??` un `null`
+    // esplicito nella patch ("togli la durata che avevo messo") sarebbe indistinguibile da "non
+    // l'ho toccata", e il valore vecchio resterebbe per sempre.
+    durationMinutes:
+      draft.durationMinutes !== undefined ? draft.durationMinutes : (existing?.durationMinutes ?? null),
+    searchers: draft.searchers !== undefined ? draft.searchers : (existing?.searchers ?? null),
     // I campi congelati non si riscrivono mai in aggiornamento: descrivono il momento
     // dell'inserimento, non lo stato attuale del modello.
     mpiAtEntry: existing?.mpiAtEntry ?? draft.mpiAtEntry ?? null,
@@ -348,7 +352,7 @@ export async function importInto(
       errors.push(`Voce senza data o zona, saltata (id ${String(entry.id ?? 'ignoto')}).`)
       continue
     }
-    await repo.add({
+    const draft = {
       date: entry.date,
       zoneCode: entry.zoneCode,
       zoneName: entry.zoneName ?? entry.zoneCode,
@@ -374,7 +378,32 @@ export async function importInto(
       mpiAtEntry: entry.mpiAtEntry ?? null,
       confidenceAtEntry: entry.confidenceAtEntry ?? null,
       algorithmVersionAtEntry: entry.algorithmVersionAtEntry ?? null,
-    })
+    }
+
+    /*
+     * L'id del file si conserva, non si rigenera.
+     *
+     * Con `repo.add()` ogni voce importata riceveva un id nuovo, e il controllo anti-duplicato
+     * sopra (`existing.has(entry.id)`) non poteva mai trovare corrispondenza: **reimportare lo
+     * stesso backup raddoppiava il diario**, in silenzio. Peggio con un account collegato, dove
+     * l'id è la chiave della sincronizzazione (`user_id, client_id`): due dispositivi che
+     * importano lo stesso file avrebbero creato due righe diverse per la stessa uscita.
+     *
+     * `createdAt` viene dal file per non alterare l'ordine storico; `updatedAt` invece è "ora",
+     * perché per questo dispositivo l'importazione *è* una modifica appena avvenuta — con il
+     * timestamp vecchio il motore di sincronizzazione la considererebbe già vista e non la
+     * manderebbe mai al server.
+     */
+    if (typeof entry.id === 'string' && entry.id !== '') {
+      const materialised = materialise(draft)
+      await repo.upsertRaw({
+        ...materialised,
+        id: entry.id,
+        createdAt: entry.createdAt ?? materialised.createdAt,
+      })
+    } else {
+      await repo.add(draft)
+    }
     imported += 1
   }
 

@@ -21,9 +21,11 @@ sempre.
    `0001_init.sql`, `0002_sync.sql`, `0003_grants.sql`, `0004_diary_location.sql`,
    `0005_grants_narrow.sql` e `0006_diary_context.sql`. Il terzo esiste perché su almeno un
    progetto reale i primi due non bastavano: vedi il caso `permission denied for schema public`
-   più sotto se lo hai già saltato. Il sesto aggiunge due colonne facoltative (durata della
-   ricerca, numero di cercatori) al diario: senza, quei due campi restano solo sul dispositivo e
-   non si sincronizzano, senza errori.
+   più sotto se lo hai già saltato. Il sesto aggiunge due colonne al diario (durata della ricerca,
+   numero di cercatori): **applicalo**. Senza, l'app se ne accorge al primo invio, smette di
+   mandare quei due campi e sincronizza tutto il resto — ma quei dati restano fermi sul
+   dispositivo finché la migrazione non c'è (vedi `isMissingColumnError` in
+   `src/lib/sync/supabase-backend.ts`).
 
    > **Se hai già eseguito `0003_grants.sql`, esegui anche `0005_grants_narrow.sql`: non è
    > facoltativo.** Il terzo file concedeva scrittura su *tutte* le tabelle dello schema `public`

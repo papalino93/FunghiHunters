@@ -140,20 +140,40 @@ export function WaypointsPanel({
     setError(null)
     setGeoState('asking')
     setSaving(true)
+
+    /*
+     * Due try separati, non uno solo che copra tutto: prendere la posizione e scriverla su disco
+     * falliscono per ragioni diverse e vanno dette diversamente. Con un unico blocco, un archivio
+     * bloccato da un'altra scheda (`DatabaseBlockedError`, che ha un messaggio utile e preciso)
+     * veniva annunciato come "nessun segnale GPS" — e un errore nella rilettura dopo un
+     * salvataggio riuscito faceva sparire un punto che invece c'era, invitando a risalvarlo.
+     */
+    let position: { latitude: number; longitude: number }
     try {
-      const position = await getPosition()
+      position = await getPosition()
+      setGeoState('idle')
+    } catch (err) {
+      const code = err instanceof Error ? err.message : 'unavailable'
+      setGeoState(code === 'denied' || code === 'timeout' ? code : 'unavailable')
+      setSaving(false)
+      return
+    }
+
+    try {
       await repo.add({
         entryId,
         kind,
         label: label.trim() === '' ? KIND_LABEL[kind] : label.trim(),
         ...position,
       })
-      setGeoState('idle')
       setLabel('')
       await reload()
     } catch (err) {
-      const code = err instanceof Error ? err.message : 'unavailable'
-      setGeoState(code === 'denied' || code === 'timeout' ? code : 'unavailable')
+      setError(
+        err instanceof Error
+          ? `Punto non salvato: ${err.message}`
+          : 'Punto non salvato: archivio non disponibile su questo dispositivo.',
+      )
     }
     setSaving(false)
   }

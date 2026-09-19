@@ -33,7 +33,7 @@ const EMPTY: Snapshot = {
  * di una validazione di dominio: quella (range dell'MPI, coerenza delle date) resta nella pipeline
  * che genera il file, non nella lettura.
  */
-function hasValidShape(value: unknown): value is Snapshot {
+export function hasValidShape(value: unknown): value is Snapshot {
   if (typeof value !== 'object' || value === null) return false
   const v = value as Partial<Snapshot>
   return (
@@ -41,7 +41,11 @@ function hasValidShape(value: unknown): value is Snapshot {
     typeof v.referenceDate === 'string' &&
     typeof v.generatedAt === 'string' &&
     Array.isArray(v.zones) &&
-    Array.isArray(v.sources)
+    Array.isArray(v.sources) &&
+    // `uncalibratedParams` non è decorativo: `SourceHealth` ne legge `.length` senza guardia, e
+    // uno snapshot di un formato precedente che non lo avesse passava questo controllo per poi
+    // far esplodere la home — esattamente il caso che questa funzione esiste per intercettare.
+    Array.isArray(v.uncalibratedParams)
   )
 }
 
