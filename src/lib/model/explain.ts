@@ -229,6 +229,8 @@ function penaltyLabel(key: string): string {
       return 'Aria secca (VPD)'
     case 'wind':
       return 'Vento'
+    case 'heatShock':
+      return 'Impennata di caldo'
     case 'thermalShock':
       return 'Shock termico'
     default:
@@ -247,6 +249,8 @@ function penaltyParam(key: string, config: AlgorithmConfig): Param {
       return penalties.vpd.threshold
     case 'wind':
       return penalties.wind.threshold
+    case 'heatShock':
+      return penalties.heatShock.threshold
     case 'thermalShock':
       return penalties.thermalShock.weight
     default:

@@ -48,6 +48,21 @@ const TABS: readonly Tab[] = [
     ),
   },
   {
+    href: '/meteo',
+    label: 'Meteo',
+    icon: (
+      <path
+        d="M6.5 15.5a3.5 3.5 0 0 1-.7-6.93 4.5 4.5 0 0 1 8.73-1.9A3.75 3.75 0 0 1 14 15.5h-7.5Z
+           M6 17.3v.2M9 17.3v.7M12 17.3v.2"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    ),
+  },
+  {
     href: '/account',
     label: 'Account',
     icon: (

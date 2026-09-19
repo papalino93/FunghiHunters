@@ -24,6 +24,7 @@ function zone(
     rain26d?: number
     limit?: string | null
     series?: Array<{ date: string; mpi: number }>
+    negativeFactors?: Array<{ key: string; label: string; contribution: number }>
   } = {},
 ): SnapshotZone {
   const mpi = o.mpi ?? 10
@@ -43,7 +44,13 @@ function zone(
       tMean20d: o.tMean === undefined ? 19 : o.tMean, tMinWindow: 8, tMaxWindow: 24,
       soilTemperatureMean: 15, soilMoisture: 0.25, vpdMean7d: 0.6, windMean7d: 2, humidityMean7d: 70,
     },
-    positiveFactors: [], negativeFactors: [], neutralFactors: [], stations: [],
+    positiveFactors: [],
+    negativeFactors: (o.negativeFactors ?? []).map((f) => ({
+      ...f,
+      value: '',
+      provenance: 'calibrate' as const,
+    })),
+    neutralFactors: [], stations: [],
     bestWindow: null, observedDays: 60, windowDays: 61, lastObservedDate: '2026-09-16',
     thermalOptimumC: o.optimum ?? 13, lapseRateCPerKm: null,
   }
@@ -104,6 +111,37 @@ describe('il verdetto risponde in parole', () => {
     expect(v.reason).toContain('Manca acqua')
     expect(v.reason).toContain('12 mm')
     expect(v.reason).not.toContain('troppo caldo')
+  })
+
+  it('nomina un secondo fattore quando pesa quasi quanto il primo', () => {
+    const v = verdictFor([
+      zone('a', {
+        mpi: 12,
+        tMean: 19,
+        optimum: 13,
+        negativeFactors: [
+          { key: 'thermal', label: 'Temperatura', contribution: -20 },
+          { key: 'water', label: 'Acqua disponibile nel suolo', contribution: -12 },
+        ],
+      }),
+    ])
+    expect(v.reason).toContain('troppo caldo')
+    expect(v.reason).toContain('Pesa anche acqua disponibile nel suolo')
+  })
+
+  it('non nomina un secondo fattore che è solo una nota a margine', () => {
+    const v = verdictFor([
+      zone('a', {
+        mpi: 12,
+        tMean: 19,
+        optimum: 13,
+        negativeFactors: [
+          { key: 'thermal', label: 'Temperatura', contribution: -20 },
+          { key: 'wind', label: 'Vento', contribution: -3 },
+        ],
+      }),
+    ])
+    expect(v.reason).not.toContain('Pesa anche')
   })
 
   it('suggerisce dove andare anche quando dice di no', () => {
