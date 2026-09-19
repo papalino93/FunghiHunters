@@ -10,7 +10,7 @@
 
 import { z } from 'zod'
 
-import { PROJECT_TIMEZONE } from '@/lib/domain/time'
+import { PROJECT_TIMEZONE, today } from '@/lib/domain/time'
 import { fetchJson } from '@/lib/sources/http'
 import { aggregateHourlyToDaily } from '@/lib/sources/open-meteo'
 
@@ -226,7 +226,10 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
     numberColumn(parsed.hourly, 'soil_temperature_0_to_7cm'),
   )
 
-  const todayIso = new Date().toISOString().slice(0, 10)
+  // Data locale (Europe/Rome), non UTC: le date giornaliere di Open-Meteo sono nel fuso richiesto
+  // (`timezone=Europe/Rome` in `buildPlaceForecastUrl`), e fra mezzanotte e l'1-2 di notte UTC e
+  // ora locale differiscono di un giorno — abbastanza per etichettare "previsto" il giorno corrente.
+  const todayIso = today()
 
   const daily: PlaceDailyWeather[] = dailyTimes
     .map((date, i) => ({
