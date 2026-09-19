@@ -64,7 +64,8 @@ export class IndexedDbWaypointRepository implements WaypointRepository {
     const all = await promisify(
       tx.objectStore(WAYPOINTS_STORE).getAll() as IDBRequest<StoredWaypoint[]>,
     )
-    return sortByRecent(all.map(normaliseWaypoint))
+    // `flatMap` invece di `map`: `normaliseWaypoint` scarta i punti senza coordinate leggibili.
+    return sortByRecent(all.flatMap((raw) => normaliseWaypoint(raw) ?? []))
   }
 
   async add(draft: WaypointDraft): Promise<Waypoint> {

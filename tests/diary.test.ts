@@ -355,6 +355,73 @@ describe('esportazione e importazione', () => {
     expect(entry).not.toHaveProperty('photoIds')
   })
 
+  it('sanifica i campi di un file manomesso invece di far entrare valori impossibili', async () => {
+    /*
+     * Il file lo sceglie chi usa l'app, non lo scrive questa app: può essere stato modificato a
+     * mano o prodotto da una versione futura. Un'abbondanza inventata non dà un errore, dà
+     * `ABUNDANCE_RANK[...] === undefined` e quindi `NaN` in tutto il pannello di calibrazione;
+     * un `trees` che non è una lista rifà esplodere `entry.trees.length`, il crash che aveva
+     * chiuso il diario in produzione.
+     */
+    const repo = new InMemoryDiaryRepository()
+    const result = await importInto(repo, {
+      format: 'fungicast-diary',
+      version: 1,
+      entries: [
+        {
+          id: 'manomessa',
+          date: '2026-09-16',
+          zoneCode: 'amiata',
+          abundance: 'tantissimi',
+          trees: 'faggio',
+          elevationM: 'mille',
+          notes: { testo: 'non una stringa' },
+          privacy: 'pubblica',
+          positionSource: 'satellite',
+          mpiAtEntry: 'alto',
+          confidenceAtEntry: null,
+          algorithmVersionAtEntry: 7,
+        },
+      ],
+    })
+
+    expect(result.imported).toBe(1)
+    const [entry] = await repo.list()
+    expect(entry?.abundance).toBe('none')
+    expect(entry?.trees).toEqual([])
+    expect(entry?.elevationM).toBeNull()
+    expect(entry?.notes).toBe('')
+    expect(entry?.privacy).toBe('area')
+    expect(entry?.positionSource).toBeNull()
+    expect(entry?.mpiAtEntry).toBeNull()
+    expect(entry?.algorithmVersionAtEntry).toBeNull()
+  })
+
+  it('tiene i valori buoni di una voce che ne ha anche di sbagliati', async () => {
+    const repo = new InMemoryDiaryRepository()
+    await importInto(repo, {
+      format: 'fungicast-diary',
+      version: 1,
+      entries: [
+        {
+          id: 'mista',
+          date: '2026-09-16',
+          zoneCode: 'amiata',
+          zoneName: 'Monte Amiata',
+          abundance: 'many',
+          trees: ['faggio', 'sequoia', 42],
+          elevationM: 1200,
+        },
+      ],
+    })
+    const [entry] = await repo.list()
+    expect(entry?.abundance).toBe('many')
+    expect(entry?.zoneName).toBe('Monte Amiata')
+    expect(entry?.elevationM).toBe(1200)
+    // Solo le specie riconosciute sopravvivono: le altre non sono un motivo per perdere la voce.
+    expect(entry?.trees).toEqual(['faggio'])
+  })
+
   it('conserva l\'id del file, così reimportare lo stesso backup non duplica il diario', async () => {
     // Il bug che questo test chiude: `importInto` rigenerava l'id a ogni voce, quindi il
     // controllo anti-duplicato non poteva mai trovare corrispondenza e la seconda importazione

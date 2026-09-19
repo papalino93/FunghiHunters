@@ -112,7 +112,7 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
       <h1 className="sr-only">Dove vado oggi</h1>
-      <WelcomeHero />
+      <WelcomeHero zoneCount={snapshot.zones.length} />
 
       <DayPicker dates={dates} selected={date} today={today} onSelect={setDate} />
 

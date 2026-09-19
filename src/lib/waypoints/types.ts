@@ -52,7 +52,15 @@ export type StoredWaypoint = Omit<Partial<Waypoint>, 'kind'> & {
  * Un punto senza `entryId` (salvato prima che esistesse questo campo) diventa un punto fisso:
  * è il comportamento che aveva già, dato che prima non poteva appartenere a nessuna uscita.
  */
-export function normaliseWaypoint(raw: StoredWaypoint): Waypoint {
+export function normaliseWaypoint(raw: StoredWaypoint): Waypoint | null {
+  /*
+   * Senza coordinate leggibili il punto non esiste: `null`, non un punto a (0, 0).
+   *
+   * Zero-zero è un posto vero, in mezzo all'Atlantico: un punto così mostrerebbe "5 000 km a
+   * sud-ovest" e manderebbe "apri in mappe" nel golfo di Guinea. Meglio non mostrarlo affatto che
+   * mostrare una posizione inventata — è la stessa regola che vale per il punteggio delle zone.
+   */
+  if (!Number.isFinite(raw.latitude) || !Number.isFinite(raw.longitude)) return null
   const kind: WaypointKind = (WAYPOINT_KINDS as readonly string[]).includes(raw.kind)
     ? (raw.kind as WaypointKind)
     : 'reference'
@@ -61,8 +69,8 @@ export function normaliseWaypoint(raw: StoredWaypoint): Waypoint {
     entryId: raw.entryId ?? null,
     kind,
     label: raw.label ?? 'Punto',
-    latitude: raw.latitude ?? 0,
-    longitude: raw.longitude ?? 0,
+    latitude: raw.latitude as number,
+    longitude: raw.longitude as number,
     createdAt: raw.createdAt ?? new Date(0).toISOString(),
   }
 }
