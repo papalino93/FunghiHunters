@@ -226,7 +226,14 @@ function reasonFor(
  * frase torna a essere una lista di numeri invece di una risposta.
  */
 function secondaryLimitClause(zone: SnapshotZone, primaryKey: string): string {
-  const primary = zone.negativeFactors.find((f) => f.key === primaryKey) ?? zone.negativeFactors[0]
+  /*
+   * Il fattore nominato dalla frase (`primaryKey`) può non comparire in `negativeFactors`: quella
+   * lista usa una soglia più stretta (contributo oltre -2) di `limitingFactorOf` in `explain.ts`
+   * (gap oltre 1). Senza questo controllo, un ripiego sul primo elemento della lista avrebbe
+   * confrontato un fattore estraneo con se stesso — attribuendo alla frase un "secondo motivo"
+   * che in realtà era il primo, non trovato.
+   */
+  const primary = zone.negativeFactors.find((f) => f.key === primaryKey)
   const secondary = zone.negativeFactors.find((f) => f.key !== primaryKey)
   if (primary === undefined || secondary === undefined) return ''
   if (Math.abs(secondary.contribution) < 5) return ''

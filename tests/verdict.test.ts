@@ -129,6 +129,22 @@ describe('il verdetto risponde in parole', () => {
     expect(v.reason).toContain('Pesa anche acqua disponibile nel suolo')
   })
 
+  it('non nomina un secondo fattore quando il primo non è nella lista dei negativi', () => {
+    // `negativeFactors` usa una soglia più stretta di `limitingFactor`: può non contenere affatto
+    // il fattore nominato dalla frase. Senza un fattore "primario" vero da confrontare, la frase
+    // non deve inventare un secondo motivo prendendo il primo della lista a caso.
+    const v = verdictFor([
+      zone('a', {
+        mpi: 12,
+        tMean: 19,
+        optimum: 13,
+        negativeFactors: [{ key: 'wind', label: 'Vento', contribution: -20 }],
+      }),
+    ])
+    expect(v.reason).toContain('troppo caldo')
+    expect(v.reason).not.toContain('Pesa anche')
+  })
+
   it('non nomina un secondo fattore che è solo una nota a margine', () => {
     const v = verdictFor([
       zone('a', {
