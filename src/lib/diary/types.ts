@@ -68,6 +68,38 @@ export const DURATION_MINUTES_MAX = 720
 export const SEARCHERS_MIN = 1
 export const SEARCHERS_MAX = 20
 
+/*
+ * Riconoscitori dei valori chiusi, per chi legge dati che non ha scritto lui.
+ *
+ * Servono alla frontiera dell'importazione: `Partial<DiaryEntry>` è una promessa al compilatore,
+ * non un controllo a runtime, e un file di esportazione può essere stato modificato a mano,
+ * troncato a metà o prodotto da una versione futura. Un'abbondanza che non è fra quelle previste
+ * non dà un errore: dà `ABUNDANCE_RANK[...] === undefined`, quindi `NaN`, e l'intero pannello di
+ * calibrazione si riempie di "NaN" senza che niente si sia rotto in modo visibile.
+ */
+export function isAbundance(value: unknown): value is Abundance {
+  return typeof value === 'string' && (ABUNDANCE_LEVELS as readonly string[]).includes(value)
+}
+
+export function isPrivacyLevel(value: unknown): value is PrivacyLevel {
+  return typeof value === 'string' && (PRIVACY_LEVELS as readonly string[]).includes(value)
+}
+
+export function isPositionSource(value: unknown): value is 'gps' | 'zone' {
+  return value === 'gps' || value === 'zone'
+}
+
+export function toTreeSpeciesList(value: unknown): TreeSpecies[] {
+  if (!Array.isArray(value)) return []
+  const known = new Set<string>(TREE_SPECIES)
+  return value.filter((v): v is TreeSpecies => typeof v === 'string' && known.has(v))
+}
+
+/** Un numero vero, oppure "non detto". Una stringa in un campo numerico fa esplodere `toFixed`. */
+export function finiteOrNull(value: unknown): number | null {
+  return typeof value === 'number' && Number.isFinite(value) ? value : null
+}
+
 export function isValidDurationMinutes(value: number): boolean {
   return Number.isInteger(value) && value >= DURATION_MINUTES_MIN && value <= DURATION_MINUTES_MAX
 }

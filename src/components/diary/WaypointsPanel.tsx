@@ -62,19 +62,67 @@ function getPosition(): Promise<{ latitude: number; longitude: number }> {
   })
 }
 
+/**
+ * A quale dei due elenchi appartiene questo pannello.
+ *
+ * Non è un dettaglio grafico: i due elenchi hanno regole di vita diverse — un punto fisso
+ * sopravvive a tutte le uscite, un punto d'uscita viene cancellato insieme alla sua — e chi
+ * salva deve saperlo *prima* di toccare "Salva qui", non dopo. Icona, pastiglia e nota finale
+ * dicono la stessa cosa in tre modi, perché nessuno dei tre viene letto sempre.
+ */
+export type WaypointScope = 'fixed' | 'outing'
+
+const SCOPE_BADGE: Readonly<Record<WaypointScope, string>> = {
+  fixed: 'sempre',
+  outing: 'solo questa uscita',
+}
+
+const SCOPE_NOTE: Readonly<Record<WaypointScope, string>> = {
+  fixed:
+    'I punti fissi restano qui a ogni uscita: cancellare un\u2019uscita non li tocca.',
+  outing:
+    'Questi punti vivono con l\u2019uscita: se cancelli l\u2019uscita spariscono anche loro. ' +
+    'Un riferimento che vuoi riusare va fra i Punti fissi, in cima al Diario.',
+}
+
+/** Segnaposto per i punti fissi, sentiero per quelli di un'uscita. */
+function ScopeIcon({ scope }: { scope: WaypointScope }) {
+  return scope === 'fixed' ? (
+    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-accent">
+      <path
+        d="M8 1.6c-2.2 0-3.9 1.7-3.9 3.9 0 2.9 3.9 8.9 3.9 8.9s3.9-6 3.9-8.9c0-2.2-1.7-3.9-3.9-3.9z"
+        fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinejoin="round"
+      />
+      <circle cx="8" cy="5.5" r="1.5" fill="currentColor" />
+    </svg>
+  ) : (
+    <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true" className="shrink-0 text-ink-faint">
+      <path
+        d="M2 13c2.6 0 1.9-3.4 4.4-3.4S9 12 11.5 12"
+        fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round"
+        strokeDasharray="2.6 2.2"
+      />
+      <path d="M11.5 3.2v8.6" fill="none" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <path d="M11.5 3.4h3.2l-1 1.5 1 1.5h-3.2z" fill="currentColor" />
+    </svg>
+  )
+}
+
 export interface WaypointsPanelProps {
   /**
-   * `null` per i punti liberi (compresi i punti di partenza preferiti — vedi `LocationPrompt`),
+   * `null` per i punti fissi (compresi i punti di partenza preferiti — vedi `LocationPrompt`),
    * l'id di una voce del diario per i punti di quella specifica uscita. Un punto vive nell'uno o
    * nell'altro elenco, mai in entrambi: vedi il commento su `entryId` in `lib/waypoints/types.ts`.
    */
   readonly entryId: string | null
+  /** Deve concordare con `entryId`: `fixed` quando è `null`, `outing` altrimenti. */
+  readonly scope: WaypointScope
   readonly title: string
   readonly description: string
   /** Se il pannello parte già aperto. I punti di un'uscita appena creata conviene vederli subito. */
   readonly defaultOpen?: boolean
   readonly emptyText: string
-  /** Quali categorie proporre: un'uscita passata non ha bisogno di "Partenza", i punti liberi sì. */
+  /** Quali categorie proporre: un'uscita passata non ha bisogno di "Partenza", i punti fissi sì. */
   readonly kinds?: readonly WaypointKind[]
 }
 
@@ -87,6 +135,7 @@ export interface WaypointsPanelProps {
  */
 export function WaypointsPanel({
   entryId,
+  scope,
   title,
   description,
   defaultOpen = false,
@@ -199,9 +248,21 @@ export function WaypointsPanel({
         className="flex min-h-11 w-full items-center justify-between text-left focus:outline-none
                    focus-visible:ring-2 focus-visible:ring-accent"
       >
-        <span>
-          <span className="text-sm font-semibold text-ink">{title}</span>
-          <span className="ml-2 text-xs text-ink-faint">{description}</span>
+        <span className="min-w-0">
+          <span className="flex items-center gap-1.5">
+            <ScopeIcon scope={scope} />
+            <span className="text-sm font-semibold text-ink">{title}</span>
+            <span
+              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+                scope === 'fixed'
+                  ? 'bg-accent/15 text-accent'
+                  : 'bg-surface-3 text-ink-dim'
+              }`}
+            >
+              {SCOPE_BADGE[scope]}
+            </span>
+          </span>
+          <span className="mt-0.5 block text-xs leading-snug text-ink-faint">{description}</span>
         </span>
         <svg
           width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"
@@ -364,6 +425,9 @@ export function WaypointsPanel({
                 ))}
               </ul>
               <p className="mt-2 text-[11px] leading-snug text-ink-faint">
+                {SCOPE_NOTE[scope]}
+              </p>
+              <p className="mt-1 text-[11px] leading-snug text-ink-faint">
                 &quot;Apri in mappe&quot; condivide quella coordinata con l&apos;app che scegli sul telefono.
                 Per il resto, questi punti restano solo su questo dispositivo: mai sincronizzati.
               </p>

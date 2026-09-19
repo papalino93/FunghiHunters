@@ -3,7 +3,7 @@ import { normaliseWaypoint } from '@/lib/waypoints/types'
 import { WAYPOINTS_STORE, openDatabase, promisify } from '@/lib/diary/db'
 
 export interface WaypointRepository {
-  /** Tutti i punti salvati, liberi e associati a un'uscita insieme: chi filtra decide il resto. */
+  /** Tutti i punti salvati, fissi e associati a un'uscita insieme: chi filtra decide il resto. */
   list(): Promise<Waypoint[]>
   add(draft: WaypointDraft): Promise<Waypoint>
   remove(id: string): Promise<boolean>
@@ -64,7 +64,8 @@ export class IndexedDbWaypointRepository implements WaypointRepository {
     const all = await promisify(
       tx.objectStore(WAYPOINTS_STORE).getAll() as IDBRequest<StoredWaypoint[]>,
     )
-    return sortByRecent(all.map(normaliseWaypoint))
+    // `flatMap` invece di `map`: `normaliseWaypoint` scarta i punti senza coordinate leggibili.
+    return sortByRecent(all.flatMap((raw) => normaliseWaypoint(raw) ?? []))
   }
 
   async add(draft: WaypointDraft): Promise<Waypoint> {

@@ -331,9 +331,12 @@ function shortSearchCaveatFor(usable: readonly DiaryEntry[]): string | null {
     (e) => rankOf(e.abundance) === 0 && e.durationMinutes === null,
   )
   if (emptyWithoutDuration.length === 0) return null
+  // Singolare e plurale su tutta la frase, non solo sul sostantivo: "1 uscita ... non hanno"
+  // si legge come un errore dell'app, e un'app che sbaglia l'italiano sembra sbagliare anche i conti.
+  const one = emptyWithoutDuration.length === 1
   return (
-    `${emptyWithoutDuration.length} ${emptyWithoutDuration.length === 1 ? 'uscita' : 'uscite'} ` +
-    'senza niente trovato non hanno la durata della ricerca: uno zero dopo dieci minuti e uno ' +
+    `${emptyWithoutDuration.length} ${one ? 'uscita' : 'uscite'} senza niente trovato ` +
+    `${one ? 'non ha' : 'non hanno'} la durata della ricerca: uno zero dopo dieci minuti e uno ` +
     'zero dopo mezza giornata non dicono la stessa cosa, ma qui non si possono distinguere. ' +
     'Indicarla nelle prossime uscite rende questi numeri più leggibili.'
   )

@@ -189,11 +189,13 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       <div className="mb-4">
         <WaypointsPanel
           entryId={null}
-          title="Punti liberi"
-          description="auto, accessi, riferimenti e punti di partenza, non legati a un'uscita"
-          emptyText="Nessun punto libero salvato. Un punto di partenza salvato qui compare anche in
-                      «Dove vado oggi», per calcolare la distanza. Resta solo su questo dispositivo,
-                      non viene mai sincronizzato."
+          scope="fixed"
+          title="Punti fissi"
+          description="i riferimenti che riusi sempre: casa, il parcheggio abituale, un accesso al bosco"
+          emptyText="Nessun punto fisso. Qui vanno i luoghi che valgono per tutte le uscite, non per
+                      una sola. Un punto di tipo «Partenza» salvato qui compare anche in «Dove vado
+                      oggi», per calcolare la distanza. Resta solo su questo dispositivo, non viene
+                      mai sincronizzato."
         />
       </div>
 
@@ -243,6 +245,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
               <li key={entry.id}>
                 <EntryRow
                   entry={entry}
+                  zoneName={zoneNameFor(entry, snapshot)}
                   onDelete={async () => {
                     await repo?.remove(entry.id)
                     await waypointRepo?.removeAllFor(entry.id)
@@ -330,11 +333,26 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   )
 }
 
+/**
+ * Nome della zona da mostrare per una voce.
+ *
+ * Le voci salvate prima che esistesse `zoneName` arrivano dalla normalizzazione con il codice al
+ * posto del nome (`normaliseEntry`), e in elenco si leggevano come "amiata · lun 1 set". Il nome
+ * lo ripesca lo snapshot; per le voci che un nome ce l'hanno resta quello congelato al momento
+ * dell'uscita, perché è il nome che la zona aveva quel giorno.
+ */
+function zoneNameFor(entry: DiaryEntry, snapshot: Snapshot): string {
+  if (entry.zoneName !== entry.zoneCode && entry.zoneName !== '') return entry.zoneName
+  return snapshot.zones.find((z) => z.code === entry.zoneCode)?.name ?? entry.zoneCode
+}
+
 function EntryRow({
   entry,
+  zoneName,
   onDelete,
 }: {
   entry: DiaryEntry
+  zoneName: string
   onDelete: () => void
 }) {
   const [confirming, setConfirming] = useState(false)
@@ -361,7 +379,7 @@ function EntryRow({
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-ink">
-            {entry.zoneName} · <span className="text-ink-dim">{formatDate(entry.date)}</span>
+            {zoneName} · <span className="text-ink-dim">{formatDate(entry.date)}</span>
           </p>
           <p className="mt-0.5 text-xs text-ink-dim">
             trovati: <strong className="text-ink">{ABUNDANCE_LABELS[entry.abundance]}</strong>
@@ -431,15 +449,17 @@ function EntryRow({
       <div className="mt-2.5">
         <WaypointsPanel
           entryId={entry.id}
-          title="Punti dell'uscita"
-          description="bivio, radura, un riferimento per questa camminata"
-          emptyText="Nessun punto salvato per questa uscita."
+          scope="outing"
+          title="Punti di questa uscita"
+          description="dove hai lasciato l'auto, da dove sei entrato, un bivio di questa camminata"
+          emptyText="Nessun punto per questa uscita. Salva qui l'auto, l'accesso al bosco o un
+                      riferimento: spariranno insieme all'uscita quando la cancelli."
           /*
            * Niente "Partenza" qui, di proposito: un punto di partenza legato a un'uscita avrebbe
-           * un `entryId`, quindi `departurePoints()` (che cerca solo i punti liberi) non lo
+           * un `entryId`, quindi `departurePoints()` (che cerca solo i punti fissi) non lo
            * troverebbe mai e non comparirebbe in "Dove vado oggi" — e sparirebbe insieme
            * all'uscita quando la cancelli. Chi vuole un punto di partenza riusabile lo salva fra
-           * i "Punti liberi", dove quella promessa è vera.
+           * i "Punti fissi", dove quella promessa è vera.
            */
           kinds={['car', 'access', 'reference']}
         />

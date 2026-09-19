@@ -30,8 +30,15 @@ interface Row {
   privacy_level_app: string | null
   position_source: string | null
   tree_species: string[] | null
-  duration_minutes: number | null
-  searchers: number | null
+  /*
+   * `undefined`, non solo `null`: `select('*')` riporta le colonne che esistono davvero, e su un
+   * progetto dove `0006_diary_context.sql` non è ancora stata applicata queste due semplicemente
+   * non ci sono. Dichiararle `number | null` farebbe credere al resto del codice che un valore
+   * assente sia `null` — e `durationMinutes !== null` è proprio il controllo con cui la
+   * calibrazione decide se uno "zero trovati" è leggibile.
+   */
+  duration_minutes: number | null | undefined
+  searchers: number | null | undefined
   mpi_at_observation: number | null
   confidence_at_observation: number | null
   algorithm_version_text: string | null
@@ -85,8 +92,8 @@ function rowToEntry(row: Row): DiaryEntry {
     privacy: isPrivacyLevel(row.privacy_level_app) ? row.privacy_level_app : 'area',
     positionSource: isPositionSource(row.position_source) ? row.position_source : null,
     trees: toTreeSpecies(row.tree_species),
-    durationMinutes: row.duration_minutes,
-    searchers: row.searchers,
+    durationMinutes: row.duration_minutes ?? null,
+    searchers: row.searchers ?? null,
     mpiAtEntry: row.mpi_at_observation,
     confidenceAtEntry: row.confidence_at_observation,
     algorithmVersionAtEntry: row.algorithm_version_text,

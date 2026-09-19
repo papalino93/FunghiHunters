@@ -32,7 +32,7 @@ export function LocationPrompt({
   const hydrated = useIsHydrated()
   const [saved, setSaved] = useState<readonly Waypoint[]>([])
 
-  // I punti di partenza preferiti si salvano dal Diario ("Punti liberi"): qui si leggono soltanto,
+  // I punti di partenza preferiti si salvano dal Diario ("Punti fissi"): qui si leggono soltanto,
   // per offrirli come terza scelta accanto al GPS e ai riferimenti di zona. Restano locali, come
   // ogni punto salvato — vedi `lib/waypoints/types.ts`.
   useEffect(() => {
@@ -189,7 +189,7 @@ export function LocationPrompt({
             collegato.
             {saved.length === 0 && (
               <> Salva un punto di partenza (casa, un parcheggio abituale) dal Diario → Punti
-              liberi: comparirà qui come scelta rapida.</>
+              fissi: comparirà qui come scelta rapida.</>
             )}
           </p>
         </div>

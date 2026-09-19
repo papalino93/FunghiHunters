@@ -136,7 +136,12 @@ export function AppShell({ snapshot }: AppShellProps) {
                         aria-hidden="true"
                       />
                       {zone.name}
-                      <span className="tabular font-semibold">{score.toFixed(0)}</span>
+                      {/* Il denominatore anche qui: le pastiglie e i segnaposti devono dire la
+                          stessa cosa, altrimenti il numero sulla mappa resta senza scala. */}
+                      <span className="tabular font-semibold">
+                        {score.toFixed(0)}
+                        <span className="font-normal text-ink-faint">/100</span>
+                      </span>
                     </button>
                   </li>
                 )
@@ -171,6 +176,10 @@ export function AppShell({ snapshot }: AppShellProps) {
               <span>discrete</span>
               <span>molto favorevoli</span>
             </div>
+            <p className="mt-2 text-[11px] leading-snug text-ink-dim">
+              Il numero dentro ogni segnaposto è questo indice, da 0 a 100: non è un conteggio di
+              funghi né di zone. L&apos;anello attorno al numero si riempie in proporzione.
+            </p>
             <p className="mt-2 text-[11px] leading-snug text-ink-dim">
               Il contorno <span className="text-ink">tratteggiato</span> e il riempimento più
               scarico indicano una stima poco affidabile: pochi dati osservati, oppure previsione

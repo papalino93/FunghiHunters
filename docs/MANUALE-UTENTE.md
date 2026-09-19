@@ -62,7 +62,7 @@ prossimi giorni, se cambia qualcosa.
 - **Posizione**: te la chiede l'app solo se gliela concedi tu, e solo per ordinare le zone per
   distanza. Puoi anche non darla: le zone restano visibili, solo non ordinate per vicinanza. In
   alternativa al GPS puoi scegliere un punto di partenza salvato in precedenza (Diario → Punti
-  liberi → tipo "Partenza") o un riferimento di zona: la distanza resta sempre in linea d'aria.
+  fissi → tipo "Partenza") o un riferimento di zona: la distanza resta sempre in linea d'aria.
 - **Filtri** (sotto le zone, si aprono a richiesta): distanza massima, tipo di bosco, affidabilità
   minima dei dati. Se nessuna zona rispetta i filtri, l'app te lo dice invece di mostrarti
   qualcosa che non hai chiesto.
@@ -123,14 +123,21 @@ Diario → Esporta) come copia di sicurezza, e reimportarlo su un altro disposit
 
 ### Punti salvati
 
-Ogni uscita ha una sezione **"Punti dell'uscita"**: segna con un tocco l'auto parcheggiata,
-l'accesso al sentiero, un bivio o un altro riferimento, con distanza e direzione dalla tua
-posizione attuale e un link diretto per aprirlo nell'app mappe del telefono. In cima al Diario c'è
-anche **"Punti liberi"**: punti non legati a nessuna uscita, per riferimenti che riusi spesso —
-casa, un parcheggio abituale. Un punto libero di tipo "Partenza" compare anche in **"Dove vado
-oggi"**, come punto di partenza per calcolare la distanza dalle zone. Tutti i punti salvati, di
-qualunque tipo, restano **solo sul dispositivo**, non sincronizzati mai: l'unica eccezione è "apri
-in mappe", che condivide quella singola coordinata con l'app che scegli, e solo quando lo tocchi.
+Con un tocco segni l'auto parcheggiata, l'accesso al sentiero, un bivio o un altro riferimento,
+con distanza e direzione dalla tua posizione attuale e un link diretto per aprirlo nell'app mappe
+del telefono. Gli elenchi sono due, e la differenza è **quanto durano**:
+
+- **"Punti fissi"** (in cima al Diario, pastiglia *sempre*): i riferimenti che valgono per tutte
+  le uscite — casa, il parcheggio abituale, un accesso al bosco. Restano lì finché non li cancelli
+  tu, e cancellare un'uscita non li tocca. Un punto fisso di tipo "Partenza" compare anche in
+  **"Dove vado oggi"**, come punto da cui calcolare la distanza dalle zone.
+- **"Punti di questa uscita"** (dentro una voce del diario, pastiglia *solo questa uscita*):
+  valgono per quella camminata soltanto — l'auto di oggi, il bivio di oggi. Se cancelli l'uscita,
+  spariscono con lei.
+
+Un punto vive in uno dei due elenchi, mai in entrambi. Tutti i punti salvati, di qualunque tipo,
+restano **solo sul dispositivo**, non sincronizzati mai: l'unica eccezione è "apri in mappe", che
+condivide quella singola coordinata con l'app che scegli, e solo quando lo tocchi.
 
 ## Account e sincronizzazione (facoltativi)
 

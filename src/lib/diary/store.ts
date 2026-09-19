@@ -20,8 +20,13 @@ import {
   type DiaryEntry,
   type DiaryExport,
   applyPrivacy,
+  finiteOrNull,
+  isAbundance,
+  isPositionSource,
+  isPrivacyLevel,
   isValidDurationMinutes,
   isValidSearchers,
+  toTreeSpeciesList,
 } from '@/lib/diary/types'
 import { DIARY_STORE, openDatabase, promisify } from '@/lib/diary/db'
 
@@ -128,14 +133,16 @@ export function normaliseEntry(raw: StoredEntry): DiaryEntry {
     date: raw.date ?? '',
     zoneCode: raw.zoneCode ?? '',
     zoneName: raw.zoneName ?? raw.zoneCode ?? '',
-    abundance: raw.abundance ?? 'none',
+    // Riconoscitore e non `??`: `StoredEntry` promette al compilatore una forma che il disco non
+    // garantisce, e un'abbondanza fuori elenco diventa `NaN` in tutta la calibrazione.
+    abundance: isAbundance(raw.abundance) ? raw.abundance : 'none',
     elevationM: raw.elevationM ?? null,
     notes: raw.notes ?? '',
     latitude: raw.latitude ?? null,
     longitude: raw.longitude ?? null,
-    privacy: raw.privacy ?? 'area',
-    positionSource: raw.positionSource ?? null,
-    trees: raw.trees ?? [],
+    privacy: isPrivacyLevel(raw.privacy) ? raw.privacy : 'area',
+    positionSource: isPositionSource(raw.positionSource) ? raw.positionSource : null,
+    trees: toTreeSpeciesList(raw.trees),
     durationMinutes: raw.durationMinutes ?? null,
     searchers: raw.searchers ?? null,
     mpiAtEntry: raw.mpiAtEntry ?? null,
@@ -352,18 +359,29 @@ export async function importInto(
       errors.push(`Voce senza data o zona, saltata (id ${String(entry.id ?? 'ignoto')}).`)
       continue
     }
+    /*
+     * Ogni campo passa per un riconoscitore, non per `??`.
+     *
+     * `entry` è tipizzato `Partial<DiaryEntry>`, ma quel tipo descrive un file scritto da questa
+     * app: qui arriva un file scelto da chi usa l'app, che può essere stato modificato a mano,
+     * troncato, o prodotto da una versione che non esiste ancora. `??` lascia passare qualunque
+     * valore non nullo — un'abbondanza inventata diventa `NaN` in tutto il pannello di
+     * calibrazione, un `trees` che non è una lista rifà esplodere `entry.trees.length`, una
+     * stringa in `elevationM` fa saltare `toFixed`. Sanificare il singolo campo, non rifiutare
+     * la voce: il resto dell'uscita è comunque informazione vera.
+     */
     const draft = {
       date: entry.date,
       zoneCode: entry.zoneCode,
-      zoneName: entry.zoneName ?? entry.zoneCode,
-      abundance: entry.abundance ?? 'none',
-      elevationM: entry.elevationM ?? null,
-      notes: entry.notes ?? '',
-      latitude: entry.latitude ?? null,
-      longitude: entry.longitude ?? null,
-      privacy: entry.privacy ?? 'area',
-      positionSource: entry.positionSource ?? null,
-      trees: entry.trees ?? [],
+      zoneName: typeof entry.zoneName === 'string' ? entry.zoneName : entry.zoneCode,
+      abundance: isAbundance(entry.abundance) ? entry.abundance : 'none',
+      elevationM: finiteOrNull(entry.elevationM),
+      notes: typeof entry.notes === 'string' ? entry.notes : '',
+      latitude: finiteOrNull(entry.latitude),
+      longitude: finiteOrNull(entry.longitude),
+      privacy: isPrivacyLevel(entry.privacy) ? entry.privacy : 'area',
+      positionSource: isPositionSource(entry.positionSource) ? entry.positionSource : null,
+      trees: toTreeSpeciesList(entry.trees),
       // Sanificati, non rifiutati: un valore fuori intervallo (o un residuo "photoIds" da un
       // export scritto quando le foto esistevano ancora, ignorato perché `entry` non lo tipizza
       // più) non deve far perdere l'intera voce — solo il singolo dato dubbio torna a "non detto".
@@ -375,9 +393,10 @@ export async function importInto(
         typeof entry.searchers === 'number' && isValidSearchers(entry.searchers)
           ? entry.searchers
           : null,
-      mpiAtEntry: entry.mpiAtEntry ?? null,
-      confidenceAtEntry: entry.confidenceAtEntry ?? null,
-      algorithmVersionAtEntry: entry.algorithmVersionAtEntry ?? null,
+      mpiAtEntry: finiteOrNull(entry.mpiAtEntry),
+      confidenceAtEntry: finiteOrNull(entry.confidenceAtEntry),
+      algorithmVersionAtEntry:
+        typeof entry.algorithmVersionAtEntry === 'string' ? entry.algorithmVersionAtEntry : null,
     }
 
     /*

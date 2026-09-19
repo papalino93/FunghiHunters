@@ -33,6 +33,50 @@ const TUSCANY_BOUNDS: [[number, number], [number, number]] = [
   [12.5, 44.6],
 ]
 
+/**
+ * Geometria del segnaposto, in coordinate del suo viewBox.
+ *
+ * La punta cade esattamente sulla coordinata della zona (`anchor: 'bottom'`): un segnaposto a
+ * goccia indica un luogo, mentre un cerchio che galleggia su una mappa e' per convenzione un
+ * raggruppamento di risultati — ed era proprio questo a far leggere "19" come "19 elementi qui"
+ * invece che "19 su 100".
+ */
+const PIN = { width: 48, height: 60, ring: 15.5 } as const
+
+/**
+ * Il segnaposto di una zona, come SVG.
+ *
+ * Tre cose dicono insieme che il numero e' un punteggio su cento e non un conteggio: la forma a
+ * goccia, l'anello che si riempie in proporzione (19 riempie un quinto del giro, e si vede prima
+ * di leggere la cifra) e il denominatore scritto sotto la cifra. Uno solo dei tre non basta: il
+ * denominatore e' minuscolo, l'anello da solo e' ambiguo, la forma da sola non da' la scala.
+ */
+function pinSvg(mpi: number, confidence: number, selected: boolean): string {
+  const value = Math.min(100, Math.max(0, mpi))
+  const circumference = 2 * Math.PI * PIN.ring
+  const filled = (circumference * value) / 100
+  const fill = mpiColor(value)
+  const ink = readableTextOn(value)
+  const edge = selected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.45)'
+  // Il tratteggio del contorno dice "stima incerta" senza aggiungere un secondo numero da leggere.
+  const dashed = isLowConfidence(confidence) ? ' stroke-dasharray="4 3"' : ''
+  return [
+    `<svg viewBox="0 0 ${PIN.width} ${PIN.height}" width="100%" height="100%" aria-hidden="true">`,
+    `<path d="M24 58 L7.8 35.8 A20 20 0 1 1 40.2 35.8 Z" fill="${fill}" stroke="${edge}"`,
+    ` stroke-width="${selected ? 2.5 : 1.5}" stroke-linejoin="round"${dashed} />`,
+    `<circle cx="24" cy="24" r="${PIN.ring}" fill="none" stroke="${ink}" stroke-opacity="0.2"`,
+    ` stroke-width="3" />`,
+    `<circle cx="24" cy="24" r="${PIN.ring}" fill="none" stroke="${ink}" stroke-width="3"`,
+    ` stroke-linecap="round" stroke-dasharray="${filled.toFixed(2)} ${circumference.toFixed(2)}"`,
+    ` transform="rotate(-90 24 24)" />`,
+    `<text x="24" y="25" text-anchor="middle" fill="${ink}" font-size="15" font-weight="700"`,
+    ` style="font-variant-numeric:tabular-nums">${value.toFixed(0)}</text>`,
+    `<text x="24" y="34" text-anchor="middle" fill="${ink}" fill-opacity="0.7" font-size="8"`,
+    ` font-weight="600" letter-spacing="0.2">/100</text>`,
+    `</svg>`,
+  ].join('')
+}
+
 export interface MapViewProps {
   readonly zones: readonly SnapshotZone[]
   /** Punteggio da mostrare, per zona, nel giorno selezionato. */
@@ -155,42 +199,41 @@ export function MapView({
 
     for (const zone of zones) {
       const score = scores[zone.code] ?? { mpi: zone.mpi, confidence: zone.confidence }
+      const selected = zone.code === selectedCode
       const element = document.createElement('button')
       element.type = 'button'
       element.setAttribute(
         'aria-label',
-        `${zone.name}: indice ${score.mpi.toFixed(0)} su 100, affidabilità ${score.confidence.toFixed(0)}`,
+        `${zone.name}: indice di compatibilità ${score.mpi.toFixed(0)} su 100, ` +
+          `affidabilità ${score.confidence.toFixed(0)} su 100`,
       )
+      // Sul desktop il nome della zona serve al passaggio del mouse: sul telefono lo danno le
+      // pastiglie della classifica in alto, che mostrano lo stesso numero accanto al nome.
+      element.title = `${zone.name} — indice ${score.mpi.toFixed(0)}/100`
       element.className =
-        'grid place-items-center rounded-full border transition-[transform,box-shadow] ' +
-        'duration-150 cursor-pointer focus:outline-none focus-visible:ring-2 ' +
-        'focus-visible:ring-white/70'
-      const selected = zone.code === selectedCode
-      const size = selected ? 52 : 44
-      element.style.width = `${size}px`
-      element.style.height = `${size}px`
-      element.style.backgroundColor = mpiColor(score.mpi)
+        'block cursor-pointer border-0 bg-transparent p-0 transition-transform duration-150 ' +
+        'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl'
+      const scale = selected ? 1.18 : 1
+      element.style.width = `${PIN.width * scale}px`
+      element.style.height = `${PIN.height * scale}px`
       element.style.opacity = String(confidenceOpacity(score.confidence))
-      element.style.color = readableTextOn(score.mpi)
-      element.style.borderColor = selected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.35)'
-      element.style.borderWidth = selected ? '2.5px' : '1.5px'
-      // Il tratteggio dice "stima incerta" senza costringere a leggere un secondo numero.
-      element.style.borderStyle = isLowConfidence(score.confidence) ? 'dashed' : 'solid'
-      element.style.boxShadow = selected
-        ? '0 0 0 6px rgba(255,255,255,0.12), 0 8px 24px rgba(0,0,0,0.45)'
-        : '0 4px 14px rgba(0,0,0,0.4)'
-
-      const value = document.createElement('span')
-      value.textContent = score.mpi.toFixed(0)
-      value.className = 'text-[15px] font-semibold leading-none tabular'
-      element.append(value)
+      // L'ombra segue la sagoma della goccia: un `box-shadow` disegnerebbe un rettangolo.
+      element.style.filter = selected
+        ? 'drop-shadow(0 8px 18px rgba(0,0,0,0.55))'
+        : 'drop-shadow(0 4px 10px rgba(0,0,0,0.45))'
+      /*
+       * `innerHTML` con una stringa costruita qui dentro: gli unici valori interpolati sono
+       * numeri gia' passati per `toFixed`, il nome della zona resta fuori dal markup e viaggia
+       * solo per `setAttribute`/`title`, che non interpretano HTML.
+       */
+      element.innerHTML = pinSvg(score.mpi, score.confidence, selected)
 
       element.addEventListener('click', (event) => {
         event.stopPropagation()
         onSelectRef.current(zone.code)
       })
 
-      const marker = new maplibregl.Marker({ element })
+      const marker = new maplibregl.Marker({ element, anchor: 'bottom' })
         .setLngLat([zone.longitude, zone.latitude])
         .addTo(map)
       zoneMarkers.current.set(zone.code, marker)

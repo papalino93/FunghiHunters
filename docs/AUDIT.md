@@ -24,11 +24,11 @@ non più scritto né letto.
 
 **Punti salvati (waypoint)**: modello esteso da due categorie (`car`, `point`) a quattro (`car`,
 `access`, `reference`, `departure`), con associazione facoltativa a una voce del diario
-(`entryId`). Un punto vive nella sezione "Punti dell'uscita" (dentro una voce) oppure "Punti
-liberi" (nel Diario, in cima), mai in entrambe. I punti di partenza preferiti sono punti liberi di
+(`entryId`). Un punto vive nella sezione "Punti di questa uscita" (dentro una voce) oppure "Punti
+fissi" (nel Diario, in cima), mai in entrambe. I punti di partenza preferiti sono punti fissi di
 categoria `departure`, selezionabili in "Dove vado oggi" per calcolare la distanza. Restano
 **esclusivamente locali**: nessuna riga Supabase, nessuna sincronizzazione, mai. Compatibilità: un
-punto salvato prima di questo modello (`kind: 'point'`, senza `entryId`) si legge come punto libero
+punto salvato prima di questo modello (`kind: 'point'`, senza `entryId`) si legge come punto fisso
 di categoria `reference` — vedi `normaliseWaypoint` in `src/lib/waypoints/types.ts`.
 
 **Integrità dello snapshot**: `algorithmVersionMismatch()` confronta la versione del modello
