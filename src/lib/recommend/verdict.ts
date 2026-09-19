@@ -191,7 +191,8 @@ function reasonFor(
       `${scope} ${tooWarm ? 'ancora troppo caldo' : 'troppo freddo'}: ` +
       `${tMean.toFixed(0)} °C di media negli ultimi 20 giorni, ` +
       `contro i ${optimum.toFixed(0)} a cui il porcino fruttifica. ` +
-      `Sono ${Math.abs(gap).toFixed(0)} gradi ${tooWarm ? 'di troppo' : 'sotto'}.`
+      `Sono ${Math.abs(gap).toFixed(0)} gradi ${tooWarm ? 'di troppo' : 'sotto'}.` +
+      secondaryLimitClause(zone, 'thermal')
     )
   }
 
@@ -199,7 +200,8 @@ function reasonFor(
     const scope = everywhere ? 'Manca acqua ovunque' : 'Manca acqua'
     return (
       `${scope}: dopo evapotraspirazione restano ${water.toFixed(0)} mm utili nel terreno, ` +
-      `su ${(rain ?? 0).toFixed(0)} mm caduti in 26 giorni.`
+      `su ${(rain ?? 0).toFixed(0)} mm caduti in 26 giorni.` +
+      secondaryLimitClause(zone, 'water')
     )
   }
 
@@ -211,6 +213,25 @@ function reasonFor(
   }
 
   return `La zona migliore è ${bandNameFor(top.mpi)}, e nessuna delle altre fa meglio.`
+}
+
+/**
+ * La frase del verdetto racconta un solo fattore — quello che, tolto, farebbe salire di più il
+ * punteggio — perché è la domanda che conta: "cosa mi frena". Il rischio, segnalato da chi usa
+ * l'app, è che l'unico fattore nominato sembri l'unico che il modello considera, quando in realtà
+ * il punteggio è sempre un prodotto di più termini (`src/lib/model/mpi.ts`).
+ *
+ * Qui si aggiunge una clausola breve solo quando un secondo fattore pesa quasi quanto il primo
+ * (almeno la metà del suo contributo, e comunque non trascurabile): non ogni volta, altrimenti la
+ * frase torna a essere una lista di numeri invece di una risposta.
+ */
+function secondaryLimitClause(zone: SnapshotZone, primaryKey: string): string {
+  const primary = zone.negativeFactors.find((f) => f.key === primaryKey) ?? zone.negativeFactors[0]
+  const secondary = zone.negativeFactors.find((f) => f.key !== primaryKey)
+  if (primary === undefined || secondary === undefined) return ''
+  if (Math.abs(secondary.contribution) < 5) return ''
+  if (Math.abs(secondary.contribution) < Math.abs(primary.contribution) * 0.5) return ''
+  return ` Pesa anche ${secondary.label.toLowerCase()}.`
 }
 
 function outlookFor(
