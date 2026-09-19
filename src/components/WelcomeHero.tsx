@@ -129,8 +129,10 @@ export function WelcomeHero() {
             <Link
               href="/guida"
               onClick={dismiss}
-              className="text-accent underline underline-offset-2 hover:text-ink focus:outline-none
-                         focus-visible:ring-2 focus-visible:ring-accent"
+              /* `after:` allarga l'area toccabile a ~47 px senza cambiare l'impaginazione. */
+              className="relative text-accent underline underline-offset-2 hover:text-ink
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                         after:absolute after:inset-x-0 after:-inset-y-4 after:content-['']"
             >
               Leggi come funziona
             </Link>

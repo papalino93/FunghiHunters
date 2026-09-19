@@ -25,8 +25,8 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
 
       {report.usable > 0 && (
         <p className="mt-1 text-[11px] text-ink-faint">
-          {report.contextual} su {report.usable} hanno anche la durata della ricerca: solo per
-          queste uno &quot;zero&quot; si legge davvero.
+          Con la durata della ricerca: {report.contextual} su {report.usable}. Solo per quelle uno
+          &quot;zero&quot; si legge davvero.
         </p>
       )}
 

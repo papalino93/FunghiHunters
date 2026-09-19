@@ -169,3 +169,29 @@ describe('per versione dell\'algoritmo', () => {
     expect(labels).toContain('versione non registrata')
   })
 })
+
+describe('avvertenza sulle uscite a vuoto senza durata', () => {
+  it('concorda singolare e plurale su tutta la frase, non solo sul sostantivo', () => {
+    const uno = calibrate([entry({ mpi: 40, abundance: 'none', day: 1 })]).shortSearchCaveat
+    expect(uno).toMatch(/^1 uscita senza niente trovato non ha la durata/)
+
+    const due = calibrate([
+      entry({ mpi: 40, abundance: 'none', day: 1 }),
+      entry({ mpi: 40, abundance: 'none', day: 2 }),
+    ]).shortSearchCaveat
+    expect(due).toMatch(/^2 uscite senza niente trovato non hanno la durata/)
+  })
+
+  it('tace quando ogni uscita a vuoto ha la durata', () => {
+    const conDurata = materialise({
+      date: '2026-09-01',
+      zoneCode: 'test',
+      zoneName: 'Garfagnana',
+      abundance: 'none',
+      durationMinutes: 120,
+      mpiAtEntry: 40,
+      confidenceAtEntry: 70,
+    })
+    expect(calibrate([conDurata]).shortSearchCaveat).toBeNull()
+  })
+})

@@ -126,14 +126,14 @@ describe('archivio punti salvati', () => {
   })
 })
 
-describe('filtri sui punti (liberi, per uscita, di partenza)', () => {
+describe('filtri sui punti (fissi, per uscita, di partenza)', () => {
   const points = [
     { id: 'a', entryId: null, kind: 'departure' as const, label: 'Casa', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
     { id: 'b', entryId: null, kind: 'car' as const, label: 'Auto', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
     { id: 'c', entryId: 'uscita-1', kind: 'reference' as const, label: 'Bivio', latitude: 44, longitude: 10, createdAt: '2026-09-01T00:00:00Z' },
   ]
 
-  it('unassociatedWaypoints() prende solo i punti liberi', () => {
+  it('unassociatedWaypoints() prende solo i punti fissi', () => {
     expect(unassociatedWaypoints(points).map((p) => p.id)).toEqual(['a', 'b'])
   })
 
@@ -142,7 +142,7 @@ describe('filtri sui punti (liberi, per uscita, di partenza)', () => {
     expect(waypointsForEntry(points, 'uscita-2')).toEqual([])
   })
 
-  it('departurePoints() prende solo i punti di partenza liberi', () => {
+  it('departurePoints() prende solo i punti di partenza fissi', () => {
     expect(departurePoints(points).map((p) => p.id)).toEqual(['a'])
   })
 })
@@ -153,7 +153,7 @@ describe('compatibilità con i punti salvati prima delle quattro categorie', () 
     expect(legacy.kind).toBe('reference')
   })
 
-  it('un punto salvato prima di entryId diventa un punto libero, non sparisce', () => {
+  it('un punto salvato prima di entryId diventa un punto fisso, non sparisce', () => {
     const legacy = normaliseWaypoint({ id: 'vecchio', kind: 'car', label: 'Auto', latitude: 44, longitude: 10, createdAt: '2026-01-01T00:00:00Z' })
     expect(legacy.entryId).toBeNull()
   })

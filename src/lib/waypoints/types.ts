@@ -6,7 +6,7 @@
  * salvato, sul suo stesso dispositivo — non è mai condiviso né sincronizzato, con nessuno, mai.
  *
  * **Associazione a un'uscita, facoltativa.** `entryId` lega un punto a una voce del diario quando
- * ha senso ("il bivio di questa camminata"), `null` quando è un punto libero riusabile ("casa",
+ * ha senso ("il bivio di questa camminata"), `null` quando è un punto fisso riusabile ("casa",
  * "il parcheggio dove vado sempre") — sono i punti di partenza preferiti, vedi
  * `src/components/today/LocationPrompt.tsx`. Un punto non è mai mostrato in entrambe le liste:
  * o ha un `entryId`, o non ce l'ha, mai i due insieme.
@@ -17,7 +17,7 @@ export type WaypointKind = (typeof WAYPOINT_KINDS)[number]
 
 export interface Waypoint {
   readonly id: string
-  /** Uscita a cui appartiene, `null` se è un punto libero (es. un punto di partenza preferito). */
+  /** Uscita a cui appartiene, `null` se è un punto fisso (es. un punto di partenza preferito). */
   readonly entryId: string | null
   readonly kind: WaypointKind
   readonly label: string
@@ -49,7 +49,7 @@ export type StoredWaypoint = Omit<Partial<Waypoint>, 'kind'> & {
  *
  * `'point'` (il valore generico di prima) diventa `'reference'`, la categoria più vicina nel
  * significato — "un posto a cui tornare", non un'auto né un accesso né una base di partenza.
- * Un punto senza `entryId` (salvato prima che esistesse questo campo) diventa un punto libero:
+ * Un punto senza `entryId` (salvato prima che esistesse questo campo) diventa un punto fisso:
  * è il comportamento che aveva già, dato che prima non poteva appartenere a nessuna uscita.
  */
 export function normaliseWaypoint(raw: StoredWaypoint): Waypoint {
@@ -67,7 +67,7 @@ export function normaliseWaypoint(raw: StoredWaypoint): Waypoint {
   }
 }
 
-/** Punti liberi: non appartengono a nessuna uscita. Include i punti di partenza preferiti. */
+/** Punti fissi: non appartengono a nessuna uscita. Include i punti di partenza preferiti. */
 export function unassociatedWaypoints(points: readonly Waypoint[]): Waypoint[] {
   return points.filter((p) => p.entryId === null)
 }
@@ -77,7 +77,7 @@ export function waypointsForEntry(points: readonly Waypoint[], entryId: string):
   return points.filter((p) => p.entryId === entryId)
 }
 
-/** Punti di partenza preferiti: punti liberi di categoria `departure` — vedi `LocationPrompt`. */
+/** Punti di partenza preferiti: punti fissi di categoria `departure` — vedi `LocationPrompt`. */
 export function departurePoints(points: readonly Waypoint[]): Waypoint[] {
   return unassociatedWaypoints(points).filter((p) => p.kind === 'departure')
 }

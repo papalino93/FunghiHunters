@@ -154,10 +154,14 @@ export function GuideScreen() {
         <Voce titolo="Punti salvati">
           Con un tocco segni dove hai lasciato l&apos;auto, l&apos;accesso al sentiero, un bivio o
           un punto a cui tornare — con distanza e direzione dalla tua posizione attuale, e un link
-          per aprirlo nell&apos;app mappe. I <em>punti liberi</em> (in cima al Diario) non sono
-          legati a un&apos;uscita: quelli di tipo &laquo;Partenza&raquo; compaiono anche in{' '}
-          <em>Dove vado</em> come punto da cui calcolare le distanze.
+          per aprirlo nell&apos;app mappe. Ci sono due elenchi, e cambia quanto durano:
         </Voce>
+        <Elenco
+          voci={[
+            '«Punti fissi» (in cima al Diario): i riferimenti che valgono per tutte le uscite — casa, il parcheggio abituale, un accesso al bosco. Restano lì finché non li cancelli tu. Quelli di tipo «Partenza» compaiono anche in Dove vado, come punto da cui calcolare le distanze.',
+            '«Punti di questa uscita» (dentro una voce del diario): valgono per quella camminata soltanto — l’auto di oggi, il bivio di oggi. Se cancelli l’uscita spariscono con lei.',
+          ]}
+        />
         <p className="text-ink-faint">
           Nessun punto viene registrato automaticamente: l&apos;app non traccia i tuoi spostamenti,
           non registra percorsi e non funziona in background. Salva solo quando lo tocchi tu.
@@ -169,7 +173,7 @@ export function GuideScreen() {
           voci={[
             'Il diario vive sul tuo dispositivo. Senza account non esce di lì, e l’app non ha modo di leggerlo.',
             'Con un account, il diario si sincronizza per ritrovarlo altrove. Solo tu puoi leggerlo: lo garantisce una regola del database che lega ogni riga al tuo utente.',
-            'I punti salvati (auto, accessi, punti di partenza) restano sempre e solo sul dispositivo: non vengono mai sincronizzati, con o senza account.',
+            'I punti salvati (fissi e di un’uscita) restano sempre e solo sul dispositivo: non vengono mai sincronizzati, con o senza account.',
             'La posizione precisa di un’uscita viene salvata sfocata a circa un chilometro, a meno che tu scelga esplicitamente «coordinate esatte» per quella voce.',
             'La sfocatura è definitiva: una volta salvata l’area, le coordinate precise non esistono più da nessuna parte.',
           ]}
@@ -231,7 +235,12 @@ export function GuideScreen() {
         Questa guida descrive l&apos;app così com&apos;è oggi, senza promettere quello che non fa.
         Se una parte ti sembra poco chiara, probabilmente è scritta male: è un difetto da
         correggere, non un tuo limite.{' '}
-        <Link href="/" className="text-accent underline underline-offset-2 hover:text-ink">
+        <Link
+          href="/"
+          /* Come in `WelcomeHero`: area toccabile allargata senza spostare il testo. */
+          className="relative text-accent underline underline-offset-2 hover:text-ink
+                     after:absolute after:inset-x-0 after:-inset-y-4 after:content-['']"
+        >
           Torna a &laquo;Dove vado&raquo;
         </Link>
       </p>
