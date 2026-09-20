@@ -13,7 +13,16 @@ import { describe, expect, it } from 'vitest'
 import { ALGORITHM_V1, uncalibratedParams } from '@/lib/config/algorithm'
 import { addDays } from '@/lib/domain/time'
 import { buildFeatures, detectRainEvents, maxThermalDrop, type CellContext, type DailyWeather } from '@/lib/model/features'
-import { computeMpi, dayOfYear, gaussian, mpiLabel, seasonBlend, MPI_LABELS } from '@/lib/model/mpi'
+import {
+  asymmetricGaussian,
+  computeMpi,
+  dayOfYear,
+  gaussian,
+  mpiLabel,
+  seasonBlend,
+  thermalSuitability,
+  MPI_LABELS,
+} from '@/lib/model/mpi'
 import { explainScore } from '@/lib/model/explain'
 import { dailyDecay, initialDeficit, southness, waterBalance } from '@/lib/model/water'
 
@@ -99,6 +108,51 @@ describe('funzioni di base', () => {
     expect(southness(180)).toBe(1)
     expect(southness(90)).toBeCloseTo(0.5, 6)
     expect(southness(270)).toBeCloseTo(0.5, 6)
+  })
+})
+
+describe('campana termica asimmetrica (v1.3.0)', () => {
+  it('usa la larghezza sotto il centro quando il valore e piu basso, quella sopra quando e piu alto', () => {
+    expect(asymmetricGaussian(9, 13, 4, 8)).toBeCloseTo(gaussian(9, 13, 4), 10)
+    expect(asymmetricGaussian(17, 13, 4, 8)).toBeCloseTo(gaussian(17, 13, 8), 10)
+  })
+
+  it('a parita di scostamento assoluto dall ottimo, il lato caldo penalizza meno del lato freddo', () => {
+    // Stesso scostamento (4 gradi) da un ottimo di 13: sotto usa sigmaC=4.2 (stretto), sopra
+    // sigmaWarmC=7.5 (largo). Il lato caldo deve risultare piu favorevole.
+    const cold = asymmetricGaussian(9, 13, 4.2, 7.5)
+    const warm = asymmetricGaussian(17, 13, 4.2, 7.5)
+    expect(warm).toBeGreaterThan(cold)
+  })
+
+  it('thermalSuitability: giornate miti (18-20 gradi) segnano meglio che con la vecchia campana simmetrica', () => {
+    // Notti fresche, giornate calde ma non estreme: la segnalazione del 20/9/2026 che ha motivato
+    // sigmaWarmC. Confronto diretto con quanto avrebbe dato la campana simmetrica di prima (sigmaC
+    // usata anche sopra l'ottimo), senza modificare l'ottimo stesso.
+    const warmDays = scenario({ tMax: 24, tMin: 14 })
+    const features = buildFeatures(warmDays, AUTUMN_CELL, ALGORITHM_V1)
+    const blend = seasonBlend(features.date, AUTUMN_CELL.elevationM, ALGORITHM_V1)
+    const result = thermalSuitability(features, blend, ALGORITHM_V1)
+
+    expect(features.tMeanWindow).not.toBeNull()
+    const optimumC = result.optimumC
+    const oldSymmetricScore = gaussian(features.tMeanWindow as number, optimumC, ALGORITHM_V1.thermal.sigmaC.value)
+    expect(result.airScore).toBeGreaterThan(oldSymmetricScore)
+  })
+
+  it('thermalSuitability: il lato freddo resta invariato, la fruttificazione quasi assente fra 5 e 10 gradi non si allarga', () => {
+    const coldDays = scenario({ tMax: 10, tMin: 2 })
+    const features = buildFeatures(coldDays, AUTUMN_CELL, ALGORITHM_V1)
+    const blend = seasonBlend(features.date, AUTUMN_CELL.elevationM, ALGORITHM_V1)
+    const result = thermalSuitability(features, blend, ALGORITHM_V1)
+
+    expect(features.tMeanWindow).not.toBeNull()
+    const expected = gaussian(
+      features.tMeanWindow as number,
+      result.optimumC,
+      ALGORITHM_V1.thermal.sigmaC.value,
+    )
+    expect(result.airScore).toBeCloseTo(expected, 10)
   })
 })
 
