@@ -31,6 +31,23 @@ export function gaussian(value: number, centre: number, sigma: number): number {
   return Math.exp(-((value - centre) ** 2) / (2 * sigma ** 2))
 }
 
+/**
+ * Campana asimmetrica: una larghezza sotto il centro, un'altra sopra.
+ *
+ * Serve per l'idoneita' termica (vedi `thermalSuitability`): la fonte misura la fruttificazione
+ * "quasi assente" pochi gradi sotto l'ottimo, quindi li' la campana resta stretta. Sopra l'ottimo
+ * la fonte non dice altrettanto — ed e' un bosco di faggio d'Europa centrale, non l'Appennino
+ * mediterraneo — quindi la' la campana puo' essere piu' larga senza contraddire la fonte.
+ */
+export function asymmetricGaussian(
+  value: number,
+  centre: number,
+  sigmaBelow: number,
+  sigmaAbove: number,
+): number {
+  return gaussian(value, centre, value <= centre ? sigmaBelow : sigmaAbove)
+}
+
 /** Giorno dell'anno, 1-366. */
 export function dayOfYear(date: string): number {
   const [y, m, d] = date.split('-').map(Number) as [number, number, number]
@@ -121,7 +138,7 @@ export function thermalSuitability(
   const airScore =
     features.tMeanWindow === null
       ? 0
-      : gaussian(features.tMeanWindow, optimumC, t.sigmaC.value)
+      : asymmetricGaussian(features.tMeanWindow, optimumC, t.sigmaC.value, t.sigmaWarmC.value)
 
   const soilScore =
     features.soilTemperatureMean === null

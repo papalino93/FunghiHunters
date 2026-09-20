@@ -338,8 +338,15 @@ export interface ThermalConfig {
   readonly optAutumnC: Param
   /** Ottimo termico del regime estivo di bassa quota. */
   readonly optSummerC: Param
-  /** Larghezza della campana di idoneita', in gradi. */
+  /** Larghezza della campana di idoneita' SOTTO l'ottimo, in gradi. */
   readonly sigmaC: Param
+  /**
+   * Larghezza della campana di idoneita' SOPRA l'ottimo, in gradi.
+   *
+   * Deliberatamente piu' larga di `sigmaC`: vedi il commento su `asymmetricGaussian` in
+   * `model/mpi.ts` e la nota su questo valore piu' sotto.
+   */
+  readonly sigmaWarmC: Param
   /** Ampiezza della finestra sulla temperatura del suolo. */
   readonly soilWindowDays: Param
   readonly soilOptC: Param
@@ -467,9 +474,21 @@ export interface AlgorithmConfig {
  * bilancio idrico (ridondante con ET0, che include gia' il vento) e la penalita' che lo
  * mescolava con la sicurezza dell'uscita, ora un segnale separato. Vedi i commenti su
  * `water.lambdaWindCoeff` e `penalties.wind`.
+ *
+ * v1.3.0: campana termica resa asimmetrica (`thermal.sigmaWarmC`). Segnalazione dal campo (20
+ * settembre 2026): con notti gia' fresche (10-15 gradi) e giornate calde ma non estreme (28-32),
+ * la media a 20 giorni finiva 18-20 gradi e la vecchia campana simmetrica (sigma 4.2 sia sopra che
+ * sotto l'ottimo) tagliava il punteggio termico a meta' o meno — "Temperatura" risultava il
+ * fattore limitante in 4 zone su 7 lo stesso giorno. Sotto l'ottimo la fonte (`brejon2026`) misura
+ * la fruttificazione "quasi assente" gia' pochi gradi sotto: li' la campana resta stretta com'era.
+ * Sopra l'ottimo la fonte non dice altrettanto — ed e' un bosco di faggio d'Europa centrale, non
+ * l'Appennino mediterraneo dove le giornate calde sono la norma — e il caldo vero ha gia' due
+ * penalita' dedicate (`penalties.heat`, `penalties.heatShock`) che intervengono per conto proprio:
+ * non serve che la campana termica lo penalizzi una seconda volta. `sigmaWarmC` resta un valore da
+ * calibrare, non una misura.
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
-  version: '1.2.0-porcino',
+  version: '1.3.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -600,8 +619,20 @@ export const ALGORITHM_V1: AlgorithmConfig = {
     ),
     sigmaC: calibrate(
       4.2,
-      'Scelta perche\' riproduce la zona di fruttificazione osservata, 10-15 gradi, come ' +
-        'intervallo entro cui il fattore resta sopra 0.75.',
+      'Lato FREDDO della campana (sotto l\'ottimo). Scelta perche\' riproduce la zona di ' +
+        'fruttificazione osservata, 10-15 gradi, come intervallo entro cui il fattore resta sopra ' +
+        '0.75 — coerente con la fonte, che misura la fruttificazione quasi assente gia\' fra 5 e 10.',
+    ),
+    sigmaWarmC: calibrate(
+      7.5,
+      'Lato CALDO della campana (sopra l\'ottimo), volutamente piu\' largo del lato freddo. La ' +
+        'fonte non misura un crollo altrettanto netto sopra l\'ottimo, ed e\' comunque un bosco di ' +
+        'faggio d\'Europa centrale: l\'Appennino mediterraneo ha giornate calde per norma, non per ' +
+        'eccezione. Il caldo vero resta comunque penalizzato per conto proprio da ' +
+        '`penalties.heat` e `penalties.heatShock`, quindi non serve che anche questa campana lo ' +
+        'punisca due volte. Introdotto il 20 settembre 2026 perche\' con notti gia\' fresche ' +
+        '(10-15 gradi) e giornate calde ma non estreme (28-32) la campana simmetrica dimezzava il ' +
+        'punteggio termico di 4 zone su 7 nello stesso giorno.',
     ),
     soilWindowDays: calibrate(7),
     soilOptC: calibrate(14, 'Leggermente sopra l\'ottimo dell\'aria: il suolo e\' piu\' inerte.'),
