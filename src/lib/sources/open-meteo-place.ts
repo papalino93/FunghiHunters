@@ -96,12 +96,28 @@ export interface PlaceDailyWeather {
   readonly isForecast: boolean
 }
 
+/** Un'ora di dettaglio, per il giorno che l'utente apre nella tabella. */
+export interface PlaceHourlyWeather {
+  readonly time: string
+  readonly temperatureC: number | null
+  readonly precipitationMm: number | null
+  readonly windSpeedMs: number | null
+  readonly windGustMs: number | null
+  readonly humidityPercent: number | null
+  readonly vpdKpa: number | null
+  readonly soilMoisture: number | null
+  readonly soilTemperatureC: number | null
+  readonly weatherCode: number | null
+}
+
 export interface PlaceForecast {
   readonly latitude: number
   readonly longitude: number
   readonly elevationM: number | null
   readonly current: PlaceCurrentWeather | null
   readonly daily: readonly PlaceDailyWeather[]
+  /** Le stesse ore di `daily`, raggruppate per data (`YYYY-MM-DD`), per il dettaglio a richiesta. */
+  readonly hourlyByDate: Readonly<Record<string, readonly PlaceHourlyWeather[]>>
 }
 
 const forecastSchema = z.object({
@@ -135,6 +151,11 @@ const DAILY_VARS = [
 ] as const
 
 const HOURLY_VARS = [
+  'temperature_2m',
+  'precipitation',
+  'wind_speed_10m',
+  'wind_gusts_10m',
+  'weather_code',
   'relative_humidity_2m',
   'vapour_pressure_deficit',
   'soil_moisture_0_to_7cm',
@@ -248,6 +269,35 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
     }))
     .filter((d) => d.date !== '')
 
+  const hourlyTemp = numberColumn(parsed.hourly, 'temperature_2m')
+  const hourlyPrecip = numberColumn(parsed.hourly, 'precipitation')
+  const hourlyWind = numberColumn(parsed.hourly, 'wind_speed_10m')
+  const hourlyGust = numberColumn(parsed.hourly, 'wind_gusts_10m')
+  const hourlyCode = numberColumn(parsed.hourly, 'weather_code')
+  const hourlyHumidity = numberColumn(parsed.hourly, 'relative_humidity_2m')
+  const hourlyVpd = numberColumn(parsed.hourly, 'vapour_pressure_deficit')
+  const hourlySoilMoisture = numberColumn(parsed.hourly, 'soil_moisture_0_to_7cm')
+  const hourlySoilTemp = numberColumn(parsed.hourly, 'soil_temperature_0_to_7cm')
+
+  const hourlyByDate: Record<string, PlaceHourlyWeather[]> = {}
+  for (const [i, time] of hourlyTimes.entries()) {
+    if (time === '') continue
+    const date = time.slice(0, 10)
+    const hour: PlaceHourlyWeather = {
+      time,
+      temperatureC: hourlyTemp[i] ?? null,
+      precipitationMm: hourlyPrecip[i] ?? null,
+      windSpeedMs: hourlyWind[i] ?? null,
+      windGustMs: hourlyGust[i] ?? null,
+      humidityPercent: hourlyHumidity[i] ?? null,
+      vpdKpa: hourlyVpd[i] ?? null,
+      soilMoisture: hourlySoilMoisture[i] ?? null,
+      soilTemperatureC: hourlySoilTemp[i] ?? null,
+      weatherCode: hourlyCode[i] ?? null,
+    }
+    ;(hourlyByDate[date] ??= []).push(hour)
+  }
+
   const current: PlaceCurrentWeather | null =
     parsed.current === undefined
       ? null
@@ -269,5 +319,6 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
     elevationM: parsed.elevation ?? null,
     current,
     daily,
+    hourlyByDate,
   }
 }

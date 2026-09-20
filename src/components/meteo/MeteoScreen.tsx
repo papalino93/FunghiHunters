@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 
-import type { PlaceCandidate, PlaceForecast } from '@/lib/sources/open-meteo-place'
+import type { PlaceCandidate, PlaceForecast, PlaceHourlyWeather } from '@/lib/sources/open-meteo-place'
 import { formatDate, formatValue } from '@/lib/ui/scale'
 import { weatherCodeLabel } from '@/lib/ui/weatherCode'
 
@@ -222,7 +222,7 @@ function PlaceWeather({
       {!loading && forecast !== null && (
         <div className="mt-3 space-y-4">
           <CurrentCard forecast={forecast} />
-          <DailyTable days={forecast.daily} />
+          <DailyTable forecast={forecast} />
           <p className="border-t border-edge pt-2 text-[11px] leading-snug text-ink-faint">
             Previsione modellata (Open-Meteo, risoluzione ~9-25 km): a livello locale — in una
             valle stretta o in cresta — i valori reali possono differire, come per ogni previsione.
@@ -268,11 +268,22 @@ function Stat({ label, value }: { label: string; value: string }) {
   )
 }
 
-function DailyTable({ days }: { days: readonly PlaceForecast['daily'][number][] }) {
+/**
+ * Giorno per giorno, con dettaglio ora per ora a richiesta.
+ *
+ * L'ora per ora sta chiuso finché non lo si apre: mostrarlo sempre per dieci giorni sarebbe una
+ * tabella lunghissima su un telefono, per un dettaglio che serve solo quando un giorno preciso
+ * conta davvero (es. "che vento fa domani mattina alle 8", non ogni giorno alla volta).
+ */
+function DailyTable({ forecast }: { forecast: PlaceForecast }) {
+  const [expandedDate, setExpandedDate] = useState<string | null>(null)
+  const days = forecast.daily
   if (days.length === 0) return null
+
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold text-ink-dim">Giorno per giorno</p>
+      <p className="mb-1.5 text-[11px] text-ink-faint">Tocca un giorno per il dettaglio ora per ora.</p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-xs">
           <thead>
@@ -287,37 +298,117 @@ function DailyTable({ days }: { days: readonly PlaceForecast['daily'][number][] 
             </tr>
           </thead>
           <tbody>
-            {days.map((day) => (
-              <tr key={day.date} className="border-t border-edge">
-                <td className="py-1.5 pr-2 text-ink">
-                  {formatDate(day.date)}
-                  {day.isForecast && (
-                    <span className="ml-1 text-[10px] text-ink-faint">previsto</span>
+            {days.map((day) => {
+              const expanded = expandedDate === day.date
+              return (
+                <Fragment key={day.date}>
+                  <tr className="border-t border-edge">
+                    <td className="py-1.5 pr-2 text-ink">
+                      <button
+                        type="button"
+                        onClick={() => setExpandedDate(expanded ? null : day.date)}
+                        aria-expanded={expanded}
+                        className="-my-1.5 flex min-h-11 items-center gap-1 rounded text-left font-medium
+                                   text-ink transition-colors hover:text-accent focus:outline-none
+                                   focus-visible:ring-2 focus-visible:ring-accent"
+                      >
+                        <span aria-hidden="true" className="text-ink-faint">
+                          {expanded ? '▾' : '▸'}
+                        </span>
+                        {formatDate(day.date)}
+                        {day.isForecast && (
+                          <span className="text-[10px] text-ink-faint">previsto</span>
+                        )}
+                      </button>
+                    </td>
+                    <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.precipitationMm, 'mm', 1)}</td>
+                    <td className="py-1.5 pr-2 text-ink-dim">
+                      {formatValue(day.temperatureMinC, '', 0)} / {formatValue(day.temperatureMaxC, '°C', 0)}
+                    </td>
+                    <td className="py-1.5 pr-2 text-ink-dim">
+                      {formatValue(day.windMaxMs, 'm/s', 1)}
+                      {day.windGustMaxMs !== null && (
+                        <span className="text-ink-faint"> ({formatValue(day.windGustMaxMs, 'm/s', 0)} raffica)</span>
+                      )}
+                    </td>
+                    <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.humidityMeanPercent, '%', 0)}</td>
+                    <td className="py-1.5 pr-2 text-ink-dim">
+                      {formatValue(day.soilTemperatureMeanC, '°C', 0)}
+                      {day.soilMoistureMean !== null && (
+                        <span className="text-ink-faint"> · {formatValue(day.soilMoistureMean, 'm³/m³', 2)}</span>
+                      )}
+                    </td>
+                    <td className="py-1.5 text-ink-dim">{formatValue(day.et0Mm, 'mm', 1)}</td>
+                  </tr>
+                  {expanded && (
+                    <tr>
+                      <td colSpan={7} className="bg-surface-2 p-0">
+                        <HourlyDetail hours={forecast.hourlyByDate[day.date] ?? []} />
+                      </td>
+                    </tr>
                   )}
-                </td>
-                <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.precipitationMm, 'mm', 1)}</td>
-                <td className="py-1.5 pr-2 text-ink-dim">
-                  {formatValue(day.temperatureMinC, '', 0)} / {formatValue(day.temperatureMaxC, '°C', 0)}
-                </td>
-                <td className="py-1.5 pr-2 text-ink-dim">
-                  {formatValue(day.windMaxMs, 'm/s', 1)}
-                  {day.windGustMaxMs !== null && (
-                    <span className="text-ink-faint"> ({formatValue(day.windGustMaxMs, 'm/s', 0)} raffica)</span>
-                  )}
-                </td>
-                <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.humidityMeanPercent, '%', 0)}</td>
-                <td className="py-1.5 pr-2 text-ink-dim">
-                  {formatValue(day.soilTemperatureMeanC, '°C', 0)}
-                  {day.soilMoistureMean !== null && (
-                    <span className="text-ink-faint"> · {formatValue(day.soilMoistureMean, 'm³/m³', 2)}</span>
-                  )}
-                </td>
-                <td className="py-1.5 text-ink-dim">{formatValue(day.et0Mm, 'mm', 1)}</td>
-              </tr>
-            ))}
+                </Fragment>
+              )
+            })}
           </tbody>
         </table>
       </div>
     </div>
   )
+}
+
+function HourlyDetail({ hours }: { hours: readonly PlaceHourlyWeather[] }) {
+  if (hours.length === 0) {
+    return (
+      <p className="p-2.5 text-[11px] text-ink-faint">
+        Dettaglio orario non disponibile per questo giorno.
+      </p>
+    )
+  }
+  return (
+    <div className="overflow-x-auto p-2">
+      <table className="w-full min-w-[520px] text-left text-[11px]">
+        <thead>
+          <tr className="text-ink-faint">
+            <th className="py-1 pr-2 font-medium">Ora</th>
+            <th className="py-1 pr-2 font-medium">Meteo</th>
+            <th className="py-1 pr-2 font-medium">Temp</th>
+            <th className="py-1 pr-2 font-medium">Pioggia</th>
+            <th className="py-1 pr-2 font-medium">Vento</th>
+            <th className="py-1 pr-2 font-medium">Umidità</th>
+            <th className="py-1 font-medium">Suolo</th>
+          </tr>
+        </thead>
+        <tbody>
+          {hours.map((h) => (
+            <tr key={h.time} className="border-t border-edge/60">
+              <td className="py-1 pr-2 text-ink">{formatHour(h.time)}</td>
+              <td className="py-1 pr-2 text-ink-dim">{weatherCodeLabel(h.weatherCode) ?? '—'}</td>
+              <td className="py-1 pr-2 text-ink-dim">{formatValue(h.temperatureC, '°C', 0)}</td>
+              <td className="py-1 pr-2 text-ink-dim">{formatValue(h.precipitationMm, 'mm', 1)}</td>
+              <td className="py-1 pr-2 text-ink-dim">
+                {formatValue(h.windSpeedMs, 'm/s', 1)}
+                {h.windGustMs !== null && (
+                  <span className="text-ink-faint"> ({formatValue(h.windGustMs, 'm/s', 0)})</span>
+                )}
+              </td>
+              <td className="py-1 pr-2 text-ink-dim">{formatValue(h.humidityPercent, '%', 0)}</td>
+              <td className="py-1 text-ink-dim">
+                {formatValue(h.soilTemperatureC, '°C', 0)}
+                {h.soilMoisture !== null && (
+                  <span className="text-ink-faint"> · {formatValue(h.soilMoisture, 'm³/m³', 2)}</span>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  )
+}
+
+/** "2026-09-20T14:00" -> "14:00". */
+function formatHour(time: string): string {
+  const index = time.indexOf('T')
+  return index === -1 ? time : time.slice(index + 1)
 }
