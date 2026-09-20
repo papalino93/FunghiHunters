@@ -17,7 +17,7 @@ describe('URL della previsione puntuale', () => {
     expect(url).toContain('elevation=1350')
     expect(url).toContain('current=temperature_2m%2Capparent_temperature')
     expect(url).toContain('daily=precipitation_sum%2Ctemperature_2m_max')
-    expect(url).toContain('hourly=relative_humidity_2m%2Cvapour_pressure_deficit')
+    expect(url).toContain('hourly=temperature_2m%2Cprecipitation%2Cwind_speed_10m')
   })
 
   it('omette la quota quando non è nota', () => {
@@ -57,6 +57,11 @@ describe('normalizzazione della risposta', () => {
     },
     hourly: {
       time: [`${yesterday}T00:00`, `${yesterday}T12:00`, `${todayIso}T00:00`, `${todayIso}T12:00`],
+      temperature_2m: [8, 16, 9, 17],
+      precipitation: [0.5, 0, 0, 0.2],
+      wind_speed_10m: [2, 4, 3, 5],
+      wind_gusts_10m: [5, 9, 6, 11],
+      weather_code: [61, 2, 3, 1],
       relative_humidity_2m: [80, 60, 78, 58],
       vapour_pressure_deficit: [0.2, 0.9, 0.25, 0.95],
       soil_moisture_0_to_7cm: [0.3, 0.28, 0.31, 0.29],
@@ -89,5 +94,20 @@ describe('normalizzazione della risposta', () => {
     const result = parsePlaceForecast(rest)
     expect(result.current).toBeNull()
     expect(result.daily.length).toBe(3)
+  })
+
+  it('raggruppa le ore per giorno, per il dettaglio a richiesta', () => {
+    const result = parsePlaceForecast(payload)
+    const yesterdayHours = result.hourlyByDate[yesterday]
+    expect(yesterdayHours).toHaveLength(2)
+    expect(yesterdayHours?.[0]).toMatchObject({
+      time: `${yesterday}T00:00`,
+      temperatureC: 8,
+      precipitationMm: 0.5,
+      windSpeedMs: 2,
+      windGustMs: 5,
+      weatherCode: 61,
+    })
+    expect(result.hourlyByDate[tomorrow]).toBeUndefined()
   })
 })
