@@ -30,6 +30,7 @@ function zone(
     lon?: number
     elevationM?: number
     forest?: string[]
+    mpiRaw?: number
     series?: Array<{ date: string; mpi: number }>
   } = {},
 ): SnapshotZone {
@@ -44,6 +45,7 @@ function zone(
   ]).map((p) => ({
     date: p.date,
     mpi: p.mpi,
+    ...(overrides.mpiRaw === undefined ? {} : { mpiRaw: overrides.mpiRaw }),
     confidence,
     dataQuality,
     forecastCertainty: 100,
@@ -264,5 +266,42 @@ describe('costruzione dei filtri', () => {
       zone('b', { forest: ['faggeta', 'castagneto'] }),
     ])
     expect(types).toEqual(['abetina', 'castagneto', 'faggeta'])
+  })
+})
+
+/**
+ * Lo spareggio fra zone a pari punteggio.
+ *
+ * Nasce da un caso vero: il 21/09/2026, sul catalogo nazionale, 233 zone segnavano esattamente
+ * 100 con la stessa affidabilita', perche' il punteggio e' un prodotto tagliato a 100. Fra due di
+ * esse una aveva 63 mm d'acqua utile su 70 richiesti e l'altra il doppio: senza spareggio
+ * l'utente si sarebbe visto presentare come classifica l'ordine in cui i comuni stanno nel file.
+ */
+describe('pari merito in cima alla classifica', () => {
+  it('a parita' + "'" + ' di punteggio mette prima quella con il valore non tagliato piu alto', () => {
+    const scarsa = zone('appaiata-scarsa', { mpi: 100, mpiRaw: 104 })
+    const abbondante = zone('appaiata-abbondante', { mpi: 100, mpiRaw: 168 })
+
+    const order = rankZones([scarsa, abbondante], { date: TODAY, from: null }).map((s) => s.zone.code)
+    expect(order).toEqual(['appaiata-abbondante', 'appaiata-scarsa'])
+  })
+
+  it('il punteggio mostrato resta 100 per entrambe', () => {
+    // Era la condizione della scelta: risolvere l'ordine senza cambiare i numeri gia' registrati.
+    const suggestions = rankZones(
+      [zone('a', { mpi: 100, mpiRaw: 104 }), zone('b', { mpi: 100, mpiRaw: 168 })],
+      { date: TODAY, from: null },
+    )
+    expect(suggestions.map((s) => s.mpi)).toEqual([100, 100])
+  })
+
+  it('senza il valore non tagliato non si rompe: ordine di prima', () => {
+    // Gli snapshot generati prima del 21/09/2026 non hanno il campo.
+    const suggestions = rankZones([zone('vecchia-a', { mpi: 100 }), zone('vecchia-b', { mpi: 100 })], {
+      date: TODAY,
+      from: null,
+    })
+    expect(suggestions).toHaveLength(2)
+    expect(suggestions.map((s) => s.mpi)).toEqual([100, 100])
   })
 })

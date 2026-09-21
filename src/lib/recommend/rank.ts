@@ -71,6 +71,21 @@ export function confidenceOn(zone: SnapshotZone, date: string): number {
 }
 
 /**
+ * Il punteggio senza il tetto a 100, per gli spareggi. Ricade su `mpi` sugli snapshot generati
+ * prima del 21/09/2026, che il campo non ce l'hanno: l'ordine torna quello di allora invece di
+ * rompersi.
+ *
+ * Gemello di quello in `snapshot/load.ts`, come gia' `mpiOn` e `confidenceOn` qui sopra: quel
+ * modulo legge dal disco e tirarlo dentro un componente client si porterebbe appresso codice di
+ * server.
+ */
+export function mpiRawOn(zone: SnapshotZone, date: string): number {
+  const point = zone.series.find((p) => p.date === date)
+  if (point !== undefined) return point.mpiRaw ?? point.mpi
+  return zone.mpiRaw ?? zone.mpi
+}
+
+/**
  * Qualità dei **dati osservati** nel giorno scelto, che non è la `confidence` complessiva.
  *
  * Le due si somigliano ma rispondono a domande diverse (vedi il commento "Perché due numeri e non
@@ -231,7 +246,16 @@ export function rankZones(
     })
   }
 
-  return suggestions.sort((a, b) => b.rankScore - a.rankScore)
+  // A parita' di punteggio di classifica decide il potenziale senza tetto. Senza posizione
+  // dell'utente il punteggio si regge solo su potenziale e affidabilita', e sul catalogo
+  // nazionale quelli pareggiano spesso: il 21/09/2026, 233 zone segnavano 100 con la stessa
+  // affidabilita'. Lasciarle nell'ordine del file sarebbe stato spacciare per classifica
+  // l'ordine alfabetico dei comuni.
+  return suggestions.sort(
+    (a, b) =>
+      b.rankScore - a.rankScore ||
+      mpiRawOn(b.zone, options.date) - mpiRawOn(a.zone, options.date),
+  )
 }
 
 function reasonsFor(

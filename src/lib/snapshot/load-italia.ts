@@ -58,5 +58,7 @@ export async function loadRegion(slug: string): Promise<Snapshot | null> {
 
 /** Le zone di una regione, dall'indice leggero: per il menu, senza leggere il dettaglio. */
 export function zonesOfRegion(index: ItaliaIndex, slug: string): ItaliaIndexEntry[] {
-  return index.zones.filter((z) => z.regionSlug === slug).sort((a, b) => b.mpi - a.mpi)
+  return index.zones
+    .filter((z) => z.regionSlug === slug)
+    .sort((a, b) => b.mpi - a.mpi || (b.mpiRaw ?? b.mpi) - (a.mpiRaw ?? a.mpi))
 }

@@ -74,13 +74,29 @@ export function zoneByCode(snapshot: Snapshot, code: string): SnapshotZone | und
   return snapshot.zones.find((z) => z.code === code)
 }
 
-/** Le zone ordinate per punteggio decrescente in un dato giorno. */
+/**
+ * Le zone ordinate per punteggio decrescente in un dato giorno.
+ *
+ * A parita' di punteggio decide il valore senza tetto. Il tetto a 100 e' voluto — tiene la scala
+ * leggibile — ma appiattisce la cima: il 21/09/2026, sul catalogo nazionale, 233 zone segnavano
+ * 100. Senza spareggio l'ordine fra loro sarebbe stato quello in cui capitavano nel file, cioe'
+ * nessun ordine, presentato come una classifica.
+ */
 export function rankZones(snapshot: Snapshot, date: string): SnapshotZone[] {
-  return [...snapshot.zones].sort((a, b) => mpiOn(b, date) - mpiOn(a, date))
+  return [...snapshot.zones].sort(
+    (a, b) => mpiOn(b, date) - mpiOn(a, date) || mpiRawOn(b, date) - mpiRawOn(a, date),
+  )
 }
 
 export function mpiOn(zone: SnapshotZone, date: string): number {
   return zone.series.find((p) => p.date === date)?.mpi ?? zone.mpi
+}
+
+/** Il punteggio senza tetto, per gli spareggi. Ricade su `mpiOn` per gli snapshot vecchi. */
+export function mpiRawOn(zone: SnapshotZone, date: string): number {
+  const point = zone.series.find((p) => p.date === date)
+  if (point !== undefined) return point.mpiRaw ?? point.mpi
+  return zone.mpiRaw ?? zone.mpi
 }
 
 export function confidenceOn(zone: SnapshotZone, date: string): number {

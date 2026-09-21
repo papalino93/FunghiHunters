@@ -716,3 +716,32 @@ describe('shock di caldo', () => {
     expect(threshold.source).toContain('Amiata')
   })
 })
+
+/**
+ * Il punteggio senza tetto.
+ *
+ * Il taglio a 100 e' voluto e resta. Quello che non va e' non sapere piu' quanto una zona stia
+ * *sopra* il tetto: il 21/09/2026, sul catalogo nazionale, 233 zone segnavano 100 e l'ordine fra
+ * loro era quello in cui capitavano nel file. `rawMpi` serve solo a questo, e proprio per questo
+ * deve restare sempre almeno pari a `mpi`, altrimenti lo spareggio invertirebbe la classifica.
+ */
+describe('rawMpi: lo stesso punteggio senza il tetto', () => {
+  it('coincide con mpi quando il prodotto sta sotto il tetto', () => {
+    const days = scenario({ rainByDaysAgo: {} })
+    const result = computeMpi({ features: buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1), cell: AUTUMN_CELL })
+    expect(result.components.core).toBeLessThanOrEqual(1)
+    expect(result.rawMpi).toBeCloseTo(result.mpi, 1)
+  })
+
+  it('supera 100 quando il prodotto sfonda il tetto, e mpi resta 100', () => {
+    const result = computeMpi({
+      features: buildFeatures(idealScenario(), AUTUMN_CELL, ALGORITHM_V1),
+      cell: AUTUMN_CELL,
+    })
+    if (result.components.core > 1) {
+      expect(result.mpi).toBe(100)
+      expect(result.rawMpi).toBeGreaterThan(100)
+    }
+    expect(result.rawMpi).toBeGreaterThanOrEqual(result.mpi)
+  })
+})

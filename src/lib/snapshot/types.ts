@@ -25,6 +25,12 @@ export interface SnapshotFactor {
 export interface SnapshotSeriesPoint {
   readonly date: string
   readonly mpi: number
+  /**
+   * Punteggio senza il tetto a 100, per ordinare i pari merito. Opzionale apposta: uno snapshot
+   * generato prima del 21/09/2026 non ce l'ha, e deve continuare a funzionare — chi legge ricade
+   * su `mpi`, che e' l'ordine di prima.
+   */
+  readonly mpiRaw?: number
   readonly confidence: number
   readonly dataQuality: number
   readonly forecastCertainty: number
@@ -89,6 +95,8 @@ export interface SnapshotZone {
   readonly stationNotes: string
 
   readonly mpi: number
+  /** Punteggio senza il tetto a 100, solo per ordinare i pari merito. Vedi `SnapshotSeriesPoint`. */
+  readonly mpiRaw?: number
   readonly confidence: number
   /** Quanto sono buoni i dati osservati, indipendentemente da quanto guardiamo avanti. */
   readonly dataQuality: number
