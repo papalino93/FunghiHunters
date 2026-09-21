@@ -95,8 +95,8 @@ export function BottomNav() {
                 href={tab.href}
                 prefetch={false}
                 aria-current={active ? 'page' : undefined}
-                className={`flex h-14 flex-col items-center justify-center gap-0.5 text-[11px]
-                            font-medium transition-colors focus:outline-none
+                className={`flex min-h-14 flex-col items-center justify-center gap-0.5 py-1
+                            text-[11px] font-medium transition-colors focus:outline-none
                             focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                               active ? 'text-accent' : 'text-ink-faint hover:text-ink-dim'
                             }`}

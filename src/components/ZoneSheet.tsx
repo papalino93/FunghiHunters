@@ -51,7 +51,7 @@ export function ZoneSheet({
 
   return (
     <section
-      className="pointer-events-auto flex max-h-[68vh] flex-col overflow-hidden rounded-t-2xl
+      className="pointer-events-auto flex max-h-[68dvh] flex-col overflow-hidden rounded-t-2xl
                  border border-b-0 border-edge bg-surface-1/95 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]
                  backdrop-blur-xl"
       aria-label={`Dettaglio ${zone.name}`}
@@ -121,7 +121,7 @@ export function ZoneSheet({
       </header>
 
       <nav
-        className="flex gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
+        className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
         aria-label="Sezioni"
       >
         {TABS.map((entry) => (
