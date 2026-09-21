@@ -139,6 +139,17 @@ Un punto vive in uno dei due elenchi, mai in entrambi. Tutti i punti salvati, di
 restano **solo sul dispositivo**, non sincronizzati mai: l'unica eccezione è "apri in mappe", che
 condivide quella singola coordinata con l'app che scegli, e solo quando lo tocchi.
 
+## La scheda Meteo
+
+Diversa dalla mappa: qui non ci sono le sette zone del modello, ma un **luogo qualsiasi** — un
+paese, una frazione, un parcheggio — cercato per nome o con la tua posizione. Mostra il dato
+meteo grezzo, senza passare dal punteggio MPI: condizioni attuali, cinque giorni passati e dieci
+di previsione (temperatura, umidità, pioggia, vento, evapotraspirazione, umidità del suolo).
+Tocca un giorno per il dettaglio ora per ora.
+
+È la stessa fonte gratuita già usata dal modello (Open-Meteo), letta senza filtro: risponde a
+"che tempo fa lì", non a "conviene andarci a cercare porcini" — per quello resta "Dove vado".
+
 ## Account e sincronizzazione (facoltativi)
 
 Non serve un account per usare l'app. Serve solo se vuoi ritrovare il diario su un secondo
