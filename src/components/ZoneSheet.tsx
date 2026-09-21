@@ -393,6 +393,14 @@ function Where({ zone }: { zone: SnapshotZone }) {
           Ecologia generale del genere, valida ovunque compaia questo tipo di bosco: non è
           calibrata su questa zona e non promette nulla su questa uscita.
         </p>
+        {zone.forestFraction !== undefined && (
+          <p className="mt-1 text-[11px] leading-relaxed text-ink-faint">
+            Bosco sul {Math.round(zone.forestFraction * 100)}% dell&apos;area attorno al punto di
+            riferimento, da copertura misurata da satellite a 10 m (2020). La carta riconosce il
+            genere e non la tipologia: il castagno ricade in «altre latifoglie» e l&apos;abete
+            bianco in «altre conifere».
+          </p>
+        )}
       </div>
 
       <div>

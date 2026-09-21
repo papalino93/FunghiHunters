@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { composeForest, MIN_SHARE } from '@/lib/sources/forest-genus'
+import { composeForest, FOREST_CLASSES, MIN_SHARE } from '@/lib/sources/forest-genus'
 
 /** Comodo per scrivere gli istogrammi come li produce il campionamento del raster. */
 function hist(entries: Record<number, number>): Map<number, number> {
@@ -54,5 +54,20 @@ describe('composeForest', () => {
     const out = composeForest(hist({ 3: 500, 255: 500 }))
     expect(out?.forestFraction).toBe(1)
     expect(out?.sampledPixels).toBe(500)
+  })
+
+  it('tiene i codici incollati alla legenda pubblicata dalla fonte', () => {
+    // Un riordino silenzioso di questa tabella non romperebbe niente: assegnerebbe a ogni zona
+    // d'Italia il bosco sbagliato, in silenzio. La legenda e' quella stampata dal record Zenodo.
+    expect(FOREST_CLASSES.map((c) => `${c.code}:${c.slug ?? 'non bosco'}`)).toEqual([
+      '0:lariceto',
+      '1:pecceta',
+      '2:pineta',
+      '3:faggeta',
+      '4:querceto',
+      '5:altre conifere',
+      '6:altre latifoglie',
+      '7:non bosco',
+    ])
   })
 })

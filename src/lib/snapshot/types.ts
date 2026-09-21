@@ -92,6 +92,12 @@ export interface SnapshotZone {
   readonly longitude: number
   readonly elevationM: number
   readonly forest: readonly string[]
+  /**
+   * Quota della superficie attorno al punto di riferimento che risulta a bosco, da copertura
+   * misurata. Assente dove il bosco è un'etichetta scritta a mano (le sette zone toscane) o dove
+   * la zona cade fuori dalla mappa: in quel caso non si sa, che è diverso da zero.
+   */
+  readonly forestFraction?: number
   readonly stationNotes: string
 
   readonly mpi: number
