@@ -39,7 +39,7 @@ export default function OpengraphImage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', marginLeft: 64 }}>
           <div style={{ display: 'flex', fontSize: 68, fontWeight: 700, color: '#eef1f8' }}>
-            FungiCast Toscana
+            FungiCast
           </div>
           <div
             style={{
@@ -51,7 +51,7 @@ export default function OpengraphImage() {
               maxWidth: 760,
             }}
           >
-            Dove conviene andare a cercare porcini in Toscana, con dati reali e incertezza
+            Dove conviene andare a cercare porcini in Italia, con dati reali e incertezza
             dichiarata — non una promessa.
           </div>
         </div>

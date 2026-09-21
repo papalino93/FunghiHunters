@@ -1,4 +1,4 @@
-# FungiCast Toscana
+# FungiCast
 
 Web app mobile-first che calcola, per ogni zona della Toscana, un **Mushroom Potential Index (MPI)** 0–100.
 

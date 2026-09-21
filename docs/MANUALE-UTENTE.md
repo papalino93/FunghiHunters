@@ -1,4 +1,4 @@
-# Come usare FungiCast Toscana
+# Come usare FungiCast
 
 Guida breve, in italiano semplice. Serve a leggere l'app senza scambiare una stima per una
 garanzia — che è l'unico modo sbagliato di usarla.

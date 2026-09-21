@@ -1,4 +1,4 @@
-# FungiCast Toscana — Discovery & Architecture Report
+# FungiCast — Discovery & Architecture Report
 
 **Versione:** 1.0 — **Data:** 17 settembre 2026 — **Stato:** Fase 1, in attesa di approvazione
 **Autore:** sessione Claude Code, su specifica `FUNGICAST-PROMPT.md`

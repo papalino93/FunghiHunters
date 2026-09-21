@@ -130,7 +130,7 @@ export const REFERENCES = {
    * Numeri completi in docs/DISCOVERY-AND-ARCHITECTURE.md, Appendice C.
    */
   sirCrossValidation2026:
-    'FungiCast Toscana (2026), leave-one-out cross-validation dell\'interpolazione su 50 stazioni ' +
+    'FungiCast (2026), leave-one-out cross-validation dell\'interpolazione su 50 stazioni ' +
     'SIR attorno alle sette zone di taratura, 2026-08-08/2026-09-16. Non pubblicata, riproducibile ' +
     'con scripts/validate-interpolation.ts. MAE: pioggia 2.37 mm (+9.7% sulla stazione piu\' ' +
     'vicina), massima 0.96 C (+56.9%), minima 1.50 C (+16.6%). Dettaglio in ' +

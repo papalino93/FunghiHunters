@@ -219,7 +219,7 @@ function NoResults({ onReset }: { onReset: () => void }) {
 function EmptySnapshot() {
   return (
     <div className="mx-auto max-w-md px-6 py-12 text-center">
-      <h1 className="text-lg font-semibold text-ink">FungiCast Toscana</h1>
+      <h1 className="text-lg font-semibold text-ink">FungiCast</h1>
       <p className="mt-2 text-sm leading-relaxed text-ink-dim">
         I dati non sono ancora stati calcolati. Vengono ricostruiti una volta al giorno; finché non
         esistono non c&apos;è niente di onesto da mostrare.

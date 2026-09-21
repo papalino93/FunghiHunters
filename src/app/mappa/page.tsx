@@ -3,7 +3,7 @@ import { Suspense } from 'react'
 import { AppShell } from '@/components/AppShell'
 import { loadSnapshot } from '@/lib/snapshot/load'
 
-export const metadata = { title: 'Mappa · FungiCast Toscana' }
+export const metadata = { title: 'Mappa · FungiCast' }
 export const revalidate = 3600
 
 export default async function MappaPage() {
