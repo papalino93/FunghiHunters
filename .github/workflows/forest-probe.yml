@@ -1,0 +1,34 @@
+# Sonda la fonte dei boschi europea, senza scriverci sopra niente.
+#
+# Esiste come workflow per un motivo solo: l'ambiente in cui si scrive il codice non raggiunge
+# Zenodo (403 di policy), quindi da li' il file vero non si puo' guardare. Questo runner si'.
+#
+# Non committa nulla e non tocca `public/data`: stampa soltanto cosa contiene davvero il
+# dataset (licenza, elenco file, dimensione delle tessere, sistema di coordinate, valori veri),
+# perche' scrivere l'ingestione sulla base della descrizione e non del file sarebbe una scommessa.
+
+name: Sonda fonte boschi
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Sonda
+        run: npx tsx scripts/probe-forest-source.ts
