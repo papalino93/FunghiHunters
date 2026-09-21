@@ -128,6 +128,15 @@ export function GuideScreen() {
           Dove registri com&apos;è andata. È la parte che rende l&apos;app migliore nel tempo: vedi
           la sezione dedicata qui sotto.
         </Voce>
+        <Voce titolo="Meteo">
+          Diversa dalla mappa: qui non ci sono le sette zone del modello, ma un
+          <strong className="text-ink"> luogo qualsiasi</strong> — un paese, una frazione, un
+          parcheggio — che cerchi per nome o con la tua posizione. Mostra il dato grezzo, senza
+          passare dal punteggio: condizioni attuali, cinque giorni passati e dieci di previsione
+          (temperatura, umidità, pioggia, vento, evapotraspirazione, umidità del suolo), con il
+          dettaglio ora per ora toccando un giorno. Risponde a &laquo;che tempo fa lì&raquo;, non a
+          &laquo;conviene andarci&raquo; — per quello resta &laquo;Dove vado&raquo;.
+        </Voce>
         <Voce titolo="Account">
           Facoltativo. Serve solo se vuoi ritrovare il diario su un secondo telefono. Senza
           account l&apos;app funziona per intero, tranne la sincronizzazione.
