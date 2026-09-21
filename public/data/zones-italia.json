@@ -1,12 +1,11 @@
 {
-  "source": "ISTAT (confini comunali e tabella regioni), Open-Meteo (quota del terreno)",
+  "source": "ISTAT (confini comunali, con regione e provincia), Open-Meteo (quota del terreno)",
   "sourceUrls": [
     "https://raw.githubusercontent.com/guglielmo/geojson-italy/main/geojson/limits_IT_municipalities.geojson",
-    "https://raw.githubusercontent.com/opendatasicilia/comuni-italiani/main/dati/comuni.csv",
     "https://api.open-meteo.com/v1/elevation"
   ],
-  "license": "CC-BY (ISTAT, via guglielmo/geojson-italy e opendatasicilia/comuni-italiani)",
-  "generatedAt": "2026-09-21T15:46:26.097Z",
+  "license": "CC-BY (ISTAT, via guglielmo/geojson-italy)",
+  "generatedAt": "2026-09-21T18:23:05.321Z",
   "criteria": {
     "minElevationM": 600,
     "maxZones": 1200,
@@ -806,17 +805,6 @@
       "forest": []
     },
     {
-      "code": "it-066094",
-      "name": "Scontrone",
-      "region": "Abruzzo",
-      "province": "L'Aquila",
-      "provinceAcronym": "AQ",
-      "latitude": 41.75305,
-      "longitude": 14.06165,
-      "elevationM": 869,
-      "forest": []
-    },
-    {
       "code": "it-066095",
       "name": "Scoppito",
       "region": "Abruzzo",
@@ -1166,17 +1154,6 @@
       "latitude": 40.07878,
       "longitude": 15.88779,
       "elevationM": 770,
-      "forest": []
-    },
-    {
-      "code": "it-076045",
-      "name": "Marsico Nuovo",
-      "region": "Basilicata",
-      "province": "Potenza",
-      "provinceAcronym": "PZ",
-      "latitude": 40.42262,
-      "longitude": 15.72866,
-      "elevationM": 732,
       "forest": []
     },
     {
@@ -1837,17 +1814,6 @@
       "latitude": 39.02905,
       "longitude": 16.63074,
       "elevationM": 786,
-      "forest": []
-    },
-    {
-      "code": "it-078072",
-      "name": "Malito",
-      "region": "Calabria",
-      "province": "Cosenza",
-      "provinceAcronym": "CS",
-      "latitude": 39.16432,
-      "longitude": 16.25075,
-      "elevationM": 774,
       "forest": []
     },
     {
@@ -2918,17 +2884,6 @@
       "forest": []
     },
     {
-      "code": "it-064098",
-      "name": "Senerchia",
-      "region": "Campania",
-      "province": "Avellino",
-      "provinceAcronym": "AV",
-      "latitude": 40.73584,
-      "longitude": 15.19818,
-      "elevationM": 722,
-      "forest": []
-    },
-    {
       "code": "it-065145",
       "name": "Stio",
       "region": "Campania",
@@ -3201,17 +3156,6 @@
       "latitude": 44.33485,
       "longitude": 10.59537,
       "elevationM": 968,
-      "forest": []
-    },
-    {
-      "code": "it-033028",
-      "name": "Morfasso",
-      "region": "Emilia-Romagna",
-      "province": "Piacenza",
-      "provinceAcronym": "PC",
-      "latitude": 44.73955,
-      "longitude": 9.72357,
-      "elevationM": 760,
       "forest": []
     },
     {
@@ -4205,17 +4149,6 @@
       "forest": []
     },
     {
-      "code": "it-058108",
-      "name": "Vallepietra",
-      "region": "Lazio",
-      "province": "Roma",
-      "provinceAcronym": "RM",
-      "latitude": 41.93005,
-      "longitude": 13.23205,
-      "elevationM": 752,
-      "forest": []
-    },
-    {
       "code": "it-060084",
       "name": "Vallerotonda",
       "region": "Lazio",
@@ -4378,17 +4311,6 @@
       "latitude": 44.53601,
       "longitude": 9.29792,
       "elevationM": 813,
-      "forest": []
-    },
-    {
-      "code": "it-009031",
-      "name": "Giustenice",
-      "region": "Liguria",
-      "province": "Savona",
-      "provinceAcronym": "SV",
-      "latitude": 44.18209,
-      "longitude": 8.21389,
-      "elevationM": 758,
       "forest": []
     },
     {
@@ -4601,17 +4523,6 @@
       "forest": []
     },
     {
-      "code": "it-017005",
-      "name": "Anfo",
-      "region": "Lombardia",
-      "province": "Brescia",
-      "provinceAcronym": "BS",
-      "latitude": 45.78477,
-      "longitude": 10.47887,
-      "elevationM": 990,
-      "forest": []
-    },
-    {
       "code": "it-014004",
       "name": "Aprica",
       "region": "Lombardia",
@@ -4642,17 +4553,6 @@
       "latitude": 46.02033,
       "longitude": 9.63382,
       "elevationM": 1390,
-      "forest": []
-    },
-    {
-      "code": "it-016015",
-      "name": "Aviatico",
-      "region": "Lombardia",
-      "province": "Bergamo",
-      "provinceAcronym": "BG",
-      "latitude": 45.78986,
-      "longitude": 9.794,
-      "elevationM": 999,
       "forest": []
     },
     {
@@ -5412,17 +5312,6 @@
       "latitude": 46.13164,
       "longitude": 9.19222,
       "elevationM": 1068,
-      "forest": []
-    },
-    {
-      "code": "it-016111",
-      "name": "Gazzaniga",
-      "region": "Lombardia",
-      "province": "Bergamo",
-      "provinceAcronym": "BG",
-      "latitude": 45.80863,
-      "longitude": 9.80681,
-      "elevationM": 991,
       "forest": []
     },
     {
@@ -6526,17 +6415,6 @@
       "forest": []
     },
     {
-      "code": "it-013236",
-      "name": "Veleso",
-      "region": "Lombardia",
-      "province": "Como",
-      "provinceAcronym": "CO",
-      "latitude": 45.91518,
-      "longitude": 9.18603,
-      "elevationM": 999,
-      "forest": []
-    },
-    {
       "code": "it-013239",
       "name": "Vercana",
       "region": "Lombardia",
@@ -7329,17 +7207,6 @@
       "forest": []
     },
     {
-      "code": "it-070079",
-      "name": "Torella del Sannio",
-      "region": "Molise",
-      "province": "Campobasso",
-      "provinceAcronym": "CB",
-      "latitude": 41.64084,
-      "longitude": 14.53093,
-      "elevationM": 706,
-      "forest": []
-    },
-    {
       "code": "it-094051",
       "name": "Vastogirardi",
       "region": "Molise",
@@ -7601,17 +7468,6 @@
       "latitude": 44.12152,
       "longitude": 7.72127,
       "elevationM": 1425,
-      "forest": []
-    },
-    {
-      "code": "it-004033",
-      "name": "Brossasco",
-      "region": "Piemonte",
-      "province": "Cuneo",
-      "provinceAcronym": "CN",
-      "latitude": 44.58286,
-      "longitude": 7.32439,
-      "elevationM": 912,
       "forest": []
     },
     {
@@ -8264,17 +8120,6 @@
       "forest": []
     },
     {
-      "code": "it-001122",
-      "name": "Inverso Pinasca",
-      "region": "Piemonte",
-      "province": "Torino",
-      "provinceAcronym": "TO",
-      "latitude": 44.92976,
-      "longitude": 7.21973,
-      "elevationM": 903,
-      "forest": []
-    },
-    {
       "code": "it-004103",
       "name": "Isasca",
       "region": "Piemonte",
@@ -8924,17 +8769,6 @@
       "forest": []
     },
     {
-      "code": "it-004182",
-      "name": "Rittana",
-      "region": "Piemonte",
-      "province": "Cuneo",
-      "provinceAcronym": "CN",
-      "latitude": 44.35946,
-      "longitude": 7.38124,
-      "elevationM": 902,
-      "forest": []
-    },
-    {
       "code": "it-004183",
       "name": "Roaschia",
       "region": "Piemonte",
@@ -8987,17 +8821,6 @@
       "latitude": 44.26058,
       "longitude": 7.73349,
       "elevationM": 1078,
-      "forest": []
-    },
-    {
-      "code": "it-004191",
-      "name": "Roccasparvera",
-      "region": "Piemonte",
-      "province": "Cuneo",
-      "provinceAcronym": "CN",
-      "latitude": 44.34868,
-      "longitude": 7.42429,
-      "elevationM": 906,
       "forest": []
     },
     {
@@ -9097,17 +8920,6 @@
       "latitude": 44.591,
       "longitude": 7.19763,
       "elevationM": 1324,
-      "forest": []
-    },
-    {
-      "code": "it-103061",
-      "name": "San Bernardino Verbano",
-      "region": "Piemonte",
-      "province": "Verbano-Cusio-Ossola",
-      "provinceAcronym": "VB",
-      "latitude": 45.99175,
-      "longitude": 8.46069,
-      "elevationM": 906,
       "forest": []
     },
     {
@@ -9573,6 +9385,292 @@
       "forest": []
     },
     {
+      "code": "it-112002",
+      "name": "Anela",
+      "region": "Sardegna",
+      "province": "Sassari",
+      "provinceAcronym": "SS",
+      "latitude": 40.45556,
+      "longitude": 9.03138,
+      "elevationM": 993,
+      "forest": []
+    },
+    {
+      "code": "it-114001",
+      "name": "Aritzo",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 39.9404,
+      "longitude": 9.18906,
+      "elevationM": 851,
+      "forest": []
+    },
+    {
+      "code": "it-116001",
+      "name": "Arzana",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 39.92988,
+      "longitude": 9.43265,
+      "elevationM": 865,
+      "forest": []
+    },
+    {
+      "code": "it-114004",
+      "name": "Belvì",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 39.97268,
+      "longitude": 9.1671,
+      "elevationM": 799,
+      "forest": []
+    },
+    {
+      "code": "it-114006",
+      "name": "Bitti",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.56552,
+      "longitude": 9.40402,
+      "elevationM": 909,
+      "forest": []
+    },
+    {
+      "code": "it-114009",
+      "name": "Bortigali",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.29972,
+      "longitude": 8.82255,
+      "elevationM": 791,
+      "forest": []
+    },
+    {
+      "code": "it-112011",
+      "name": "Bottidda",
+      "region": "Sardegna",
+      "province": "Sassari",
+      "provinceAcronym": "SS",
+      "latitude": 40.40645,
+      "longitude": 8.99938,
+      "elevationM": 909,
+      "forest": []
+    },
+    {
+      "code": "it-112014",
+      "name": "Burgos",
+      "region": "Sardegna",
+      "province": "Sassari",
+      "provinceAcronym": "SS",
+      "latitude": 40.40254,
+      "longitude": 8.97522,
+      "elevationM": 880,
+      "forest": []
+    },
+    {
+      "code": "it-113010",
+      "name": "Calangianus",
+      "region": "Sardegna",
+      "province": "Gallura Nord-Est Sardegna",
+      "provinceAcronym": "OT",
+      "latitude": 40.91084,
+      "longitude": 9.24792,
+      "elevationM": 703,
+      "forest": []
+    },
+    {
+      "code": "it-114010",
+      "name": "Desulo",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.02816,
+      "longitude": 9.2532,
+      "elevationM": 1391,
+      "forest": []
+    },
+    {
+      "code": "it-118017",
+      "name": "Esterzili",
+      "region": "Sardegna",
+      "province": "Cagliari",
+      "provinceAcronym": "CA",
+      "latitude": 39.73952,
+      "longitude": 9.30499,
+      "elevationM": 713,
+      "forest": []
+    },
+    {
+      "code": "it-114013",
+      "name": "Fonni",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.08492,
+      "longitude": 9.28584,
+      "elevationM": 1194,
+      "forest": []
+    },
+    {
+      "code": "it-114016",
+      "name": "Gavoi",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.15237,
+      "longitude": 9.22402,
+      "elevationM": 869,
+      "forest": []
+    },
+    {
+      "code": "it-112025",
+      "name": "Illorai",
+      "region": "Sardegna",
+      "province": "Sassari",
+      "provinceAcronym": "SS",
+      "latitude": 40.36399,
+      "longitude": 8.97732,
+      "elevationM": 961,
+      "forest": []
+    },
+    {
+      "code": "it-114021",
+      "name": "Lodine",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.14738,
+      "longitude": 9.23486,
+      "elevationM": 810,
+      "forest": []
+    },
+    {
+      "code": "it-115039",
+      "name": "Neoneli",
+      "region": "Sardegna",
+      "province": "Oristano",
+      "provinceAcronym": "OR",
+      "latitude": 40.0621,
+      "longitude": 8.98581,
+      "elevationM": 711,
+      "forest": []
+    },
+    {
+      "code": "it-114029",
+      "name": "Ollolai",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.16195,
+      "longitude": 9.17227,
+      "elevationM": 1039,
+      "forest": []
+    },
+    {
+      "code": "it-114039",
+      "name": "Orune",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.40269,
+      "longitude": 9.33828,
+      "elevationM": 831,
+      "forest": []
+    },
+    {
+      "code": "it-114042",
+      "name": "Ovodda",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.08707,
+      "longitude": 9.18954,
+      "elevationM": 929,
+      "forest": []
+    },
+    {
+      "code": "it-116023",
+      "name": "Seui",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 39.82316,
+      "longitude": 9.34683,
+      "elevationM": 753,
+      "forest": []
+    },
+    {
+      "code": "it-114049",
+      "name": "Sorgono",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.016,
+      "longitude": 9.07245,
+      "elevationM": 720,
+      "forest": []
+    },
+    {
+      "code": "it-114052",
+      "name": "Tonara",
+      "region": "Sardegna",
+      "province": "Nuoro",
+      "provinceAcronym": "NU",
+      "latitude": 40.02337,
+      "longitude": 9.18135,
+      "elevationM": 903,
+      "forest": []
+    },
+    {
+      "code": "it-116019",
+      "name": "Ulassai",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 39.72374,
+      "longitude": 9.47353,
+      "elevationM": 752,
+      "forest": []
+    },
+    {
+      "code": "it-116020",
+      "name": "Urzulei",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 40.14295,
+      "longitude": 9.50987,
+      "elevationM": 812,
+      "forest": []
+    },
+    {
+      "code": "it-116021",
+      "name": "Ussassai",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 39.82075,
+      "longitude": 9.40056,
+      "elevationM": 712,
+      "forest": []
+    },
+    {
+      "code": "it-116022",
+      "name": "Villagrande Strisaili",
+      "region": "Sardegna",
+      "province": "Ogliastra",
+      "provinceAcronym": "OG",
+      "latitude": 40.01338,
+      "longitude": 9.42472,
+      "elevationM": 966,
+      "forest": []
+    },
+    {
       "code": "it-087006",
       "name": "Adrano",
       "region": "Sicilia",
@@ -9614,17 +9712,6 @@
       "latitude": 38.03496,
       "longitude": 13.3109,
       "elevationM": 774,
-      "forest": []
-    },
-    {
-      "code": "it-082013",
-      "name": "Borgetto",
-      "region": "Sicilia",
-      "province": "Palermo",
-      "provinceAcronym": "PA",
-      "latitude": 38.04001,
-      "longitude": 13.16342,
-      "elevationM": 752,
       "forest": []
     },
     {
@@ -11377,17 +11464,6 @@
       "forest": []
     },
     {
-      "code": "it-022164",
-      "name": "Sagron Mis",
-      "region": "Trentino-Alto Adige/Südtirol",
-      "province": "Trento",
-      "provinceAcronym": "TN",
-      "latitude": 46.19315,
-      "longitude": 11.93738,
-      "elevationM": 1184,
-      "forest": []
-    },
-    {
       "code": "it-021077",
       "name": "San Candido/Innichen",
       "region": "Trentino-Alto Adige/Südtirol",
@@ -11407,17 +11483,6 @@
       "latitude": 46.41978,
       "longitude": 11.71343,
       "elevationM": 1594,
-      "forest": []
-    },
-    {
-      "code": "it-021081",
-      "name": "San Lorenzo di Sebato/St. Lorenzen",
-      "region": "Trentino-Alto Adige/Südtirol",
-      "province": "Bolzano/Bozen",
-      "provinceAcronym": "BZ",
-      "latitude": 46.76745,
-      "longitude": 11.8472,
-      "elevationM": 1210,
       "forest": []
     },
     {
@@ -11572,17 +11637,6 @@
       "latitude": 46.66776,
       "longitude": 12.3648,
       "elevationM": 1663,
-      "forest": []
-    },
-    {
-      "code": "it-022173",
-      "name": "Sfruz",
-      "region": "Trentino-Alto Adige/Südtirol",
-      "province": "Trento",
-      "provinceAcronym": "TN",
-      "latitude": 46.34284,
-      "longitude": 11.14235,
-      "elevationM": 1207,
       "forest": []
     },
     {
@@ -12015,17 +12069,6 @@
       "forest": []
     },
     {
-      "code": "it-054018",
-      "name": "Foligno",
-      "region": "Umbria",
-      "province": "Perugia",
-      "provinceAcronym": "PG",
-      "latitude": 42.984,
-      "longitude": 12.80617,
-      "elevationM": 754,
-      "forest": []
-    },
-    {
       "code": "it-054031",
       "name": "Monteleone di Spoleto",
       "region": "Umbria",
@@ -12342,17 +12385,6 @@
       "latitude": 45.87463,
       "longitude": 7.83743,
       "elevationM": 2846,
-      "forest": []
-    },
-    {
-      "code": "it-007033",
-      "name": "Gressoney-Saint-Jean",
-      "region": "Valle d'Aosta/Vallée d'Aoste",
-      "province": "Valle d'Aosta/Vallée d'Aoste",
-      "provinceAcronym": "AO",
-      "latitude": 45.77321,
-      "longitude": 7.83369,
-      "elevationM": 1490,
       "forest": []
     },
     {
@@ -12807,17 +12839,6 @@
       "forest": []
     },
     {
-      "code": "it-024041",
-      "name": "Foza",
-      "region": "Veneto",
-      "province": "Vicenza",
-      "provinceAcronym": "VI",
-      "latitude": 45.89993,
-      "longitude": 11.64013,
-      "elevationM": 951,
-      "forest": []
-    },
-    {
       "code": "it-026030",
       "name": "Fregona",
       "region": "Veneto",
@@ -13002,17 +13023,6 @@
       "latitude": 45.61517,
       "longitude": 11.08059,
       "elevationM": 1026,
-      "forest": []
-    },
-    {
-      "code": "it-025045",
-      "name": "San Gregorio nelle Alpi",
-      "region": "Veneto",
-      "province": "Belluno",
-      "provinceAcronym": "BL",
-      "latitude": 46.12784,
-      "longitude": 12.02918,
-      "elevationM": 956,
       "forest": []
     },
     {
