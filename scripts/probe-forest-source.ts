@@ -19,6 +19,8 @@
 
 import { fromUrl } from 'geotiff'
 
+import { toLaea } from '@/lib/geo/laea'
+
 const ZENODO_RECORD = '13341104'
 const ZENODO_API = `https://zenodo.org/api/records/${ZENODO_RECORD}`
 
@@ -36,54 +38,6 @@ interface ZenodoRecord {
   readonly doi?: string
   readonly metadata?: { readonly license?: unknown; readonly description?: string }
   readonly files?: readonly ZenodoFile[]
-}
-
-/** Da gradi a EPSG:3035 (LAEA Europa). Formula chiusa, nessuna libreria di proiezione. */
-export function toLaea(lon: number, lat: number): { x: number; y: number } {
-  const toRad = Math.PI / 180
-  // Parametri ufficiali di EPSG:3035, su ellissoide GRS80.
-  const a = 6378137
-  const f = 1 / 298.257222101
-  const e2 = f * (2 - f)
-  const e = Math.sqrt(e2)
-  const lon0 = 10 * toRad
-  const lat0 = 52 * toRad
-  const x0 = 4321000
-  const y0 = 3210000
-
-  const phi = lat * toRad
-  const lam = lon * toRad
-
-  const qOf = (p: number): number => {
-    const sp = Math.sin(p)
-    return (
-      (1 - e2) *
-      (sp / (1 - e2 * sp * sp) - (1 / (2 * e)) * Math.log((1 - e * sp) / (1 + e * sp)))
-    )
-  }
-  const qP = qOf(Math.PI / 2)
-  const q = qOf(phi)
-  const q0 = qOf(lat0)
-
-  const beta = Math.asin(q / qP)
-  const beta0 = Math.asin(q0 / qP)
-  const rq = a * Math.sqrt(qP / 2)
-  const d = a * (Math.cos(lat0) / Math.sqrt(1 - e2 * Math.sin(lat0) ** 2)) / (rq * Math.cos(beta0))
-
-  const b =
-    rq *
-    Math.sqrt(
-      2 /
-        (1 +
-          Math.sin(beta0) * Math.sin(beta) +
-          Math.cos(beta0) * Math.cos(beta) * Math.cos(lam - lon0)),
-    )
-
-  const x = x0 + b * d * Math.cos(beta) * Math.sin(lam - lon0)
-  const y =
-    y0 +
-    (b / d) * (Math.cos(beta0) * Math.sin(beta) - Math.sin(beta0) * Math.cos(beta) * Math.cos(lam - lon0))
-  return { x, y }
 }
 
 async function main(): Promise<void> {
