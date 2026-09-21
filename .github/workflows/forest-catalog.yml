@@ -24,6 +24,10 @@ on:
         description: "true = stampa e basta, non scrive e non committa"
         required: false
         default: 'false'
+      apply_only:
+        description: "true = non riscarica niente, riapplica il bosco gia' letto agli snapshot di regione"
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -52,11 +56,19 @@ jobs:
         run: df -h /
 
       - name: Leggi il bosco delle zone
+        if: inputs.apply_only != 'true'
         run: >-
           npx tsx scripts/ingest-forest-italia.ts
           --radius-km ${{ inputs.radius_km }}
           ${{ inputs.columns != '' && format('--columns {0}', inputs.columns) || '' }}
           ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+
+      # Il bosco non entra nel punteggio, quindi non c'e' ragione di rifare il calcolo del meteo
+      # (un'ora di attesa e quasi 6.000 chiamate del budget giornaliero) per aggiornare
+      # un'etichetta che quel calcolo non usa: si scrive sui file gia' pronti.
+      - name: Scrivilo sugli snapshot di regione
+        if: inputs.dry_run != 'true'
+        run: npx tsx scripts/apply-forest-to-snapshots.ts
 
       - name: Commit
         if: inputs.dry_run != 'true'
