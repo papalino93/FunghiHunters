@@ -8,6 +8,7 @@
  */
 import { describe, expect, it } from 'vitest'
 
+import { addDays, today } from '@/lib/domain/time'
 import { buildPlaceForecastUrl, parsePlaceForecast } from '@/lib/sources/open-meteo-place'
 
 describe('URL della previsione puntuale', () => {
@@ -27,9 +28,17 @@ describe('URL della previsione puntuale', () => {
 })
 
 describe('normalizzazione della risposta', () => {
-  const todayIso = new Date().toISOString().slice(0, 10)
-  const yesterday = new Date(Date.now() - 86_400_000).toISOString().slice(0, 10)
-  const tomorrow = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10)
+  /*
+   * Le tre date vengono dallo stesso orologio che usa il codice, cioe' quello di Roma.
+   *
+   * Costruirle in UTC faceva fallire questo test fra le 22 e mezzanotte UTC, che a Roma e' gia'
+   * il giorno dopo: il "domani" del test diventava l'"oggi" del modulo e `isForecast` usciva
+   * falso. Un test che passa ventidue ore su ventiquattro e' peggio di uno rotto, perche' rompe
+   * la corsa di notte e sembra un caso.
+   */
+  const todayIso = today()
+  const yesterday = addDays(todayIso, -1)
+  const tomorrow = addDays(todayIso, 1)
 
   const payload = {
     latitude: 44.14,

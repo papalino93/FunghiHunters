@@ -5,17 +5,19 @@
  *
  * **Perche' esiste, e perche' non e' un doppione di `build-snapshot-italia.ts`.** Quello e' il
  * calcolo: interroga il meteo di 1.202 localita', costa quasi 6.000 chiamate del budget
- * giornaliero e un'ora buona di attesa imposta dai limiti della fonte. Il bosco pero' **non entra
- * nel punteggio**: e' un'etichetta della zona, usata dal filtro e dai consigli su dove cercare.
- * Rifare il calcolo del meteo perche' e' cambiata un'etichetta sarebbe pagare un'ora e un budget
- * intero per un dato che quel calcolo non usa.
+ * giornaliero e un'ora buona di attesa imposta dai limiti della fonte. Questo scrive il bosco sui
+ * file gia' pronti, senza rifare niente.
  *
- * Quindi: quando la copertura forestale viene rigenerata, questo passo la scrive sui file gia'
- * pronti e basta. Il prossimo calcolo giornaliero la rileggera' comunque per conto suo — le due
- * strade portano allo stesso risultato, questa ci arriva senza rifare il meteo.
+ * **Attenzione, dal modello 1.4.0.** Fino alla 1.3.0 il bosco era solo un'etichetta e questo
+ * passo bastava. Ora il bosco **entra nel punteggio** (vedi `src/lib/model/forest.ts`), quindi
+ * dopo questo aggiornamento l'etichetta e' quella nuova e il punteggio e' ancora quello vecchio.
+ * Non e' un'incoerenza che si puo' lasciare a lungo: serve comunque un ricalcolo, e questo passo
+ * e' solo il rattoppo che tiene le etichette giuste nel frattempo. Quando il bosco cambia
+ * davvero, si lancia lo snapshot.
  *
- * Tocca solo `forest` e `forestFraction`, e solo delle zone che compaiono nella copertura: le
- * sette zone toscane hanno codici diversi e restano intatte, con le loro etichette scritte a mano.
+ * Tocca solo `forest` e `forestFraction`, e solo delle zone che compaiono nei file di regione: le
+ * sette zone toscane stanno in un altro file e restano intatte, con le loro etichette scritte a
+ * mano — che dicono "abetina" e "castagneto", cose che la mappa dei generi non sa nominare.
  */
 
 import { readdir, readFile, writeFile } from 'node:fs/promises'

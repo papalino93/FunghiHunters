@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { toLaea } from '@/lib/geo/laea'
+import { fromLaea, toLaea } from '@/lib/geo/laea'
 
 /**
  * Una conversione sbagliata non fallisce: restituisce il bosco di un altro posto. Questi controlli
@@ -54,5 +54,25 @@ describe('toLaea', () => {
     const km = Math.hypot(etna.x - bormio.x, etna.y - bormio.y) / 1000
     expect(km).toBeGreaterThan(1_030)
     expect(km).toBeLessThan(1_052)
+  })
+
+  it('torna indietro sul punto di partenza, entro il centimetro', () => {
+    // Serve a spostare il punto di una zona dentro il bosco: se andata e ritorno non
+    // coincidessero, il punto finirebbe spostato di suo, e nessuno se ne accorgerebbe.
+    for (const [lon, lat] of [
+      [10, 52],
+      [11.7, 43.75],
+      [10.37, 46.47],
+      [14.99, 37.75],
+      [9.13, 40.02],
+    ] as const) {
+      const p = toLaea(lon, lat)
+      const back = fromLaea(p.x, p.y)
+      const q = toLaea(back.lon, back.lat)
+      expect(Math.hypot(q.x - p.x, q.y - p.y)).toBeLessThan(0.01)
+      // Un centomilionesimo di grado e' circa un millimetro: e' il residuo della serie.
+      expect(back.lon).toBeCloseTo(lon, 7)
+      expect(back.lat).toBeCloseTo(lat, 7)
+    }
   })
 })
