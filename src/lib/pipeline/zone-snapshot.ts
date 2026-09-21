@@ -40,6 +40,8 @@ export interface ZoneLike {
   readonly longitude: number
   readonly elevationM: number
   readonly forest: readonly string[]
+  /** Quota a bosco, quando misurata. Vedi `SnapshotZone.forestFraction`. */
+  readonly forestFraction?: number
   readonly stationNotes: string
 }
 
@@ -209,6 +211,7 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
     longitude: zone.longitude,
     elevationM: zone.elevationM,
     forest: zone.forest,
+    ...(zone.forestFraction === undefined ? {} : { forestFraction: zone.forestFraction }),
     stationNotes: zone.stationNotes.replace(/\s+/g, ' ').trim(),
     mpi: currentResult.mpi,
     mpiRaw: currentResult.rawMpi,

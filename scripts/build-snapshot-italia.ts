@@ -39,6 +39,7 @@ import { LICENSES } from '@/lib/sources/adapter'
 import { fetchJson } from '@/lib/sources/http'
 import { OPEN_METEO_FREE_LIMITS, RatePacer } from '@/lib/sources/open-meteo-rate'
 import type { Snapshot, SnapshotZone } from '@/lib/snapshot/types'
+import type { ForestFile } from '@/../scripts/ingest-forest-italia'
 import type { ItalianZone } from '@/../scripts/ingest-zones-italia'
 
 const HISTORY_DAYS = 60
@@ -61,6 +62,7 @@ const POINTS_PER_REQUEST = Math.min(
 )
 
 const ZONES_FILE = 'public/data/zones-italia.json'
+const FOREST_FILE = 'public/data/forest-italia.json'
 const INDEX_FILE = 'public/data/italia-index.json'
 const REGION_DIR = 'public/data/regioni'
 
@@ -131,12 +133,39 @@ async function loadZones(): Promise<ItalianZone[] | null> {
   }
 }
 
+interface ZoneForest {
+  readonly forest: readonly string[]
+  readonly forestFraction: number
+}
+
+/**
+ * Il bosco misurato di ogni zona, da `scripts/ingest-forest-italia.ts`.
+ *
+ * Mappa vuota quando il file non c'e': le zone restano senza bosco, come prima che la fonte
+ * esistesse, invece di far fallire il calcolo del punteggio, che dal bosco non dipende.
+ */
+async function loadForest(): Promise<Map<string, ZoneForest>> {
+  try {
+    const raw = await readFile(FOREST_FILE, 'utf-8')
+    const file = JSON.parse(raw) as ForestFile
+    return new Map(
+      file.zones.map((zone) => [
+        zone.code,
+        { forest: zone.forest, forestFraction: zone.forestFraction },
+      ]),
+    )
+  } catch {
+    return new Map()
+  }
+}
+
 /** Le zone nazionali non hanno osservazioni: mappe vuote, condivise, invece di una per zona. */
 const NO_OBSERVATIONS: ReadonlyMap<string, DailySamples> = new Map()
 const NO_STATIONS: ReadonlyMap<string, Station> = new Map()
 
 async function main(): Promise<void> {
   const zones = await loadZones()
+  const forestByCode = await loadForest()
   if (zones === null) {
     console.log(
       `${ZONES_FILE} non trovato: niente da calcolare. ` +
@@ -144,6 +173,12 @@ async function main(): Promise<void> {
     )
     return
   }
+
+  console.log(
+    forestByCode.size === 0
+      ? `${FOREST_FILE} non trovato: le zone resteranno senza tipo di bosco.`
+      : `Bosco misurato disponibile per ${forestByCode.size} zone.`,
+  )
 
   const todayIso = today()
   const estimatedWeight = zones.length * WEIGHT_PER_POINT
@@ -175,6 +210,7 @@ async function main(): Promise<void> {
     for (const [j, zone] of chunk.entries()) {
       const response = responses[j]
       if (response === undefined) continue
+      const measured = forestByCode.get(zone.code)
       const snapshotZone = buildZoneSnapshot({
         zone: {
           code: zone.code,
@@ -184,7 +220,10 @@ async function main(): Promise<void> {
           latitude: zone.latitude,
           longitude: zone.longitude,
           elevationM: zone.elevationM,
-          forest: zone.forest,
+          // Il catalogo nasce con `forest` vuoto: il bosco vero arriva dalla copertura misurata,
+          // e si ricade sul catalogo solo se quella corsa non e' ancora stata fatta.
+          forest: measured?.forest ?? zone.forest,
+          ...(measured === undefined ? {} : { forestFraction: measured.forestFraction }),
           stationNotes: NATIONAL_STATION_NOTE,
         },
         modelSeries: toModelSeries(response, todayIso),

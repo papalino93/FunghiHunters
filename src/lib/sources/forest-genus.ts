@@ -19,7 +19,10 @@
 export interface ForestClass {
   /** Valore del pixel nella mappa. */
   readonly code: number
-  /** Nome che l'app usa per il tipo di bosco, `null` per il non bosco. */
+  /**
+   * Nome che l'app usa per il tipo di bosco, `null` per il non bosco. E' anche quello che
+   * l'utente legge nel filtro e nella scheda, percio' "altre conifere" e non una sigla.
+   */
   readonly slug: string | null
   /** Come si legge in italiano. */
   readonly label: string
@@ -31,8 +34,8 @@ export const FOREST_CLASSES: readonly ForestClass[] = [
   { code: 2, slug: 'pineta', label: 'pino' },
   { code: 3, slug: 'faggeta', label: 'faggio' },
   { code: 4, slug: 'querceto', label: 'querce' },
-  { code: 5, slug: 'conifere-miste', label: 'altre conifere' },
-  { code: 6, slug: 'latifoglie-miste', label: 'altre latifoglie' },
+  { code: 5, slug: 'altre conifere', label: 'altre conifere' },
+  { code: 6, slug: 'altre latifoglie', label: 'altre latifoglie' },
   { code: 7, slug: null, label: 'non bosco' },
 ]
 

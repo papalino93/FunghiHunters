@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { habitatCuesFor } from '@/lib/model/habitat'
+import { FOREST_CLASSES } from '@/lib/sources/forest-genus'
 
 describe('habitatCuesFor', () => {
   it('restituisce un accenno per ogni tipo di bosco riconosciuto', () => {
@@ -29,5 +30,12 @@ describe('habitatCuesFor', () => {
     for (const cue of all) {
       expect(cue.note).not.toMatch(forbidden)
     }
+  })
+
+  it('ha un consiglio per ogni tipo di bosco che la copertura misurata puo\' produrre', () => {
+    // Senza questo, una classe nuova arriverebbe fino alla scheda e mostrerebbe "nessuna
+    // indicazione disponibile" proprio dove l'utente si aspetta di leggere dove cercare.
+    const misurati = FOREST_CLASSES.map((c) => c.slug).filter((slug) => slug !== null)
+    expect(habitatCuesFor(misurati)).toHaveLength(misurati.length)
   })
 })
