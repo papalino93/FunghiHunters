@@ -94,7 +94,6 @@ export interface ItaliaIndexEntry {
   readonly name: string
   readonly region: string
   readonly regionSlug: string
-  readonly province: string
   readonly provinceAcronym: string
   readonly latitude: number
   readonly longitude: number
@@ -303,7 +302,6 @@ async function main(): Promise<void> {
         name: zone.name,
         region,
         regionSlug: regionSlug(region),
-        province: zone.municipality ?? zone.name,
         provinceAcronym: zone.province,
         latitude: zone.latitude,
         longitude: zone.longitude,
