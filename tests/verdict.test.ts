@@ -25,6 +25,8 @@ function zone(
     limit?: string | null
     series?: Array<{ date: string; mpi: number }>
     negativeFactors?: Array<{ key: string; label: string; contribution: number }>
+    forest?: readonly string[]
+    forestFraction?: number
   } = {},
 ): SnapshotZone {
   const mpi = o.mpi ?? 10
@@ -34,7 +36,8 @@ function zone(
   }))
   return {
     code, name: code, reference: code, province: 'LU', municipality: null,
-    latitude: 44, longitude: 10.4, elevationM: 1000, forest: ['faggeta'], stationNotes: '',
+    latitude: 44, longitude: 10.4, elevationM: 1000, forest: o.forest ?? ['faggeta'], stationNotes: '',
+    ...(o.forestFraction === undefined ? {} : { forestFraction: o.forestFraction }),
     mpi, confidence: 70, dataQuality: 70, forecastCertainty: 100,
     label: bandNameFor(mpi), limitingFactor: o.limit === undefined ? 'Temperatura' : o.limit,
     development: 0, series, nearbyMunicipalities: [],
@@ -256,6 +259,46 @@ describe('fatti della zona, in parole', () => {
       zone('a', { water: 10, tMean: 19, optimum: 13, limit: 'Temperatura' }),
     )
     expect(facts.bad).toContain('Manca il fresco')
+  })
+
+  it('dice che il limite è il bosco quando il bosco è poco', () => {
+    // Acqua e temperatura a posto: senza questa riga la scheda avrebbe detto solo "L'acqua c'è",
+    // con "Limite: Bosco" scritto sotto e nessuna spiegazione.
+    const facts = zoneFacts(
+      zone('bormio', {
+        water: 90,
+        tMean: 13,
+        optimum: 13,
+        limit: 'Il bosco della zona',
+        forestFraction: 0.12,
+      }),
+    )
+    expect(facts.good).toContain("L'acqua c'è")
+    expect(facts.bad).toContain('Poco bosco')
+    expect(facts.bad).toContain('12%')
+  })
+
+  it('distingue il bosco poco esteso dal bosco poco adatto', () => {
+    const facts = zoneFacts(
+      zone('lariceto', {
+        water: 90,
+        tMean: 13,
+        optimum: 13,
+        limit: 'Il bosco della zona',
+        forestFraction: 0.85,
+        forest: ['lariceto'],
+      }),
+    )
+    expect(facts.bad).toContain('poco adatto')
+    expect(facts.bad).toContain('lariceto')
+    expect(facts.bad).not.toContain('Poco bosco')
+  })
+
+  it('non nomina il bosco dove non è lui il limite', () => {
+    const facts = zoneFacts(
+      zone('a', { water: 10, tMean: 13, optimum: 13, forestFraction: 0.05 }),
+    )
+    expect(facts.bad).toContain('Manca acqua')
   })
 })
 

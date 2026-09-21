@@ -334,18 +334,39 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
 
   const waterProblem = waterOk ? null : `Manca acqua: solo ${water}`
 
+  /*
+   * Il bosco, quando è lui il limite.
+   *
+   * Dal modello 1.4.0 il bosco entra nel punteggio, quindi può essere il fattore che lo tiene
+   * basso mentre acqua e temperatura sono a posto. Senza questa riga la scheda avrebbe detto
+   * "L'acqua c'è" e nient'altro, con "Limite: Bosco" scritto due centimetri più sotto: non una
+   * contraddizione, ma una risposta che nasconde la cosa che conta.
+   *
+   * Due casi diversi, e vanno distinti: poco bosco non è la stessa cosa di bosco poco adatto.
+   */
+  const forestProblem =
+    zone.limitingFactor !== 'Il bosco della zona'
+      ? null
+      : zone.forestFraction !== undefined && zone.forestFraction < 0.4
+        ? `Poco bosco: copre il ${Math.round(zone.forestFraction * 100)}% dell'area attorno al punto`
+        : zone.forest.length > 0
+          ? `Bosco poco adatto al porcino: ${zone.forest.join(', ')}`
+          : 'Il bosco di questa zona è il limite principale'
+
   // Le due soglie sopra (±3°C, 45mm) dicono solo "questo fattore è scomodo", non quanto pesa sul
   // punteggio: la campana termica è asimmetrica (più tollerante sopra l'ottimo), quindi un caso
   // può avere sia temperatura sia acqua "scomode" mentre il modello, che le pesa insieme, ne
   // considera una sola davvero limitante. Quando è così, va nominata per prima quella — altrimenti
   // questa frase e "Perché" (che legge `zone.limitingFactor`) raccontano due storie diverse dello
-  // stesso numero, come nel caso di Garfagnana del 21/9.
+  // stesso numero, come nel caso di Garfagnana del 21/9. Vale anche per il bosco: se il modello
+  // dice che il limite è quello, è quello che va scritto.
   const bad =
-    tempProblem !== null && waterProblem !== null
+    forestProblem ??
+    (tempProblem !== null && waterProblem !== null
       ? zone.limitingFactor === 'Acqua disponibile nel suolo'
         ? waterProblem
         : tempProblem
-      : (tempProblem ?? waterProblem)
+      : (tempProblem ?? waterProblem))
 
   return {
     good: waterOk ? `L'acqua c'è: ${water}` : tempOk && temp !== null ? `Temperatura giusta: ${temp}` : null,
