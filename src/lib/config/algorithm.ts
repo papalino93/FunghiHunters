@@ -78,12 +78,33 @@ export const REFERENCES = {
    * La fonte piu' vicina a noi che esista: monitoraggio triennale di Boletus edulis
    * sul Monte Amiata, ad Abbadia San Salvatore, a 1050 m. Una delle nostre sette zone.
    * Usa gli stessi dati SIR che usiamo noi.
+   *
+   * ATTENZIONE, correzione del 21 settembre 2026: il bosco studiato e' **abetina**
+   * (rimboschimenti artificiali di Abies alba), non faggeta come questo file dichiarava prima.
+   * Vedi la scheda `EVIDENCE.salerni2023` per cosa cambia nella trasferibilita'.
    */
   salerni2023:
     'Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate ' +
     'change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. ' +
-    'https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 su Monte Amiata, ' +
-    'Abbadia San Salvatore (SI), 1050 m s.l.m.',
+    'https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di ' +
+    'Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m.',
+  /**
+   * Abetine toscane, rilievi mensili con conteggio dei carpofori. E' la prima fonte toscana del
+   * progetto che non riguardi l'Amiata: copre il tipo di bosco di Casentino e Garfagnana.
+   */
+  lagana2002:
+    'Lagana A., Angiolini C., Loppi S., Salerni E., Perini C., Barluzzi C., De Dominicis V. ' +
+    '(2002), Periodicity, fluctuations and successions of macrofungi in fir forests ' +
+    '(Abies alba Miller) in Tuscany, Italy. Forest Ecology and Management 169: 187-202 - ' +
+    'rilievi mensili in abetine naturali e di impianto, Toscana',
+  /**
+   * Lo stesso disegno sperimentale da cui viene il dataset di `salerni2023`, letto dal lato della
+   * gestione forestale invece che del clima: diradamento e lettiera.
+   */
+  salerni2004:
+    'Salerni E., Perini C. (2004), Experimental study for increasing productivity of Boletus ' +
+    'edulis s.l. in Italy. Forest Ecology and Management 201: 161-170 - quattro rimboschimenti ' +
+    'di Abies alba sul Monte Amiata, due classi d\'eta\' (30 e 60 anni), sei trattamenti',
   salerni2002:
     'Salerni E., Lagana A., Perini C., Loppi S., De Dominicis V. (2002), Effects of temperature ' +
     'and rainfall on fruiting of macrofungi in oak forests of the Mediterranean area. ' +
@@ -125,7 +146,9 @@ export const REFERENCES = {
 export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessment>> = {
   salerni2023: {
     speciesStudied: 'Boletus edulis',
-    habitatStudied: 'Faggeta appenninica di gestione forestale nota (diradata vs. non diradata)',
+    habitatStudied:
+      'Abetina: rimboschimenti artificiali di Abies alba, di gestione forestale nota ' +
+      '(diradata vs. non diradata), due classi d\'eta\'',
     geographicArea: 'Monte Amiata, Abbadia San Salvatore (SI), 1050 m — una delle sette zone del modello',
     observationPeriod: '2000-2002, monitoraggio con raccolta giornaliera durante la stagione',
     demonstratedVariable:
@@ -134,13 +157,57 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
     demonstratedResult:
       'Effetto positivo della pioggia intensa massimo a 12 giorni dall\'evento; impennate di ' +
       'temperatura massima di circa 8 C sopra la media del periodo inibiscono la produzione, con ' +
-      'correlazioni negative a 4, 14 e 19 giorni',
+      'correlazioni negative a 4, 14 e 19 giorni. L\'inibizione da caldo NON e\' incondizionata: ' +
+      'vale nei siti non diradati o diradati poco, mentre dove il diradamento e\' stato forte la ' +
+      'temperatura alta sembra favorire la produzione a partire dal ventesimo giorno dopo ' +
+      'l\'evento — vedi la nota su `penalties.heatShock`.',
     transferability:
-      'La fonte piu\' forte del progetto: stessa specie, stessa regione, una delle sette zone di ' +
-      'taratura, stessi dati SIR che l\'app usa in produzione. Resta un singolo sito e tre anni: ' +
-      'non dimostra che valga identico su Casentino o Garfagnana, ma e\' la base toscana che prima ' +
-      'mancava del tutto.',
+      'Resta la fonte piu\' vicina a noi: stessa specie, stessa regione, una delle sette zone di ' +
+      'taratura, stessi dati SIR che l\'app usa in produzione. Il bosco pero\' e\' ABETINA, non ' +
+      'faggeta (corretto il 21 settembre 2026: questo campo dichiarava "faggeta appenninica", ed ' +
+      'era sbagliato). Conseguenza concreta: i parametri che ne derivano — innesco a 12 giorni, ' +
+      'soglia R20, heatShock — sono piu\' trasferibili alle zone con abetina (Casentino, ' +
+      'Garfagnana) di quanto il progetto dichiarasse, e MENO alle faggete pure, per le quali la ' +
+      'fonte resta `brejon2026`, tedesca. Resta comunque un singolo sito e tre anni.',
     status: 'applicable',
+  },
+  lagana2002: {
+    speciesStudied: 'Macrofunghi in generale, con censimento dei carpofori per specie',
+    habitatStudied: 'Abetine di Abies alba, naturali e di impianto',
+    geographicArea: 'Toscana',
+    observationPeriod: 'Rilievi mensili; serie pluriennale, con confronto su scala decennale',
+    demonstratedVariable:
+      'Periodicita\', fluttuazioni e successioni delle comunita\' di macrofunghi in rapporto ai ' +
+      'parametri meteorologici e all\'evoluzione del popolamento',
+    demonstratedResult:
+      'Sul breve periodo i parametri meteorologici dominano periodicita\' e fluttuazioni della ' +
+      'fruttificazione; su scala decennale contano invece i parametri vegetazionali e ' +
+      'l\'evoluzione del bosco',
+    transferability:
+      'Toscana e abetina: copre il tipo di bosco di Casentino e Garfagnana, che finora non aveva ' +
+      'nessuna fonte propria. Riguarda pero\' i macrofunghi nel loro insieme, non Boletus edulis ' +
+      'in particolare, e dimostra una gerarchia di fattori (meteo nel breve, bosco nel lungo), ' +
+      'non un valore numerico. Per ora sostiene l\'impianto del modello — il meteo come predittore ' +
+      'a breve termine — non un singolo parametro.',
+    status: 'applicable-with-caution',
+  },
+  salerni2004: {
+    speciesStudied: 'Boletus edulis s.l.',
+    habitatStudied: 'Rimboschimenti di Abies alba, due classi d\'eta\' (30 e 60 anni), sei trattamenti',
+    geographicArea: 'Monte Amiata (SI) — stesso disegno sperimentale da cui viene `salerni2023`',
+    observationPeriod: 'Osservazioni di campo pluriennali (dataset poi ripreso e ampliato nel 2023)',
+    demonstratedVariable: 'Effetto del diradamento e dell\'asportazione della lettiera sulla fruttificazione',
+    demonstratedResult:
+      'Il diradamento medio ha effetto positivo sulla fruttificazione di B. edulis; ' +
+      'l\'asportazione dello strato di lettiera ha effetto negativo; nei popolamenti piu\' vecchi ' +
+      'B. edulis tende a essere sostituito da B. badius',
+    transferability:
+      'Stessa specie, stessa zona, stesso bosco di `salerni2023`. Riguarda pero\' variabili che ' +
+      'il modello oggi NON ha: densita\' del popolamento, gestione forestale, spessore della ' +
+      'lettiera. Non sostiene nessun parametro attuale — e\' la fonte che servirebbe se un domani ' +
+      'si volesse introdurre un fattore di gestione forestale, e la ragione per cui ' +
+      '`water.canopyDensity` (oggi sempre nullo) non e\' un dettaglio cosmetico.',
+    status: 'applicable-with-caution',
   },
   salerni2002: {
     speciesStudied: 'Macrofunghi in generale (non solo Boletus edulis)',
@@ -739,13 +806,23 @@ export const ALGORITHM_V1: AlgorithmConfig = {
      *
      * Il segno e' opposto a quello che la specifica di progetto ipotizzava: non e' il calo che
      * innesca, e' l'impennata che blocca.
+     *
+     * LIMITE NOTO, non catturato dal modello (dichiarato il 21 settembre 2026).
+     * Nello studio l'inibizione vale nei siti non diradati o diradati poco. Dove il diradamento
+     * e' stato forte, la temperatura alta sembra invece FAVORIRE la produzione, a partire dal
+     * ventesimo giorno dall'evento. Noi applichiamo la penalita' uguale ovunque, perche' non
+     * sappiamo quanto sia diradato il bosco di una cella: `water.canopyDensity` esiste nel
+     * modello ma e' sempre nullo, in mancanza di una maschera forestale reale. Quindi su un
+     * bosco molto aperto questa penalita' puo' avere il segno sbagliato. Si corregge quando
+     * arrivera' la copertura forestale vera, non prima — vedi docs/CATALOGO-FONTI.md.
      */
     heatShock: {
       threshold: sourced(
         8,
         REFERENCES.salerni2023,
         'peer-reviewed',
-        'Aumento improvviso della massima rispetto alla media del periodo, in gradi.',
+        'Aumento improvviso della massima rispetto alla media del periodo, in gradi. Vale nei ' +
+          'siti poco o nulla diradati: vedi il limite dichiarato nel commento sopra.',
       ),
       floor: calibrate(0.55, 'L\'entita\' dell\'inibizione non e\' quantificata nello studio.'),
       weight: calibrate(1),
