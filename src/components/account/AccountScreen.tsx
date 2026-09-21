@@ -99,6 +99,27 @@ function Shell({
       </Link>
 
       {/*
+        * Badge statico di Buy Me a Coffee: qui, oltre al widget flottante presente su tutte le
+        * pagine, perché chi arriva in Account sta già pensando all'app nel suo insieme — il posto
+        * giusto per un link esplicito, non solo un pulsante che compare e basta.
+        */}
+      <a
+        href="https://www.buymeacoffee.com/papalino"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-3 flex min-h-11 items-center justify-center rounded-xl border border-edge
+                   bg-surface-1 p-3 transition-colors hover:bg-surface-2 focus:outline-none
+                   focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element -- badge esterno a URL fisso */}
+        <img
+          src="https://cdn.buymeacoffee.com/buttons/v2/default-yellow.png"
+          alt="Offrimi un caffè"
+          style={{ height: '48px', width: 'auto' }}
+        />
+      </a>
+
+      {/*
         * Discreta ma raggiungibile dal telefono, senza strumenti da sviluppatore: è il modo per
         * sapere se l'app che si ha davanti è davvero l'ultima pubblicata, o una copia rimasta in
         * cache. Un numero che non serve a nessuno finché non serve moltissimo.

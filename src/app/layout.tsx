@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, JetBrains_Mono } from 'next/font/google'
+import Script from 'next/script'
 
 import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
@@ -102,6 +103,24 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <BottomNav />
         </AuthProvider>
         <ServiceWorker />
+        {/*
+         * Widget flottante di Buy Me a Coffee: script ufficiale, caricato dopo tutto il resto
+         * (`lazyOnload`) perché non è mai necessario all'uso dell'app. Un'unica istanza qui basta
+         * per tutte le pagine: la navigazione fra schede è lato client, non ricarica il body.
+         */}
+        <Script
+          src="https://cdnjs.buymeacoffee.com/1.0.0/widget.prod.min.js"
+          strategy="lazyOnload"
+          data-name="BMC-Widget"
+          data-cfasync="false"
+          data-id="papalino"
+          data-description="Support me on Buy me a coffee!"
+          data-message=""
+          data-color="#BD5FFF"
+          data-position="Right"
+          data-x_margin="18"
+          data-y_margin="18"
+        />
       </body>
     </html>
   )
