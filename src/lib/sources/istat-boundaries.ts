@@ -29,6 +29,8 @@ export interface MunicipalityProperties {
   readonly name: string
   readonly prov_name: string
   readonly prov_acr: string
+  /** Nome della regione, presente in ogni feature del mirror: vedi `istat-national.ts`. */
+  readonly reg_name: string
   readonly com_istat_code: string
 }
 

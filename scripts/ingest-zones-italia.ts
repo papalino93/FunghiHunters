@@ -8,8 +8,9 @@
  * quota del terreno non cambiano, si rigenera solo quando si cambiano i criteri.
  *
  * **Da dove viene ogni campo, perche' nessuno sia inventato.**
- * - nome, provincia, codice ISTAT, geometria → GeoJSON ISTAT nazionale (CC-BY)
- * - regione → CSV ISTAT per codice comune (CC-BY)
+ * - nome, provincia, regione, codice ISTAT, geometria → GeoJSON ISTAT nazionale (CC-BY), tutto
+ *   dalla stessa feature: unire una seconda tabella sul codice comune aveva gia' fatto sparire la
+ *   Sardegna intera, vedi `src/lib/sources/istat-national.ts`
  * - punto di riferimento → centroide dell'anello esterno piu' esteso del comune; approssimazione
  *   dichiarata, vedi `referencePoint` in `src/lib/sources/istat-national.ts`
  * - quota → API elevazione di Open-Meteo, cioe' il terreno reale in quel punto, non l'altitudine
@@ -39,8 +40,6 @@ import { RatePacer } from '@/lib/sources/open-meteo-rate'
 import {
   buildCandidates,
   fetchNationalBoundaries,
-  fetchRegionLookup,
-  COMUNI_CSV_URL,
   NATIONAL_BOUNDARIES_URL,
   NATIONAL_LICENSE,
   type CandidateZone,
@@ -169,12 +168,9 @@ async function main(): Promise<void> {
   const collection = await fetchNationalBoundaries()
   console.log(`Ricevuti ${collection.features.length} comuni.`)
 
-  console.log(`Scarico la tabella regione/comune da ${COMUNI_CSV_URL}…`)
-  const regions = await fetchRegionLookup()
-  console.log(`Ricevute ${regions.size} righe.`)
-
-  const candidates = buildCandidates(collection, regions)
-  console.log(`Candidati con regione nota: ${candidates.length}.`)
+  const candidates = buildCandidates(collection)
+  const regionCount = new Set(candidates.map((c) => c.region)).size
+  console.log(`Candidati: ${candidates.length} comuni in ${regionCount} regioni.`)
 
   console.log('Risolvo la quota del terreno su Open-Meteo…')
   const elevations = await resolveElevations(candidates)
@@ -198,12 +194,12 @@ async function main(): Promise<void> {
   console.log(`Sopra ${minElevationM} m: ${aboveThreshold.length} comuni.`)
 
   const zones = capByRegion(aboveThreshold, maxZones)
-  const regionCount = new Set(zones.map((z) => z.region)).size
-  console.log(`Catalogo finale: ${zones.length} zone in ${regionCount} regioni.`)
+  const keptRegions = new Set(zones.map((z) => z.region)).size
+  console.log(`Catalogo finale: ${zones.length} zone in ${keptRegions} regioni.`)
 
   const file: ZonesFile = {
-    source: 'ISTAT (confini comunali e tabella regioni), Open-Meteo (quota del terreno)',
-    sourceUrls: [NATIONAL_BOUNDARIES_URL, COMUNI_CSV_URL, ELEVATION_URL],
+    source: 'ISTAT (confini comunali, con regione e provincia), Open-Meteo (quota del terreno)',
+    sourceUrls: [NATIONAL_BOUNDARIES_URL, ELEVATION_URL],
     license: NATIONAL_LICENSE,
     generatedAt: new Date().toISOString(),
     criteria: {

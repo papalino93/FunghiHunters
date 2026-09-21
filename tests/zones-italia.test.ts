@@ -2,42 +2,69 @@ import { describe, expect, it } from 'vitest'
 
 import { regionSlug } from '@/../scripts/build-snapshot-italia'
 import { capByRegion, type ItalianZone } from '@/../scripts/ingest-zones-italia'
-import { parseComuniCsv, referencePoint } from '@/lib/sources/istat-national'
+import { buildCandidates, referencePoint } from '@/lib/sources/istat-national'
+import type { MunicipalityCollection } from '@/lib/sources/istat-boundaries'
 
 /**
- * Righe vere, ritagliate dal CSV scaricato davvero il 21 settembre 2026 — non inventate.
- * Includono apposta la Valle d'Aosta, il cui nome contiene un apostrofo e una barra, e due comuni
- * toscani gia' noti al progetto.
+ * Proprieta' vere, copiate dal GeoJSON nazionale scaricato davvero il 21 settembre 2026.
+ * Fonni non e' un esempio a caso: e' il comune che ha rivelato il bug. Il suo codice nel GeoJSON
+ * e' `114013`, con il codice provinciale nuovo, mentre il CSV che si usava prima lo chiama
+ * `091013`: l'unione falliva e la Sardegna intera spariva dal catalogo senza un errore.
  */
-const CSV_SAMPLE = [
-  'comune,pro_com_t,den_prov,sigla,den_reg,cod_reg',
-  "Aosta,007003,Valle d'Aosta/Vallée d'Aoste,AO,Valle d'Aosta/Vallée d'Aoste,2",
-  'Bolzano,021008,Bolzano/Bozen,BZ,Trentino-Alto Adige/Südtirol,4',
-  'Abbadia San Salvatore,052001,Siena,SI,Toscana,9',
-  'Montieri,053017,Grosseto,GR,Toscana,9',
-].join('\n')
+const QUADRATO: ReadonlyArray<readonly [number, number]> = [
+  [10, 44],
+  [12, 44],
+  [12, 46],
+  [10, 46],
+]
 
-describe('parseComuniCsv', () => {
-  it('indicizza per codice ISTAT del comune', () => {
-    const map = parseComuniCsv(CSV_SAMPLE)
-    expect(map.size).toBe(4)
-    expect(map.get('052001')).toEqual({
-      region: 'Toscana',
-      province: 'Siena',
-      provinceAcronym: 'SI',
+const COLLECTION: MunicipalityCollection = {
+  type: 'FeatureCollection',
+  features: [
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Fonni',
+        prov_name: 'Nuoro',
+        prov_acr: 'NU',
+        reg_name: 'Sardegna',
+        com_istat_code: '114013',
+      },
+      geometry: { type: 'Polygon', coordinates: [QUADRATO] },
+    },
+    {
+      type: 'Feature',
+      properties: {
+        name: 'Abbadia San Salvatore',
+        prov_name: 'Siena',
+        prov_acr: 'SI',
+        reg_name: 'Toscana',
+        com_istat_code: '052001',
+      },
+      geometry: { type: 'Polygon', coordinates: [QUADRATO] },
+    },
+  ],
+}
+
+describe('buildCandidates', () => {
+  it('prende regione e provincia dalla stessa feature, senza unire una seconda tabella', () => {
+    const candidates = buildCandidates(COLLECTION)
+    expect(candidates).toHaveLength(2)
+    expect(candidates[0]).toMatchObject({
+      istatCode: '114013',
+      name: 'Fonni',
+      region: 'Sardegna',
+      province: 'Nuoro',
+      provinceAcronym: 'NU',
     })
   })
 
-  it('conserva i nomi bilingui senza spezzarli', () => {
-    const map = parseComuniCsv(CSV_SAMPLE)
-    expect(map.get('021008')?.region).toBe('Trentino-Alto Adige/Südtirol')
-    expect(map.get('007003')?.region).toBe("Valle d'Aosta/Vallée d'Aoste")
-  })
-
-  it('si ferma invece di indovinare se l intestazione cambia', () => {
-    expect(() => parseComuniCsv('comune,codice,regione\nAosta,007003,VDA')).toThrow(
-      /Intestazione CSV inattesa/,
-    )
+  it('non perde nessun comune per strada', () => {
+    // Il bug era proprio questo: i comuni senza riga corrispondente sparivano in silenzio.
+    expect(buildCandidates(COLLECTION).map((c) => c.name)).toEqual([
+      'Fonni',
+      'Abbadia San Salvatore',
+    ])
   })
 })
 
