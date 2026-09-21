@@ -33,7 +33,9 @@ concurrency:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # Lo snapshot toscano dura pochi minuti; quello nazionale deve rallentare apposta per non
+    # sfondare i limiti orari del piano gratuito di Open-Meteo, e con 1200 zone arriva a un'ora.
+    timeout-minutes: 150
 
     steps:
       - uses: actions/checkout@v5
@@ -52,10 +54,18 @@ jobs:
       - name: Calcola lo snapshot
         run: npx tsx scripts/build-snapshot.ts --stations 45
 
-      # Le zone fuori dalla Toscana: solo modello meteo, nessuna stazione da scaricare, quindi
-      # dura molto meno del passo qui sopra nonostante i punti siano molti di piu'. Se il
-      # catalogo non e' ancora stato generato lo script esce senza fare nulla e senza fallire.
+      # Le zone fuori dalla Toscana: solo modello meteo, nessuna stazione da scaricare. Costano
+      # pero' molto in chiamate pesate a Open-Meteo (una localita' su 68 giorni vale quasi cinque
+      # chiamate), quindi girano **una volta al giorno sola**, sulla corsa delle 11:40, e non
+      # anche su quella notturna: due corse sfonderebbero il tetto giornaliero del piano gratuito.
+      # Se il catalogo non e' ancora stato generato lo script esce senza fare nulla e senza fallire.
+      #
+      # `continue-on-error` non e' pigrizia: senza, un limite di frequenza sul pezzo nazionale
+      # farebbe saltare il commit e la Toscana perderebbe il suo aggiornamento del giorno, che e'
+      # la parte del sito con le stazioni vere dietro. Il pezzo nazionale puo' saltare un giro.
       - name: Calcola lo snapshot nazionale
+        if: github.event.schedule != '5 23 * * *'
+        continue-on-error: true
         run: npx tsx scripts/build-snapshot-italia.ts
 
       - name: Commit se qualcosa e' cambiato

@@ -28,6 +28,8 @@ import type { Station } from '@/lib/domain/types'
 import {
   buildForecastUrl,
   chunkPoints,
+  forecastWeightPerPoint,
+  MAX_POINTS_PER_REQUEST,
   toModelSeries,
   type OpenMeteoResponse,
 } from '@/lib/pipeline/open-meteo-series'
@@ -35,12 +37,28 @@ import { buildZoneSnapshot } from '@/lib/pipeline/zone-snapshot'
 import type { DailySamples } from '@/lib/pipeline/zone-series'
 import { LICENSES } from '@/lib/sources/adapter'
 import { fetchJson } from '@/lib/sources/http'
+import { OPEN_METEO_FREE_LIMITS, RatePacer } from '@/lib/sources/open-meteo-rate'
 import type { Snapshot, SnapshotZone } from '@/lib/snapshot/types'
 import type { ItalianZone } from '@/../scripts/ingest-zones-italia'
 
 const HISTORY_DAYS = 60
 const FORECAST_DAYS = 8
 const DISPLAY_PAST_DAYS = 14
+
+/**
+ * Quanti punti stanno in una richiesta, e perche' non 300 come in Toscana.
+ *
+ * Il limite non e' piu' la lunghezza dell'URL ma il costo: con 68 giorni chiesti, una singola
+ * localita' pesa quasi 5 chiamate, quindi un lotto da 300 ne peserebbe 1.450 e sfonderebbe da solo
+ * il tetto di 600 al minuto del piano gratuito. Il lotto si dimensiona quindi **sul peso**, non su
+ * un numero scelto a mano, cosi' resta corretto anche se domani si aggiunge una variabile o si
+ * allunga la finestra.
+ */
+const WEIGHT_PER_POINT = forecastWeightPerPoint(HISTORY_DAYS, FORECAST_DAYS)
+const POINTS_PER_REQUEST = Math.min(
+  MAX_POINTS_PER_REQUEST,
+  Math.max(1, Math.floor(OPEN_METEO_FREE_LIMITS.perMinute / WEIGHT_PER_POINT)),
+)
 
 const ZONES_FILE = 'public/data/zones-italia.json'
 const INDEX_FILE = 'public/data/italia-index.json'
@@ -126,11 +144,23 @@ async function main(): Promise<void> {
   }
 
   const todayIso = today()
+  const estimatedWeight = zones.length * WEIGHT_PER_POINT
   console.log(`Snapshot Italia ${ALGORITHM_V1.version} - ${todayIso} - ${zones.length} zone`)
+  console.log(
+    `Costo stimato: ${Math.round(estimatedWeight)} chiamate pesate su ` +
+      `${OPEN_METEO_FREE_LIMITS.perDay} al giorno, in lotti da ${POINTS_PER_REQUEST} punti.`,
+  )
 
   const computed: SnapshotZone[] = []
-  const chunks = chunkPoints(zones)
+  // Attesa massima per lotto poco oltre l'ora: sopra le ~1.000 zone la corsa deve scavallare la
+  // finestra oraria, e dormire e' l'unico modo di restare dentro il piano gratuito.
+  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000 })
+  const chunks = chunkPoints(zones, POINTS_PER_REQUEST)
   for (const [i, chunk] of chunks.entries()) {
+    const waited = await pacer.reserve(chunk.length * WEIGHT_PER_POINT)
+    if (waited > 0) {
+      console.log(`  pausa di ${Math.round(waited / 1000)} s per restare nei limiti Open-Meteo`)
+    }
     const responses = await fetchJson<OpenMeteoResponse[]>(
       buildForecastUrl(chunk, HISTORY_DAYS, FORECAST_DAYS),
       { timeoutMs: 180_000 },
@@ -167,7 +197,10 @@ async function main(): Promise<void> {
       })
       if (snapshotZone !== null) computed.push(snapshotZone)
     }
-    console.log(`  lotto ${i + 1}/${chunks.length}: ${computed.length} zone calcolate finora`)
+    console.log(
+      `  lotto ${i + 1}/${chunks.length}: ${computed.length} zone calcolate, ` +
+        `${Math.round(pacer.used)} chiamate pesate spese`,
+    )
   }
 
   const byRegion = new Map<string, { region: string; zones: SnapshotZone[] }>()
