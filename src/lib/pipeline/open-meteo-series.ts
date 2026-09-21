@@ -12,6 +12,7 @@
 
 import type { DailyWeather } from '@/lib/model/features'
 import { PROJECT_TIMEZONE } from '@/lib/domain/time'
+import { estimateCallWeight } from '@/lib/sources/open-meteo'
 
 export const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -30,6 +31,26 @@ const HOURLY_PARAMS =
  * perche' l'URL cresce anche con il numero di variabili.
  */
 export const MAX_POINTS_PER_REQUEST = 300
+
+/**
+ * Quante variabili meteo chiede una richiesta, contate e non scritte a mano: il peso di una
+ * chiamata Open-Meteo dipende da questo numero, e una variabile aggiunta senza aggiornare la
+ * costante si pagherebbe con un 429 in produzione invece che con un errore qui.
+ */
+export const VARIABLE_COUNT =
+  DAILY_PARAMS.split(',').length + HOURLY_PARAMS.split(',').length
+
+/**
+ * Peso di una singola localita' in una richiesta di previsione.
+ *
+ * Open-Meteo dichiara che l'unita' e' "due settimane con dieci variabili per una localita'":
+ * chiedere piu' giorni o piu' variabili conta come piu' chiamate, in frazioni. Con la nostra
+ * finestra di 68 giorni una sola localita' pesa quasi 5, ed e' il motivo per cui un lotto da 300
+ * punti — accettabile per la lunghezza dell'URL — sfonderebbe da solo il limite al minuto.
+ */
+export function forecastWeightPerPoint(pastDays: number, forecastDays: number): number {
+  return estimateCallWeight(1, VARIABLE_COUNT, pastDays + forecastDays)
+}
 
 export interface OpenMeteoResponse {
   readonly daily: {

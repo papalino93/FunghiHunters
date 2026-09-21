@@ -2,7 +2,7 @@
  * Costruisce il catalogo nazionale delle zone, regione per regione.
  *
  *   npx tsx scripts/ingest-zones-italia.ts
- *   npx tsx scripts/ingest-zones-italia.ts --min-elevation 600 --max-zones 1500
+ *   npx tsx scripts/ingest-zones-italia.ts --min-elevation 600 --max-zones 1200
  *
  * Scrive `public/data/zones-italia.json`. Non gira nel cron giornaliero: i confini comunali e la
  * quota del terreno non cambiano, si rigenera solo quando si cambiano i criteri.
@@ -20,18 +20,22 @@
  *   un'altra. Le sette zone toscane storiche restano quelle di `zones.ts`, con il bosco verificato
  *   a mano.
  *
- * **Perche' un tetto al numero di zone.** Ogni zona e' un punto in piu' nelle richieste giornaliere
- * a Open-Meteo. Il costo reale del multi-localita' non e' documentato (vedi `estimateCallWeight` in
- * `src/lib/sources/open-meteo.ts`), quindi si parte prudenti e si misura in produzione invece di
- * scoprire il limite sfondandolo. Il criterio di selezione, quando il tetto morde, e' dichiarato e
- * riproducibile: si tengono i comuni piu' alti di ciascuna regione, in proporzione a quanti ne ha
- * sopra la soglia — non una scelta a mano, e nessuna regione esclusa del tutto.
+ * **Perche' un tetto al numero di zone, e perche' proprio 1200.** Ogni zona e' un punto in piu'
+ * nelle richieste giornaliere a Open-Meteo, e il piano gratuito concede 10.000 chiamate pesate al
+ * giorno. Con la finestra di 68 giorni dello snapshot una sola localita' pesa circa 4,9
+ * (`forecastWeightPerPoint`), quindi 1200 zone costano circa 5.900 a corsa: sta nella giornata con
+ * margine per un ritentativo. Il numero non e' piu' una stima prudente ma un conto: il primo
+ * tentativo del 21/09/2026 e' fallito con HTTP 429 ed e' servito a misurare il peso vero.
+ * Il criterio di selezione, quando il tetto morde, e' dichiarato e riproducibile: si tengono i
+ * comuni piu' alti di ciascuna regione, in proporzione a quanti ne ha sopra la soglia — non una
+ * scelta a mano, e nessuna regione esclusa del tutto.
  */
 
 import { mkdir, writeFile } from 'node:fs/promises'
 import path from 'node:path'
 
 import { fetchJson } from '@/lib/sources/http'
+import { RatePacer } from '@/lib/sources/open-meteo-rate'
 import {
   buildCandidates,
   fetchNationalBoundaries,
@@ -45,6 +49,16 @@ import {
 /** L'API elevazione di Open-Meteo accetta al massimo 100 coordinate per richiesta. */
 const ELEVATION_BATCH = 100
 const ELEVATION_URL = 'https://api.open-meteo.com/v1/elevation'
+
+/**
+ * Peso di una coordinata sull'API elevazione: uno.
+ *
+ * Non e' documentato, e' misurato. Il 21/09/2026 sei richieste da 100 coordinate hanno esaurito
+ * esattamente il limite di 600 al minuto: il multi-localita' non e' uno sconto, ogni punto conta
+ * come una chiamata. Da qui l'attesa fra un lotto e l'altro, altrimenti la settima richiesta
+ * prende 429 — che e' precisamente come e' andata la prima volta.
+ */
+const ELEVATION_WEIGHT_PER_POINT = 1
 
 function arg(name: string, fallback: number): number {
   const index = process.argv.indexOf(`--${name}`)
@@ -81,8 +95,17 @@ interface ZonesFile {
 
 async function resolveElevations(points: readonly CandidateZone[]): Promise<Map<string, number>> {
   const out = new Map<string, number>()
+  // Un'ora di attesa massima per lotto: la finestra oraria e' 5.000, quindi con 7.500 candidati
+  // la corsa deve per forza scavallare un'ora. Meglio che dorma qui, dichiarandolo, che fallire.
+  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000 })
+  let sleptMs = 0
   for (let i = 0; i < points.length; i += ELEVATION_BATCH) {
     const batch = points.slice(i, i + ELEVATION_BATCH)
+    const waited = await pacer.reserve(batch.length * ELEVATION_WEIGHT_PER_POINT)
+    if (waited > 0) {
+      sleptMs += waited
+      console.log(`  pausa di ${Math.round(waited / 1000)} s per restare nei limiti Open-Meteo`)
+    }
     const params = new URLSearchParams({
       latitude: batch.map((p) => p.latitude).join(','),
       longitude: batch.map((p) => p.longitude).join(','),
@@ -103,6 +126,7 @@ async function resolveElevations(points: readonly CandidateZone[]): Promise<Map<
     }
     console.log(`  quote risolte: ${Math.min(i + ELEVATION_BATCH, points.length)}/${points.length}`)
   }
+  if (sleptMs > 0) console.log(`  attesa totale per i limiti: ${Math.round(sleptMs / 60_000)} min`)
   return out
 }
 
@@ -139,7 +163,7 @@ export function capByRegion(
 
 async function main(): Promise<void> {
   const minElevationM = arg('min-elevation', 600)
-  const maxZones = arg('max-zones', 1500)
+  const maxZones = arg('max-zones', 1200)
 
   console.log(`Scarico i confini comunali nazionali da ${NATIONAL_BOUNDARIES_URL}…`)
   const collection = await fetchNationalBoundaries()
