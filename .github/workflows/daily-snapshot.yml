@@ -62,5 +62,11 @@ jobs:
             echo "Nessuna variazione: niente da committare."
           else
             git commit -m "Snapshot $(date -u +%Y-%m-%d)"
+            # Fra il checkout a inizio job e il push possono passare diversi minuti (lo scarico
+            # delle serie SIR ci mette la maggior parte del tempo): se nel frattempo qualcun
+            # altro ha aggiornato main — una PR mersata, l'altra corsa schedulata — il push nudo
+            # viene rifiutato "non-fast-forward" e lo snapshot appena calcolato va perso.
+            # Il rebase riapplica questo commit sopra la storia nel frattempo avanzata.
+            git pull --rebase origin main
             git push
           fi
