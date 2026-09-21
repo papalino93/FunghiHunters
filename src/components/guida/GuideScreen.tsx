@@ -61,7 +61,7 @@ export function GuideScreen() {
 
       <Sezione id="cosa-fa" titolo="Cosa fa, e cosa non fa">
         <p>
-          L&apos;app calcola, per alcune zone della Toscana, un numero da 0 a 100 che dice quanto
+          L&apos;app calcola, per oltre milleduecento zone in tutta Italia, un numero da 0 a 100 che dice quanto
           le condizioni ambientali di quei giorni <strong className="text-ink">assomigliano</strong>{' '}
           a quelle in cui il porcino fruttifica: pioggia recente, acqua rimasta nel terreno,
           temperatura dell&apos;aria e del suolo, evapotraspirazione, quota, tipo di bosco,
@@ -129,7 +129,7 @@ export function GuideScreen() {
           la sezione dedicata qui sotto.
         </Voce>
         <Voce titolo="Meteo">
-          Diversa dalla mappa: qui non ci sono le sette zone del modello, ma un
+          Diversa dalla mappa: qui non ci sono le zone del modello, ma un
           <strong className="text-ink"> luogo qualsiasi</strong> — un paese, una frazione, un
           parcheggio — che cerchi per nome o con la tua posizione. Mostra il dato grezzo, senza
           passare dal punteggio: condizioni attuali, cinque giorni passati e dieci di previsione
@@ -201,10 +201,14 @@ export function GuideScreen() {
           storia a sé. È un indice di compatibilità, non una previsione di raccolto.
         </Faq>
         <Faq domanda="Perché la mia zona non c'è?">
-          Oggi l&apos;app copre sette aree della Toscana, quelle su cui esistono dati meteo
-          osservati abbastanza vicini da rendere onesta una stima. Estenderla richiede una mappa
-          forestale e altimetrica non ancora integrata: mostrare punteggi su tutta la regione senza
-          quei dati significherebbe inventarli.
+          L&apos;app copre 1.202 zone in tutte e venti le regioni, più sette aree della Toscana
+          seguite a parte. Le zone sono comuni, e ci sono i più alti d&apos;Italia: si parte da
+          695 metri. Se il tuo comune non c&apos;è, quasi sempre sta più in basso di così.
+          <br />
+          <br />
+          Le sette aree toscane restano le uniche con stazioni di misura al suolo collegate, e per
+          questo sono le più affidabili. Altrove il punteggio viene dal solo modello meteo, e
+          l&apos;affidabilità indicata su ogni zona ne tiene conto: è più bassa, dichiaratamente.
         </Faq>
         <Faq domanda="Cosa vuol dire «stima incerta»?">
           Che i dati su cui il numero è costruito sono scarsi o lontani: poche stazioni vicine,

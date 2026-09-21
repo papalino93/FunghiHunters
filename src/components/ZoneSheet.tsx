@@ -409,7 +409,8 @@ function Where({ zone }: { zone: SnapshotZone }) {
         </h3>
         {nearby.length === 0 ? (
           <p className="text-xs leading-relaxed text-ink-dim">
-            Nessun comune risolto entro raggio per questa zona.
+            Per questa zona non è ancora elencato nessun comune vicino. Il nome e il punto di
+            riferimento restano quelli verificati sui confini ISTAT.
           </p>
         ) : (
           <ul className="space-y-1.5">
@@ -428,8 +429,8 @@ function Where({ zone }: { zone: SnapshotZone }) {
         )}
         <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
           Comuni reali entro 15 km in linea d&apos;aria dal punto di riferimento della zona,
-          verificati contro i confini ISTAT — non il confine della zona, che non esiste: le sette
-          zone di taratura sono punti, non poligoni.
+          verificati contro i confini ISTAT — non il confine della zona, che non esiste: una zona
+          qui è un punto, non un poligono.
         </p>
       </div>
     </div>
