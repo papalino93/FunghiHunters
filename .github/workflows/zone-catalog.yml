@@ -52,8 +52,14 @@ jobs:
           --min-elevation ${{ inputs.min_elevation }}
           --max-zones ${{ inputs.max_zones }}
 
-      - name: Calcola subito i punteggi delle nuove zone
-        run: npx tsx scripts/build-snapshot-italia.ts
+      # Il punteggio delle zone nuove NON si calcola qui, e non per dimenticanza.
+      # I limiti di Open-Meteo valgono per indirizzo IP, e i due passi girerebbero sullo stesso
+      # runner: risolvere le quote di ~7.500 comuni costa 7.500 chiamate pesate, calcolare 1.200
+      # zone ne costa altre 5.800, e insieme sfondano il tetto di 10.000 al giorno. Il secondo
+      # passo fallirebbe proprio quando il primo ha finito, e con lui salterebbe il commit del
+      # catalogo appena costruito — un'ora e mezza di lavoro persa per un errore evitabile.
+      # I punteggi arrivano quindi dalla corsa "Snapshot giornaliero", che gira su un altro runner
+      # con il suo budget: parte da sola alle 11:40 UTC, oppure si lancia a mano subito dopo.
 
       - name: Commit
         run: |
