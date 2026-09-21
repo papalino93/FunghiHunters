@@ -98,6 +98,8 @@ export interface ItaliaIndexEntry {
   readonly longitude: number
   readonly elevationM: number
   readonly mpi: number
+  /** Punteggio senza il tetto a 100, solo per ordinare i pari merito. */
+  readonly mpiRaw: number
   readonly label: string
   readonly confidence: number
   readonly limitingFactor: string | null
@@ -222,7 +224,11 @@ async function main(): Promise<void> {
       generatedAt,
       algorithmVersion: ALGORITHM_V1.version,
       referenceDate: todayIso,
-      zones: [...entry.zones].sort((a, b) => b.mpi - a.mpi),
+      // A parita' di punteggio decide il valore senza tetto: vedi `rankZones` in
+      // `src/lib/snapshot/load.ts` per il perche'.
+      zones: [...entry.zones].sort(
+        (a, b) => b.mpi - a.mpi || (b.mpiRaw ?? b.mpi) - (a.mpiRaw ?? a.mpi),
+      ),
       sources: [
         {
           status: 'ok',
@@ -264,6 +270,7 @@ async function main(): Promise<void> {
         longitude: zone.longitude,
         elevationM: zone.elevationM,
         mpi: zone.mpi,
+        mpiRaw: zone.mpiRaw ?? zone.mpi,
         label: zone.label,
         confidence: zone.confidence,
         limitingFactor: zone.limitingFactor,

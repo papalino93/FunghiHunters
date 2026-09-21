@@ -141,6 +141,7 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
     points.push({
       date,
       mpi: result.mpi,
+      mpiRaw: result.rawMpi,
       confidence: confidence.score,
       dataQuality: confidence.dataQuality,
       forecastCertainty: confidence.forecastCertainty,
@@ -210,6 +211,7 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
     forest: zone.forest,
     stationNotes: zone.stationNotes.replace(/\s+/g, ' ').trim(),
     mpi: currentResult.mpi,
+    mpiRaw: currentResult.rawMpi,
     confidence: currentConfidence,
     dataQuality: currentDataQuality,
     forecastCertainty: currentForecastCertainty,

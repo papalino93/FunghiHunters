@@ -322,6 +322,16 @@ export interface MpiComponents {
 
 export interface MpiResult {
   readonly mpi: number
+  /**
+   * Lo stesso punteggio **senza il tetto a 100**.
+   *
+   * Non si mostra e non entra nel modello: serve a ordinare i pari merito. Con sette zone
+   * toscane il tetto non si notava; con 1.202 zone italiane, il 21/09/2026, 233 zone segnavano
+   * esattamente 100 — e fra due zone appaiate una aveva 63 mm d'acqua utile su 70 richiesti e
+   * l'altra il doppio. Per chi deve scegliere dove andare domani non sono la stessa cosa, e un
+   * ordinamento alfabetico fra pari merito sarebbe stato una risposta finta.
+   */
+  readonly rawMpi: number
   readonly algorithmVersion: string
   readonly date: string
   readonly components: MpiComponents
@@ -360,9 +370,11 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
   // La saturazione a 1 e' cio' che permette al tetto idrico sopra 1 di compensare una
   // temperatura leggermente fuori ottimo, senza sfondare la scala.
   const mpi = 100 * clamp(core, 0, 1) * penaltyProduct
+  const rawMpi = 100 * Math.max(core, 0) * penaltyProduct
 
   return {
     mpi: Math.round(mpi * 10) / 10,
+    rawMpi: Math.round(rawMpi * 10) / 10,
     algorithmVersion: config.version,
     date: features.date,
     components: {
