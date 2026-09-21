@@ -202,8 +202,14 @@ export function GuideScreen() {
         </Faq>
         <Faq domanda="Perché la mia zona non c'è?">
           L&apos;app copre 1.202 zone in tutte e venti le regioni, più sette aree della Toscana
-          seguite a parte. Le zone sono comuni, e ci sono i più alti d&apos;Italia: si parte da
-          695 metri. Se il tuo comune non c&apos;è, quasi sempre sta più in basso di così.
+          seguite a parte. Le zone sono comuni, e sono i più alti d&apos;Italia: entra chi ha il
+          terreno sopra i 600 metri. Se il tuo comune non c&apos;è, quasi sempre sta più in basso
+          di così.
+          <br />
+          <br />
+          Il punto in cui calcoliamo il meteo, però, non è il centro del comune: lo spostiamo
+          dentro il bosco, che spesso sta più in basso del centro geometrico. Per questo qualche
+          zona mostra una quota sotto i 600 metri — è la quota del suo bosco, non quella del paese.
           <br />
           <br />
           Le sette aree toscane restano le uniche con stazioni di misura al suolo collegate, e per
