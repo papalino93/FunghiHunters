@@ -151,6 +151,14 @@ export interface ZoneConfidenceInput {
   readonly observationAgeDays?: number
   readonly horizonDays?: number
   readonly ensembleAgreement?: number | null
+  /**
+   * Quanto e' noto il **tipo di bosco** della zona, 0-1 (vedi `src/lib/model/forest.ts`).
+   *
+   * Sta nella confidence e non nel punteggio di proposito: la mappa dei generi arborei mette il
+   * castagno e il pioppo nella stessa classe, e quella e' incertezza nostra, non un bosco
+   * peggiore. Chi legge deve vedere un numero meno affidabile, non un numero piu' basso.
+   */
+  readonly habitatCertainty?: number
   readonly config?: AlgorithmConfig
 }
 
@@ -197,5 +205,25 @@ export function zoneConfidence(input: ZoneConfidenceInput): AggregateConfidence 
     )
   }
 
-  return aggregateConfidence({ variables, weights: DEFAULT_VARIABLE_WEIGHTS })
+  const aggregate = aggregateConfidence({ variables, weights: DEFAULT_VARIABLE_WEIGHTS })
+
+  const habitatCertainty = Math.min(1, Math.max(0, input.habitatCertainty ?? 1))
+  if (habitatCertainty >= 1) return aggregate
+
+  // Tocca la qualita' del dato, non la certezza della previsione: non sapere che bosco sia non
+  // rende meno affidabile il meteo di dopodomani, rende meno affidabile il punteggio di oggi.
+  return {
+    ...aggregate,
+    score: Math.round(aggregate.score * habitatCertainty * 10) / 10,
+    dataQuality: Math.round(aggregate.dataQuality * habitatCertainty * 10) / 10,
+    factors: [
+      ...aggregate.factors,
+      {
+        key: 'habitat',
+        label: 'Tipo di bosco riconosciuto solo in parte',
+        value: `fattore ${habitatCertainty.toFixed(2)}`,
+        impact: 1 - habitatCertainty,
+      },
+    ],
+  }
 }

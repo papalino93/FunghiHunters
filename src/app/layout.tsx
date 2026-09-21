@@ -18,7 +18,7 @@ const mono = JetBrains_Mono({
 
 const DESCRIPTION =
   'Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino ' +
-  'in Toscana. Non indica la presenza di funghi.'
+  'in Italia. Non indica la presenza di funghi.'
 
 /**
  * Serve un URL assoluto per generare i link `og:image`/`twitter:image` che WhatsApp, Telegram e
@@ -34,21 +34,21 @@ const SITE_URL =
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  title: 'FungiCast Toscana',
+  title: 'FungiCast',
   description: DESCRIPTION,
-  applicationName: 'FungiCast Toscana',
+  applicationName: 'FungiCast',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'FungiCast', statusBarStyle: 'black-translucent' },
   openGraph: {
-    title: 'FungiCast Toscana',
+    title: 'FungiCast',
     description: DESCRIPTION,
-    siteName: 'FungiCast Toscana',
+    siteName: 'FungiCast',
     locale: 'it_IT',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'FungiCast Toscana',
+    title: 'FungiCast',
     description: DESCRIPTION,
   },
   other: {

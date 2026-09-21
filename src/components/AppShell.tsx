@@ -99,7 +99,7 @@ export function AppShell({ snapshot }: AppShellProps) {
           <header className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3">
             <div className="pointer-events-auto inline-flex max-w-full flex-col rounded-xl border border-edge bg-surface-1/90 px-3 py-2 backdrop-blur-xl">
               <div className="flex items-center gap-2">
-                <h1 className="text-sm font-semibold text-ink">FungiCast Toscana</h1>
+                <h1 className="text-sm font-semibold text-ink">FungiCast</h1>
                 <span className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-dim">
                   porcino
                 </span>
@@ -249,7 +249,7 @@ function EmptyState() {
   return (
     <section className="grid h-full place-items-center bg-surface-0 px-6 text-center">
       <div className="max-w-sm">
-        <h1 className="text-lg font-semibold text-ink">FungiCast Toscana</h1>
+        <h1 className="text-lg font-semibold text-ink">FungiCast</h1>
         <p className="mt-2 text-sm leading-relaxed text-ink-dim">
           Lo snapshot dei dati non è ancora stato generato. Viene ricostruito una volta al giorno;
           finché non esiste, la mappa non ha nulla di onesto da mostrare.

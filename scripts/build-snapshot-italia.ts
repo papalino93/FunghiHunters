@@ -135,6 +135,8 @@ async function loadZones(): Promise<ItalianZone[] | null> {
 interface ZoneForest {
   readonly forest: readonly string[]
   readonly forestFraction: number
+  /** Le quote per tipo: da qui in poi il bosco non e' piu' solo un'etichetta, pesa sul punteggio. */
+  readonly shares: Readonly<Record<string, number>>
 }
 
 /**
@@ -150,7 +152,7 @@ async function loadForest(): Promise<Map<string, ZoneForest>> {
     return new Map(
       file.zones.map((zone) => [
         zone.code,
-        { forest: zone.forest, forestFraction: zone.forestFraction },
+        { forest: zone.forest, forestFraction: zone.forestFraction, shares: zone.shares },
       ]),
     )
   } catch {
@@ -222,7 +224,9 @@ async function main(): Promise<void> {
           // Il catalogo nasce con `forest` vuoto: il bosco vero arriva dalla copertura misurata,
           // e si ricade sul catalogo solo se quella corsa non e' ancora stata fatta.
           forest: measured?.forest ?? zone.forest,
-          ...(measured === undefined ? {} : { forestFraction: measured.forestFraction }),
+          ...(measured === undefined
+            ? {}
+            : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
           stationNotes: NATIONAL_STATION_NOTE,
         },
         modelSeries: toModelSeries(response, todayIso),

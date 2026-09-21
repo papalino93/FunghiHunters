@@ -71,3 +71,41 @@ export function toLaea(lon: number, lat: number): LaeaPoint {
         (Math.cos(BETA0) * Math.sin(beta) - Math.sin(BETA0) * Math.cos(beta) * Math.cos(dLam)),
   }
 }
+
+/**
+ * Serie per tornare dalla latitudine autalica a quella vera (Snyder, formula 3-18).
+ *
+ * L'andata usa una formula chiusa, il ritorno no: la relazione non si inverte in forma
+ * elementare. La serie converge in fretta sull'ellissoide terrestre — i termini oltre il sesto
+ * grado valgono frazioni di millimetro — quindi si fermano qui e il test di andata e ritorno
+ * dichiara l'errore che resta.
+ */
+const B1 = E2 / 3 + (31 * E2 ** 2) / 180 + (517 * E2 ** 3) / 5040
+const B2 = (23 * E2 ** 2) / 360 + (251 * E2 ** 3) / 3780
+const B3 = (761 * E2 ** 3) / 45360
+
+/** Da metri EPSG:3035 a gradi. E' l'inversa esatta di `toLaea`, non un'approssimazione locale. */
+export function fromLaea(x: number, y: number): { lon: number; lat: number } {
+  const dx = x - X0
+  const dy = y - Y0
+
+  const rho = Math.hypot(dx / D, D * dy)
+  if (rho === 0) return { lon: LON0 / TO_RAD, lat: LAT0 / TO_RAD }
+
+  const ce = 2 * Math.asin(rho / (2 * RQ))
+  const sinCe = Math.sin(ce)
+  const cosCe = Math.cos(ce)
+
+  const beta = Math.asin(cosCe * Math.sin(BETA0) + (D * dy * sinCe * Math.cos(BETA0)) / rho)
+  const lam =
+    LON0 +
+    Math.atan2(
+      dx * sinCe,
+      D * rho * Math.cos(BETA0) * cosCe - D * D * dy * Math.sin(BETA0) * sinCe,
+    )
+
+  const phi =
+    beta + B1 * Math.sin(2 * beta) + B2 * Math.sin(4 * beta) + B3 * Math.sin(6 * beta)
+
+  return { lon: lam / TO_RAD, lat: phi / TO_RAD }
+}

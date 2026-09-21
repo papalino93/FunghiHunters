@@ -39,6 +39,16 @@ export const FOREST_CLASSES: readonly ForestClass[] = [
   { code: 7, slug: null, label: 'non bosco' },
 ]
 
+/**
+ * Le classi che tengono insieme generi diversi, e che quindi non dicono davvero che bosco sia.
+ *
+ * "Altre latifoglie" contiene il castagno, che per il porcino e' fra i boschi migliori, ma anche
+ * il pioppo e l'ontano, che non lo ospitano; "altre conifere" e' quasi sempre abete bianco — il
+ * bosco della fonte dell'Amiata — ma puo' essere anche cipresso o cedro. Il modello non abbassa
+ * il punteggio per questo: abbassa la confidence. Vedi `src/lib/model/forest.ts`.
+ */
+export const AMBIGUOUS_SLUGS: ReadonlySet<string> = new Set(['altre latifoglie', 'altre conifere'])
+
 const BY_CODE = new Map(FOREST_CLASSES.map((c) => [c.code, c]))
 
 /**

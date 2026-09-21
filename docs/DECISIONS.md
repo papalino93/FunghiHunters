@@ -1,4 +1,4 @@
-# FungiCast Toscana — Decisioni di progetto
+# FungiCast — Decisioni di progetto
 
 Risposte alle otto domande aperte del
 [Discovery & Architecture Report](./DISCOVERY-AND-ARCHITECTURE.md), 17 settembre 2026.

@@ -28,6 +28,10 @@ on:
         description: "true = non riscarica niente, riapplica il bosco gia' letto agli snapshot di regione"
         required: false
         default: 'false'
+      relocate:
+        description: "true = sposta il punto di calcolo di ogni zona dentro il bosco e riscrive il catalogo zone. Non pubblica il bosco: serve una seconda corsa normale sui punti nuovi"
+        required: false
+        default: 'false'
 
 permissions:
   contents: write
@@ -62,12 +66,18 @@ jobs:
           --radius-km ${{ inputs.radius_km }}
           ${{ inputs.columns != '' && format('--columns {0}', inputs.columns) || '' }}
           ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
+          ${{ inputs.relocate == 'true' && '--relocate' || '' }}
 
-      # Il bosco non entra nel punteggio, quindi non c'e' ragione di rifare il calcolo del meteo
-      # (un'ora di attesa e quasi 6.000 chiamate del budget giornaliero) per aggiornare
-      # un'etichetta che quel calcolo non usa: si scrive sui file gia' pronti.
+      # Aggiorna l'etichetta del bosco sui file gia' pronti, senza rifare il meteo.
+      #
+      # ATTENZIONE, dalla versione 1.4.0 del modello: il bosco **entra** nel punteggio, quindi
+      # dopo questo passaggio l'etichetta e' quella nuova ma il punteggio e' ancora quello vecchio.
+      # E' una differenza che dura fino al primo ricalcolo (una volta al giorno fuori dalla
+      # Toscana), e si accetta solo perche' l'alternativa — un'ora di attesa e quasi 6.000
+      # chiamate del budget giornaliero — la pagherebbe comunque il calcolo notturno. Quando
+      # conta, si lancia a mano lo snapshot subito dopo.
       - name: Scrivilo sugli snapshot di regione
-        if: inputs.dry_run != 'true'
+        if: inputs.dry_run != 'true' && inputs.relocate != 'true'
         run: npx tsx scripts/apply-forest-to-snapshots.ts
 
       - name: Commit
@@ -79,7 +89,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "Nessuna variazione: niente da committare."
           else
-            git commit -m "Catalogo boschi Italia $(date -u +%Y-%m-%d)"
+            git commit -m "${{ inputs.relocate == 'true' && 'Punti di calcolo spostati nel bosco' || 'Catalogo boschi Italia' }} $(date -u +%Y-%m-%d)"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin HEAD:"${GITHUB_REF_NAME}"
           fi

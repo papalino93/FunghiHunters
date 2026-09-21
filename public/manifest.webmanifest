@@ -1,7 +1,7 @@
 {
-  "name": "FungiCast Toscana",
+  "name": "FungiCast",
   "short_name": "FungiCast",
-  "description": "Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino in Toscana. Non indica la presenza di funghi.",
+  "description": "Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino in Italia. Non indica la presenza di funghi.",
   "start_url": "/",
   "display": "standalone",
   "orientation": "portrait",

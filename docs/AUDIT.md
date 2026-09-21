@@ -1,4 +1,4 @@
-# Audit — FungiCast Toscana
+# Audit — FungiCast
 
 Questo file ha due parti, e vanno lette in modo diverso. **"Stato attuale"** qui sotto è quello che
 vale oggi, verificato in questa sessione: se contraddice qualcosa più in basso, questa sezione ha

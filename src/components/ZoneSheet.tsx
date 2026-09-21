@@ -651,6 +651,7 @@ const LIMITING_FACTOR_SHORT: Readonly<Record<string, string>> = {
   Temperatura: 'Temp.',
   'Stagione e quota': 'Stagione',
   'Penalità meteorologiche': 'Meteo',
+  'Il bosco della zona': 'Bosco',
 }
 
 function shorten(factor: string): string {

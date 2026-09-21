@@ -26,6 +26,7 @@ import {
   type OpenMeteoResponse,
 } from '@/lib/pipeline/open-meteo-series'
 import { buildZoneSnapshot } from '@/lib/pipeline/zone-snapshot'
+import type { ForestFile } from '@/../scripts/ingest-forest-italia'
 import type { DailySamples } from '@/lib/pipeline/zone-series'
 import type { StationSample } from '@/lib/spatial/interpolate'
 import { LICENSES } from '@/lib/sources/adapter'
@@ -67,6 +68,28 @@ function toSample(station: Station, value: number): StationSample {
     elevationM: station.elevationM ?? 0,
     value,
     validated: false,
+  }
+}
+
+/**
+ * Il bosco misurato delle sette zone, da `scripts/ingest-forest-italia.ts`.
+ *
+ * Mappa vuota quando il file non c'e' o non contiene ancora le zone toscane: il termine habitat
+ * resta allora neutro, che e' come si comportava il modello prima della 1.4.0 — non una
+ * penalizzazione silenziosa.
+ */
+async function loadForest(): Promise<Map<string, { forestFraction: number; shares: Readonly<Record<string, number>> }>> {
+  try {
+    const raw = await readFile('public/data/forest-italia.json', 'utf-8')
+    const file = JSON.parse(raw) as ForestFile
+    return new Map(
+      file.zones.map((zone) => [
+        zone.code,
+        { forestFraction: zone.forestFraction, shares: zone.shares },
+      ]),
+    )
+  } catch {
+    return new Map()
   }
 }
 
@@ -142,6 +165,7 @@ async function main(): Promise<void> {
 
   const municipalityByZone = await loadAdminBoundaries()
   const nearbyByZone = await loadNearbyComuni()
+  const forestByZone = await loadForest()
 
   const zones: SnapshotZone[] = []
 
@@ -149,8 +173,19 @@ async function main(): Promise<void> {
     const response = modelResponses[index]
     if (response === undefined) continue
 
+    const measured = forestByZone.get(zone.code)
     const snapshotZone = buildZoneSnapshot({
-      zone,
+      /*
+       * Del bosco misurato si prende solo quanto ce n'e' e di che generi: l'etichetta resta
+       * quella scritta a mano in `zones.ts`, che dice "abetina" e "castagneto" dove la mappa dei
+       * generi sa dire soltanto "altre conifere" e "altre latifoglie".
+       */
+      zone: {
+        ...zone,
+        ...(measured === undefined
+          ? {}
+          : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
+      },
       modelSeries: toModelSeries(response, todayIso),
       observationsByDate,
       todayIso,

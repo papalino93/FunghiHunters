@@ -17,6 +17,7 @@ import { ALGORITHM_V1 } from '@/lib/config/algorithm'
 import { addDays, daysBetween } from '@/lib/domain/time'
 import type { Station } from '@/lib/domain/types'
 import { buildFeatures, type CellContext } from '@/lib/model/features'
+import { habitatSuitability } from '@/lib/model/forest'
 import { computeMpi, mpiLabel } from '@/lib/model/mpi'
 import { explainScore } from '@/lib/model/explain'
 import { potentialWindow, type ForecastPoint } from '@/lib/model/narrative'
@@ -42,6 +43,11 @@ export interface ZoneLike {
   readonly forest: readonly string[]
   /** Quota a bosco, quando misurata. Vedi `SnapshotZone.forestFraction`. */
   readonly forestFraction?: number
+  /**
+   * Quota di ciascun tipo di bosco **sul bosco**, quando misurata. Insieme a `forestFraction` e'
+   * cio' che fa pesare il bosco sul punteggio: vedi `src/lib/model/forest.ts`.
+   */
+  readonly forestShares?: Readonly<Record<string, number>>
   readonly stationNotes: string
 }
 
@@ -94,6 +100,12 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
     aspectDeg: null,
     slopeDeg: null,
     canopyDensity: null,
+    // `null` vuol dire "non misurato", e il modello lo tratta come neutro: una zona senza bosco
+    // misurato non deve perdere punti rispetto a una che ce l'ha.
+    forest:
+      zone.forestFraction === undefined || zone.forestShares === undefined
+        ? null
+        : { forestFraction: zone.forestFraction, shares: zone.forestShares },
   }
   const target = {
     latitude: zone.latitude,
@@ -112,6 +124,15 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
     assembled.lastObservedDate === null
       ? 30
       : Math.max(0, daysBetween(assembled.lastObservedDate, todayIso))
+
+  /*
+   * Il bosco non cambia da un giorno all'altro: si calcola una volta sola, fuori dal ciclo.
+   *
+   * Qui serve la sua **certezza**, che abbassa la confidence dove la mappa dei generi e' generica
+   * ("altre latifoglie" tiene insieme il castagno e il pioppo). Il moltiplicatore sul punteggio
+   * lo applica invece `computeMpi`, dal contesto della cella.
+   */
+  const habitat = habitatSuitability(cell.forest, ALGORITHM_V1)
 
   // Punteggio per ogni giorno visualizzato: il motore e' puro, quindi basta ricalcolarlo
   // sulla serie troncata a quel giorno. E' anche esattamente cio' che serve al backtest.
@@ -137,6 +158,7 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
       coverage: features.coverage,
       observationAgeDays: ageDays + Math.max(0, offset),
       horizonDays: horizon,
+      habitatCertainty: habitat.certainty,
     })
 
     const day = full[dayIndex]
