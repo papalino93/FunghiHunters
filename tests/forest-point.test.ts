@@ -104,6 +104,51 @@ describe('forestPoint', () => {
     expect(result.density).toBeCloseTo(0.28, 2)
   })
 
+  it('non guarda il bosco fuori dal comune', () => {
+    /*
+     * Il caso Bormio: valle stretta, il bosco piu' vicino al punto sta nel comune accanto.
+     *
+     * Prima si sceglieva il punto e poi si verificava il confine, scartando lo spostamento se
+     * cadeva fuori: cosi' le zone per cui la correzione esiste erano proprio quelle che non la
+     * ricevevano. Erano 79 su 1.202, e Bormio era una di quelle.
+     */
+    const dentro = (x: number): boolean => x > -1000
+    const withoutBorder = forestPoint(
+      ORIGIN,
+      cells([
+        { x: 0, y: 0, wooded: 0, total: 2500 },
+        { x: -3000, y: 0, wooded: 2400, total: 2500 },
+        { x: 2000, y: 0, wooded: 1400, total: 2500 },
+      ]),
+    )
+    expect(withoutBorder.x).toBeCloseTo(-3000, 6)
+
+    const withBorder = forestPoint(
+      ORIGIN,
+      cells([
+        { x: 0, y: 0, wooded: 0, total: 2500 },
+        { x: -3000, y: 0, wooded: 2400, total: 2500 },
+        { x: 2000, y: 0, wooded: 1400, total: 2500 },
+      ]),
+      { inside: (x) => dentro(x) },
+    )
+    expect(withBorder.outcome).toBe('spostato')
+    expect(withBorder.x).toBeCloseTo(2000, 6)
+  })
+
+  it('dichiara "niente bosco" se dentro il comune non ce n\'e\'', () => {
+    const result = forestPoint(
+      ORIGIN,
+      cells([
+        { x: 0, y: 0, wooded: 0, total: 2500 },
+        { x: -3000, y: 0, wooded: 2400, total: 2500 },
+      ]),
+      { inside: (x) => x > -1000 },
+    )
+    expect(result.outcome).toBe('niente-bosco')
+    expect(result.x).toBe(0)
+  })
+
   it('usa celle da mezzo chilometro', () => {
     expect(CELL_M).toBe(500)
     expect(cellKey(10, 10)).toBe(cellKey(400, 400))

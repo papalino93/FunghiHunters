@@ -333,21 +333,33 @@ async function relocatePoints(
       count('nessun campione')
       continue
     }
-    const result = forestPoint({ x: zone.x, y: zone.y }, cells)
-    if (result.outcome !== 'spostato') {
-      count(result.outcome)
-      continue
-    }
-    const { lon, lat } = fromLaea(result.x, result.y)
     const geometry = geometryByCode.get(zone.code.replace(/^it-/, ''))
     if (geometry === undefined) {
       count('confine non trovato')
       continue
     }
-    if (!pointInGeometry(lon, lat, geometry)) {
-      count('fuori dal comune')
+    /*
+     * Il confine entra nella scelta, non dopo.
+     *
+     * La prima corsa (21/9/2026) sceglieva il punto e poi verificava: 79 zone su 1.202 finivano
+     * scartate perche' il bosco piu' vicino stava nel comune accanto, e fra quelle c'era Bormio,
+     * cioe' il caso che aveva fatto nascere tutta la correzione.
+     */
+    const result = forestPoint(
+      { x: zone.x, y: zone.y },
+      cells,
+      {
+        inside: (x, y) => {
+          const point = fromLaea(x, y)
+          return pointInGeometry(point.lon, point.lat, geometry)
+        },
+      },
+    )
+    if (result.outcome !== 'spostato') {
+      count(result.outcome)
       continue
     }
+    const { lon, lat } = fromLaea(result.x, result.y)
     moved.set(zone.code, {
       latitude: Number(lat.toFixed(5)),
       longitude: Number(lon.toFixed(5)),

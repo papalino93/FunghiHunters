@@ -15,9 +15,12 @@
  * da solo, puo' cadere in mezzo a una radura o nel fondovalle fra due versanti boscati: scegliendo
  * una cella che il bosco ce l'ha davvero si evita di spostare il punto in un prato.
  *
- * **Quello che questa funzione non puo' garantire** e' che il punto resti dentro il comune: qui
- * arrivano pixel, non confini. Lo verifica il chiamante con il poligono ISTAT, e se il punto nuovo
- * cade fuori tiene quello vecchio. Vedi `scripts/ingest-forest-italia.ts`.
+ * **Il confine del comune entra nella scelta, non dopo.** La prima versione sceglieva il punto e
+ * poi il chiamante verificava che fosse dentro il comune, tenendo quello vecchio se non lo era.
+ * Su 1.202 zone ne bocciava 79, e fra quelle c'era Bormio: un comune lungo e stretto, dove il
+ * bosco piu' vicino al baricentro sta nel comune accanto. Cioe' il controllo scartava proprio i
+ * casi per cui la correzione esiste. Ora le celle fuori dal comune non contano ne' come bersaglio
+ * ne' come candidate, e il punto esce dentro per costruzione.
  */
 
 /** Lato della cella su cui si decide dov'e' il bosco, in metri. */
@@ -45,6 +48,13 @@ export interface ForestPointOptions {
   readonly minFill?: number
   /** Sotto questo spostamento il punto resta dov'e': muoverlo non cambierebbe niente. */
   readonly minMoveM?: number
+  /**
+   * Vero quando quel punto sta dentro il comune della zona.
+   *
+   * Senza, il bosco del comune accanto puo' vincere: nelle valli alpine strette succede quasi
+   * sempre, ed e' li' che la correzione serve di piu'.
+   */
+  readonly inside?: (x: number, y: number) => boolean
 }
 
 export type ForestPointOutcome = 'gia-nel-bosco' | 'spostato' | 'niente-bosco'
@@ -79,16 +89,28 @@ export function forestPoint(
   const minDensity = options.minDensity ?? 0.5
   const minFill = options.minFill ?? 0.25
   const minMoveM = options.minMoveM ?? 250
+  const inside = options.inside
+
+  // Il pieno si misura su tutte le celle, anche quelle fuori: e' la scala con cui si riconosce
+  // una scheggia al bordo della tessera, e non dipende da dove passa il confine comunale.
+  let fullest = 0
+  for (const cell of cells.values()) {
+    if (cell.total > fullest) fullest = cell.total
+  }
+
+  const usable = [...cells.values()].filter((cell) => {
+    if (cell.wooded === 0) return false
+    if (inside === undefined) return true
+    return inside(cell.sumX / cell.wooded, cell.sumY / cell.wooded)
+  })
 
   let wooded = 0
   let sumX = 0
   let sumY = 0
-  let fullest = 0
-  for (const cell of cells.values()) {
+  for (const cell of usable) {
     wooded += cell.wooded
     sumX += cell.sumX
     sumY += cell.sumY
-    if (cell.total > fullest) fullest = cell.total
   }
 
   if (wooded === 0) {
@@ -98,8 +120,8 @@ export function forestPoint(
   const centreX = sumX / wooded
   const centreY = sumY / wooded
 
-  const candidates = [...cells.values()].filter(
-    (cell) => cell.wooded > 0 && cell.total >= fullest * minFill && cell.wooded / cell.total >= minDensity,
+  const candidates = usable.filter(
+    (cell) => cell.total >= fullest * minFill && cell.wooded / cell.total >= minDensity,
   )
   /*
    * Nessuna cella abbastanza boscosa: si ripiega su quella con piu' bosco in assoluto.
@@ -109,10 +131,8 @@ export function forestPoint(
    * con `density` quanto vale.
    */
   const pool =
-    candidates.length > 0
-      ? candidates
-      : [...cells.values()].filter((cell) => cell.wooded > 0 && cell.total >= fullest * minFill)
-  const fallback = pool.length > 0 ? pool : [...cells.values()].filter((cell) => cell.wooded > 0)
+    candidates.length > 0 ? candidates : usable.filter((cell) => cell.total >= fullest * minFill)
+  const fallback = pool.length > 0 ? pool : usable
 
   const best = fallback.reduce((acc, cell) => {
     const ax = acc.sumX / acc.wooded
