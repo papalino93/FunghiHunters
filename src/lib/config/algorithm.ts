@@ -516,6 +516,42 @@ export interface SpatialConfig {
   readonly fusionHalfDistanceKm: Param
 }
 
+// ============================================================================
+// HABITAT — IL BOSCO
+// ============================================================================
+
+/**
+ * Il termine che fa pesare il bosco misurato sul punteggio.
+ *
+ * **Nessun valore qui e' misurato in letteratura, e nessuno finge di esserlo.** Sono tutti
+ * `calibrate`: la letteratura dice *quali* piante ospitano il porcino, e su quello i numeri qui
+ * sotto si appoggiano, ma nessuno studio dice "una faggeta produce 1.4 volte una pineta a parita'
+ * di meteo". Quel rapporto e' esattamente cio' che il diario uscite potra' misurare.
+ *
+ * Il dato in ingresso e' la mappa dei generi arborei ForestPaths (10 m, 2020, CC BY 4.0,
+ * DOI 10.5281/zenodo.13341104), campionata su un disco attorno al punto della zona: vedi
+ * `src/lib/sources/forest-genus.ts` e `scripts/ingest-forest-italia.ts`.
+ */
+export interface HabitatConfig {
+  /** Copertura di bosco oltre la quale il termine non toglie piu' nulla, 0-1. */
+  readonly coverReference: Param
+  /** Moltiplicatore minimo della copertura: quanto resta a una zona quasi spoglia. */
+  readonly coverFloor: Param
+  /** Peso del termine di copertura. A 0 viene calcolato e mostrato, ma non applicato. */
+  readonly coverWeight: Param
+  /** Peso del termine di ospite. A 0 viene calcolato e mostrato, ma non applicato. */
+  readonly hostWeight: Param
+  /** Idoneita' di un tipo di bosco che la tabella non conosce: neutra per scelta. */
+  readonly hostUnknown: Param
+  /**
+   * Quanto scende la **confidence** quando il bosco sta nelle classi generiche della mappa.
+   * Non tocca il punteggio: l'incertezza della fonte non e' un bosco peggiore.
+   */
+  readonly ambiguousCertainty: Param
+  /** Idoneita' come ospite, per tipo di bosco della legenda ForestPaths. */
+  readonly host: Readonly<Record<string, Param>>
+}
+
 export interface AlgorithmConfig {
   readonly version: string
   readonly water: WaterConfig
@@ -523,6 +559,7 @@ export interface AlgorithmConfig {
   readonly thermal: ThermalConfig
   readonly phenology: PhenologyConfig
   readonly penalties: PenaltyConfig
+  readonly habitat: HabitatConfig
   readonly confidence: ConfidenceConfig
   readonly spatial: SpatialConfig
 }
@@ -553,9 +590,18 @@ export interface AlgorithmConfig {
  * penalita' dedicate (`penalties.heat`, `penalties.heatShock`) che intervengono per conto proprio:
  * non serve che la campana termica lo penalizzi una seconda volta. `sigmaWarmC` resta un valore da
  * calibrare, non una misura.
+ *
+ * v1.4.0: entra il **bosco** (`habitat`). Fino a qui il punteggio conosceva soltanto meteo, quota
+ * e stagione: due zone con lo stesso meteo prendevano lo stesso numero anche se una era faggeta
+ * all'80 per cento e l'altra un altopiano spoglio. Per una specie micorrizica era il limite piu'
+ * grosso del modello, piu' grosso di qualunque soglia sbagliata, e si vedeva nella classifica
+ * nazionale: il 21 settembre 2026, 230 zone su 1.202 segnavano esattamente 100. Ora il bosco
+ * misurato su tutte le zone (ForestPaths) entra con due termini distinti — quanto bosco c'e' e
+ * che bosco e' — applicati dopo la saturazione, perche' il posto non cambia col giorno. Dove la
+ * mappa e' generica il punteggio non scende: scende la confidence. Vedi `src/lib/model/forest.ts`.
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
-  version: '1.3.0-porcino',
+  version: '1.4.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -837,6 +883,84 @@ export const ALGORITHM_V1: AlgorithmConfig = {
           'saprotrofi coltivati. Viene comunque calcolata e registrata a peso zero, cosi\' quando ' +
           'il diario avra\' abbastanza uscite il confronto sara\' possibile senza ricalcolare il ' +
           'passato. Da non confondere con heatShock, che ha una fonte e agisce.',
+      ),
+    },
+  },
+
+  habitat: {
+    coverReference: calibrate(
+      0.4,
+      'Oltre il 40% di bosco attorno al punto il termine non toglie nulla. Non e\' una soglia ' +
+        'biologica: e\' la quota oltre la quale, sul campione di 1.202 zone italiane, "qui c\'e\' ' +
+        'bosco" smette di distinguere — la copertura mediana e\' 70%, e sopra il 40% ci sta la ' +
+        'grande maggioranza delle zone di montagna.',
+    ),
+    coverFloor: calibrate(
+      0.6,
+      'Quanto resta del punteggio a una zona quasi spoglia. NON zero, e il motivo e\' il dato, non ' +
+        'la biologia: misuriamo un disco di 3 km attorno a un punto, non il comune intero, quindi ' +
+        'poco bosco li\' non vuol dire nessun bosco in zona. Azzerare vorrebbe dire far sparire ' +
+        'dalla classifica un posto che magari ha la faggeta a quattro chilometri.',
+    ),
+    coverWeight: calibrate(1, 'A 0 il termine si calcola e si mostra, ma non agisce.'),
+    hostWeight: calibrate(1, 'A 0 il termine si calcola e si mostra, ma non agisce.'),
+    hostUnknown: calibrate(
+      1,
+      'Un tipo di bosco che questa tabella non conosce resta neutro. Penalizzarlo vorrebbe dire ' +
+        'togliere punti per ignoranza nostra: quel caso si paga sulla confidence, non sul punteggio.',
+    ),
+    ambiguousCertainty: calibrate(
+      0.85,
+      'Confidence che resta a una zona il cui bosco sta tutto nelle classi generiche della mappa ' +
+        '("altre latifoglie", "altre conifere"). Non tocca il punteggio.',
+    ),
+    /*
+     * La tabella degli ospiti.
+     *
+     * Il porcino in senso lato sono quattro specie con piante ospiti diverse, e la mappa ci dice
+     * il genere dominante: e\' il primo pezzo di "che bosco e\'" che il modello abbia mai avuto.
+     * I valori sono relativi fra loro, non assoluti: 1 vuol dire "ospite classico, non tolgo
+     * niente", non "qui ci sono i funghi".
+     */
+    host: {
+      faggeta: calibrate(
+        1,
+        'Ospite classico del porcino autunnale, ed e\' il bosco della fonte su cui sono tarati ' +
+          'la finestra termica e l\'ottimo di 13 gradi (brejon2026).',
+      ),
+      pecceta: calibrate(
+        1,
+        'Ospite classico in quota, sia per B. edulis sia per B. pinophilus. In Italia e\' il bosco ' +
+          'da porcino delle Alpi orientali.',
+      ),
+      querceto: calibrate(
+        1,
+        'Ospite classico del porcino estivo: B. aereus e B. reticulatus stanno nei querceti, e ' +
+          'salerni2002 misura proprio la fruttificazione nei querceti della Toscana meridionale.',
+      ),
+      pineta: calibrate(
+        0.9,
+        'B. pinophilus e\' letteralmente "quello del pino" e il porcino nelle pinete c\'e\'; il ' +
+          'valore sta poco sotto 1 perche\' una parte delle pinete italiane sono rimboschimenti ' +
+          'mediterranei di bassa quota, dove il porcino e\' molto meno costante.',
+      ),
+      'altre conifere': calibrate(
+        0.9,
+        'Sopra i 600 m in Italia questa classe e\' quasi sempre abete bianco, che e\' il bosco ' +
+          'della fonte dell\'Amiata (salerni2023) e quindi un ospite ottimo. Non sta a 1 perche\' ' +
+          'la stessa classe raccoglie anche cipresso, cedro e douglasia.',
+      ),
+      'altre latifoglie': calibrate(
+        0.85,
+        'Classe mista: dentro c\'e\' il castagno, fra i boschi da porcino migliori d\'Italia, ma ' +
+          'anche carpino e betulla (ospiti) e ontano, pioppo e frassino (non ospiti). 0.85 e\' il ' +
+          'valore atteso su quella mescolanza, non un giudizio sul castagneto.',
+      ),
+      lariceto: calibrate(
+        0.7,
+        'Il piu\' basso dei sette. Il larice non e\' un ospite classico del porcino — il suo fungo ' +
+          'tipico e\' il Suillus grevillei — e dove il porcino si trova nei lariceti alpini, di ' +
+          'solito ci arriva dagli abeti e dai pini mescolati dentro.',
       ),
     },
   },

@@ -6,6 +6,7 @@
  */
 
 import type { Provenance } from '@/lib/domain/types'
+import type { ForestHabitat } from '@/lib/model/forest'
 import type { AlgorithmConfig } from '@/lib/config/algorithm'
 import {
   type CellModifiers,
@@ -34,6 +35,14 @@ export interface CellContext {
   readonly aspectDeg: number | null
   readonly slopeDeg: number | null
   readonly canopyDensity: number | null
+  /**
+   * Il bosco misurato attorno al punto della zona, quando c'e'.
+   *
+   * Assente o `null` vuol dire "non misurato", non "non c'e' bosco": il modello lascia il termine
+   * habitat neutro invece di penalizzare, perche' altrimenti una zona senza dato perderebbe punti
+   * rispetto a una con il dato. Vedi `src/lib/model/forest.ts`.
+   */
+  readonly forest?: ForestHabitat | null
 }
 
 /** Un evento di pioggia riconosciuto automaticamente. */

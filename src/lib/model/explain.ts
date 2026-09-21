@@ -91,11 +91,20 @@ export function explainScore(
   // core vero è water * thermal * phenology * trigger.factor (vedi computeMpi in mpi.ts): ogni
   // neutralizzazione deve tenere fermo anche trigger.factor, altrimenti su un giorno con innesco
   // attivo il confronto userebbe un moltiplicatore diverso da quello del punteggio reale.
-  const withoutWater = 100 * Math.min(1, c.thermal.score * c.phenology * c.trigger.factor) * penaltyProduct
-  const withoutThermal = 100 * Math.min(1, c.water * c.phenology * c.trigger.factor) * penaltyProduct
-  const withoutPhenology = 100 * Math.min(1, c.water * c.thermal.score * c.trigger.factor) * penaltyProduct
-  const withoutTrigger = 100 * Math.min(1, c.water * c.thermal.score * c.phenology) * penaltyProduct
-  const withoutPenalties = 100 * clamped
+  // Il bosco moltiplica il punteggio fuori dalla saturazione (vedi computeMpi): resta fermo in
+  // ogni neutralizzazione degli altri fattori, altrimenti i contributi non sommerebbero al
+  // punteggio vero di una zona con poco bosco.
+  const habitat = c.habitat.factor
+  const withoutWater =
+    100 * Math.min(1, c.thermal.score * c.phenology * c.trigger.factor) * penaltyProduct * habitat
+  const withoutThermal =
+    100 * Math.min(1, c.water * c.phenology * c.trigger.factor) * penaltyProduct * habitat
+  const withoutPhenology =
+    100 * Math.min(1, c.water * c.thermal.score * c.trigger.factor) * penaltyProduct * habitat
+  const withoutTrigger =
+    100 * Math.min(1, c.water * c.thermal.score * c.phenology) * penaltyProduct * habitat
+  const withoutPenalties = 100 * clamped * habitat
+  const withoutHabitat = 100 * clamped * penaltyProduct
 
   const factors: Factor[] = [
     {
@@ -144,10 +153,27 @@ export function explainScore(
     },
   ]
 
+  /*
+   * Il bosco si mostra solo dove e' stato misurato.
+   *
+   * Una zona senza misura ha il termine neutro per scelta (vedi forest.ts): elencarlo lo stesso
+   * scriverebbe "Bosco: 0 punti" accanto a un dato che non esiste, e l'utente leggerebbe "qui il
+   * bosco non conta" invece di "qui non lo sappiamo".
+   */
+  if (c.habitat.measured) {
+    factors.push({
+      key: 'habitat',
+      label: 'Il bosco della zona',
+      contribution: result.mpi - withoutHabitat,
+      value: c.habitat.detail,
+      ...provenanceOf(config.habitat.coverReference),
+    })
+  }
+
   for (const penalty of c.penalties) {
     if (!penalty.applied) continue
     const others = c.penalties.reduce((acc, p) => (p.key === penalty.key ? acc : acc * p.factor), 1)
-    const without = 100 * clamped * others
+    const without = 100 * clamped * others * habitat
     factors.push({
       key: `penalty.${penalty.key}`,
       label: penaltyLabel(penalty.key),
@@ -190,7 +216,13 @@ export function explainScore(
     neutralFactors: neutral,
     confidenceFactors,
     limitingFactor: limitingFactorOf(
-      { withoutWater, withoutThermal, withoutPhenology, withoutPenalties },
+      {
+        withoutWater,
+        withoutThermal,
+        withoutPhenology,
+        withoutPenalties,
+        ...(c.habitat.measured ? { withoutHabitat } : {}),
+      },
       result.mpi,
     ),
   }
@@ -206,6 +238,8 @@ function limitingFactorOf(
     withoutThermal: number
     withoutPhenology: number
     withoutPenalties: number
+    /** Assente quando il bosco della zona non e' misurato: non si nomina cio' che non si sa. */
+    withoutHabitat?: number
   },
   mpi: number,
 ): string | null {
@@ -214,6 +248,9 @@ function limitingFactorOf(
     { key: 'Temperatura', gap: neutralised.withoutThermal - mpi },
     { key: 'Stagione e quota', gap: neutralised.withoutPhenology - mpi },
     { key: 'Penalità meteorologiche', gap: neutralised.withoutPenalties - mpi },
+    ...(neutralised.withoutHabitat === undefined
+      ? []
+      : [{ key: 'Il bosco della zona', gap: neutralised.withoutHabitat - mpi }]),
   ] as const
   const worst = gaps.reduce((acc, g) => (g.gap > acc.gap ? g : acc), gaps[0])
   return worst.gap > 1 ? worst.key : null

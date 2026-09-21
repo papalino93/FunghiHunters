@@ -210,11 +210,23 @@ export function GuideScreen() {
           questo sono le più affidabili. Altrove il punteggio viene dal solo modello meteo, e
           l&apos;affidabilità indicata su ogni zona ne tiene conto: è più bassa, dichiaratamente.
         </Faq>
+        <Faq domanda="Il bosco conta nel punteggio?">
+          Sì, da questa versione. Di ogni zona misuriamo da satellite quanto bosco c&apos;è attorno
+          al punto di calcolo e di che alberi è fatto, e tutte e due le cose pesano: una zona quasi
+          spoglia non può segnare come una coperta di faggeta, anche se ci è piovuto uguale.
+          <br />
+          <br />
+          La mappa riconosce il genere, non il tipo di bosco: faggio, querce, abete rosso, larice e
+          pino escono con il loro nome, mentre castagno e abete bianco finiscono dentro
+          «altre latifoglie» e «altre conifere». Dove il bosco è in quelle classi generiche non
+          abbassiamo il punteggio — non sarebbe colpa del bosco, è un limite del nostro dato —
+          ma abbassiamo l&apos;affidabilità.
+        </Faq>
         <Faq domanda="Cosa vuol dire «stima incerta»?">
           Che i dati su cui il numero è costruito sono scarsi o lontani: poche stazioni vicine,
-          molti valori previsti invece che misurati, oppure stai guardando un giorno lontano nel
-          tempo. Il potenziale può essere alto e la stima incerta insieme: è il caso in cui conviene
-          fidarsi meno del numero.
+          molti valori previsti invece che misurati, un giorno lontano nel tempo, oppure un bosco
+          che la mappa riconosce solo in parte. Il potenziale può essere alto e la stima incerta
+          insieme: è il caso in cui conviene fidarsi meno del numero.
         </Faq>
         <Faq domanda="Funziona senza rete, nel bosco?">
           Sì, per quello che è già stato caricato: l&apos;app si installa come applicazione sul

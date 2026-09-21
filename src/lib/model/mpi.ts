@@ -1,10 +1,11 @@
 /**
  * Il motore MPI.
  *
- *   MPI = 100 * saturate( W * T * Phi ) * prodotto delle penalita'
+ *   MPI = 100 * saturate( W * T * Phi ) * prodotto delle penalita' * H
  *
- * dove W e' la disponibilita' idrica, T l'idoneita' termica e Phi la stagionalita' corretta per
- * l'anomalia climatica. Le penalita' sono moltiplicatori **limitati inferiormente**: una gelata
+ * dove W e' la disponibilita' idrica, T l'idoneita' termica, Phi la stagionalita' corretta per
+ * l'anomalia climatica e H il bosco della zona (`src/lib/model/forest.ts`), che moltiplica fuori
+ * dalla saturazione perche' e' una proprieta' del posto e non del giorno. Le penalita' sono moltiplicatori **limitati inferiormente**: una gelata
  * riduce fortemente ma non annulla, perche' danneggia i carpofori esistenti piu' di quanto
  * azzeri il potenziale del micelio.
  *
@@ -20,6 +21,7 @@
 
 import { ALGORITHM_V1, type AlgorithmConfig } from '@/lib/config/algorithm'
 import type { CellContext, CellFeatures } from '@/lib/model/features'
+import { habitatSuitability, type HabitatResult } from '@/lib/model/forest'
 
 function clamp(value: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, value))
@@ -316,6 +318,8 @@ export interface MpiComponents {
   readonly phenology: number
   readonly blend: SeasonBlend
   readonly penalties: readonly PenaltyResult[]
+  /** Il bosco della zona. Neutro, con `measured: false`, dove non e' stato misurato. */
+  readonly habitat: HabitatResult
   /** Prodotto W * T * Phi prima della saturazione e delle penalita'. */
   readonly core: number
 }
@@ -367,10 +371,23 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
   const penalties = computePenalties(features, config)
   const penaltyProduct = penalties.reduce((acc, p) => acc * p.factor, 1)
 
+  /*
+   * Il bosco moltiplica **fuori** dal core, insieme alle penalita' e non insieme ai fattori meteo.
+   *
+   * Dentro il core sarebbe sparito proprio dove conta: il core satura spesso sopra 1, e un bosco
+   * scarso sarebbe stato assorbito dal tetto invece di farsi vedere. Fuori, invece, distingue le
+   * zone che altrimenti segnano tutte 100 — che il 21 settembre 2026 erano 230 su 1.202.
+   *
+   * E' anche la collocazione onesta: la copertura e il tipo di bosco sono proprieta' del posto,
+   * non del giorno, e non hanno nulla a che vedere con la disponibilita' idrica o la campana
+   * termica che compongono il core.
+   */
+  const habitat = habitatSuitability(cell.forest, config)
+
   // La saturazione a 1 e' cio' che permette al tetto idrico sopra 1 di compensare una
   // temperatura leggermente fuori ottimo, senza sfondare la scala.
-  const mpi = 100 * clamp(core, 0, 1) * penaltyProduct
-  const rawMpi = 100 * Math.max(core, 0) * penaltyProduct
+  const mpi = 100 * clamp(core, 0, 1) * penaltyProduct * habitat.factor
+  const rawMpi = 100 * Math.max(core, 0) * penaltyProduct * habitat.factor
 
   return {
     mpi: Math.round(mpi * 10) / 10,
@@ -384,6 +401,7 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
       phenology,
       blend,
       penalties,
+      habitat,
       core,
     },
   }
