@@ -144,6 +144,31 @@ async function listTiffs(zip: string): Promise<string[]> {
     .filter((line) => /\.tiff?$/i.test(line))
 }
 
+/**
+ * Salta le tessere che non possono contenere nessuna zona, guardando il nome.
+ *
+ * Un archivio di colonna copre tutta l'Europa in altezza, dalla Sicilia alla Lapponia: estrarre
+ * e aprire ogni tessera vuol dire scompattare qualche giga per scoprire che dentro non c'e'
+ * niente di italiano. Il nome dichiara l'angolo in alto a sinistra
+ * (`spp_pred_ulx_4400_uly_2340.tif`, in chilometri), quindi si puo' decidere prima.
+ *
+ * Il margine e' volutamente largo, e il dubbio si risolve sempre estraendo: se un giorno il nome
+ * cambiasse significato, la corsa diventerebbe lenta come prima, non sbagliata.
+ */
+export function tileCanHoldZones(
+  member: string,
+  zones: readonly { readonly y: number }[],
+): boolean {
+  const match = /ulx_(\d+)_uly_(\d+)/.exec(path.basename(member))
+  if (match === null) return true
+  const uly = Number(match[2]) * 1000
+  if (!Number.isFinite(uly)) return true
+  const margin = 150_000
+  const bottom = uly - TILE_M - margin
+  const top = uly + margin
+  return zones.some((zone) => zone.y >= bottom && zone.y <= top)
+}
+
 async function extract(zip: string, member: string, dir: string): Promise<string> {
   await run('unzip', ['-o', '-j', '-q', zip, member, '-d', dir], { maxBuffer: 16 * 1024 * 1024 })
   return path.join(dir, path.basename(member))
@@ -263,9 +288,15 @@ async function main(): Promise<void> {
     const members = await listTiffs(zipPath)
     console.log(`  tessere nell'archivio: ${members.length}`)
 
-    for (const member of members) {
+    const columnZones = byColumn.get(column) ?? []
+    const wanted = members.filter((member) => tileCanHoldZones(member, columnZones))
+    if (wanted.length < members.length) {
+      console.log(`  ne servono ${wanted.length}: le altre sono fuori dall'Italia`)
+    }
+
+    for (const member of wanted) {
       const tilePath = await extract(zipPath, member, workDir)
-      const touched = await sampleTile(tilePath, byColumn.get(column) ?? [], radiusM, histograms)
+      const touched = await sampleTile(tilePath, columnZones, radiusM, histograms)
       if (touched > 0) console.log(`    ${path.basename(member)}: ${touched} zone campionate`)
       await rm(tilePath, { force: true })
     }
