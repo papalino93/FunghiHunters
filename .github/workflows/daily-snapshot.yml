@@ -14,6 +14,13 @@ on:
   schedule:
     # 11:40 UTC: il SIR aggiorna i suoi layer verso le 10:30 UTC, quindi troviamo il dato fresco.
     - cron: '40 11 * * *'
+    # 23:05 UTC, poco dopo mezzanotte in Italia: 01:05 con l'ora legale, 00:05 con quella
+    # solare. GitHub Actions capisce solo UTC, quindi non esiste un orario fisso che sia
+    # "00:01 italiane" tutto l'anno — 23:05 UTC e' il piu' vicino che resta comunque dopo la
+    # mezzanotte locale in entrambi i casi. Non porta dati SIR piu' freschi (quelli arrivano
+    # solo con la corsa delle 11:40), ma mette prima in produzione un fix appena mersato e
+    # aggiorna le previsioni Open-Meteo, che cambiano piu' spesso nell'arco della giornata.
+    - cron: '5 23 * * *'
   workflow_dispatch:
 
 permissions:
