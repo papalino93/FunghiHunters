@@ -13,8 +13,8 @@ import { CELL_M, cellKey, forestPoint, type WoodCell } from '@/lib/sources/fores
 /** Celle costruite dal loro centro: `x`,`y` e' dove sta il bosco di quella cella. */
 function cells(
   entries: ReadonlyArray<{ x: number; y: number; wooded: number; total: number }>,
-): Map<string, WoodCell> {
-  const out = new Map<string, WoodCell>()
+): Map<number, WoodCell> {
+  const out = new Map<number, WoodCell>()
   for (const entry of entries) {
     out.set(cellKey(entry.x, entry.y), {
       wooded: entry.wooded,

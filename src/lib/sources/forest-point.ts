@@ -58,14 +58,22 @@ export interface ForestPointResult {
   readonly density: number
 }
 
-/** Chiave di cella per accumulare i pixel. Non ha significato oltre l'uso come chiave. */
-export function cellKey(x: number, y: number): string {
-  return `${Math.floor(x / CELL_M)},${Math.floor(y / CELL_M)}`
+/**
+ * Chiave di cella per accumulare i pixel. Non ha significato oltre l'uso come chiave.
+ *
+ * E' un numero e non una stringa perche' questa funzione viene chiamata una volta per pixel: su
+ * un disco di 6 km sono un milione e mezzo di chiamate per zona, e costruire una stringa ogni
+ * volta vuol dire un miliardo di allocazioni in una corsa nazionale. Il fattore un milione tiene
+ * separate le due coordinate senza collisioni: in EPSG:3035 l'Europa sta dentro 14.000 celle per
+ * lato, ben sotto quel margine, e il risultato resta un intero esatto in doppia precisione.
+ */
+export function cellKey(x: number, y: number): number {
+  return Math.floor(x / CELL_M) * 1_000_000 + Math.floor(y / CELL_M)
 }
 
 export function forestPoint(
   origin: { readonly x: number; readonly y: number },
-  cells: ReadonlyMap<string, WoodCell>,
+  cells: ReadonlyMap<number, WoodCell>,
   options: ForestPointOptions = {},
 ): ForestPointResult {
   const minDensity = options.minDensity ?? 0.5

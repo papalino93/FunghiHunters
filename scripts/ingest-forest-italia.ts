@@ -65,6 +65,14 @@ const DEFAULT_RADIUS_KM = 3
 /** Valore della classe "non bosco" nella legenda ForestPaths: vedi `FOREST_CLASSES`. */
 const NO_TREES_CLASS = 7
 
+/** Accumulatore mutabile di una cella: `WoodCell` con gli stessi campi, ma scrivibili. */
+interface MutableCell extends Record<keyof WoodCell, number> {
+  wooded: number
+  total: number
+  sumX: number
+  sumY: number
+}
+
 function flag(name: string): string | null {
   const index = process.argv.indexOf(`--${name}`)
   if (index < 0) return null
@@ -197,7 +205,7 @@ async function sampleTile(
   radiusM: number,
   histograms: Map<string, Map<number, number>>,
   /** Celle di bosco per zona, solo in `--relocate`: servono a spostare il punto, non a contare. */
-  cellsByZone: Map<string, Map<string, WoodCell>> | null = null,
+  cellsByZone: Map<string, Map<number, MutableCell>> | null = null,
 ): Promise<number> {
   const tiff = await fromFile(tiffPath)
   const image = await tiff.getImage()
@@ -235,7 +243,7 @@ async function sampleTile(
     if (band === undefined) continue
 
     const histogram = histograms.get(zone.code) ?? new Map<number, number>()
-    const cells = cellsByZone === null ? null : cellsByZone.get(zone.code) ?? new Map<string, WoodCell>()
+    const cells = cellsByZone === null ? null : cellsByZone.get(zone.code) ?? new Map<number, MutableCell>()
     const windowWidth = right - left
     for (let row = top; row < bottom; row += 1) {
       const dy = row + 0.5 - centreRow
@@ -251,15 +259,20 @@ async function sampleTile(
         if (value < 0 || value > NO_TREES_CLASS) continue
         const px = originX + (col + 0.5) * resX
         const py = originY + (row + 0.5) * resY
+        // Si muta l'accumulatore invece di ricrearlo: qui si passa una volta per pixel, e un
+        // oggetto nuovo a pixel vorrebbe dire un miliardo di allocazioni in una corsa nazionale.
         const key = cellKey(px, py)
-        const cell = cells.get(key) ?? { wooded: 0, total: 0, sumX: 0, sumY: 0 }
-        const isWood = value !== NO_TREES_CLASS
-        cells.set(key, {
-          wooded: cell.wooded + (isWood ? 1 : 0),
-          total: cell.total + 1,
-          sumX: cell.sumX + (isWood ? px : 0),
-          sumY: cell.sumY + (isWood ? py : 0),
-        })
+        let cell = cells.get(key)
+        if (cell === undefined) {
+          cell = { wooded: 0, total: 0, sumX: 0, sumY: 0 }
+          cells.set(key, cell)
+        }
+        cell.total += 1
+        if (value !== NO_TREES_CLASS) {
+          cell.wooded += 1
+          cell.sumX += px
+          cell.sumY += py
+        }
       }
     }
     histograms.set(zone.code, histogram)
@@ -288,7 +301,7 @@ async function relocatePoints(
   zonesPath: string,
   file: ZonesFile,
   placed: readonly PlacedZone[],
-  cellsByZone: ReadonlyMap<string, Map<string, WoodCell>>,
+  cellsByZone: ReadonlyMap<string, Map<number, MutableCell>>,
   dryRun: boolean,
 ): Promise<void> {
   console.log('\nScarico i confini comunali per verificare che i punti nuovi restino nel comune...')
@@ -484,7 +497,7 @@ async function main(): Promise<void> {
 
   await mkdir(workDir, { recursive: true })
   const histograms = new Map<string, Map<number, number>>()
-  const cellsByZone = relocate ? new Map<string, Map<string, WoodCell>>() : null
+  const cellsByZone = relocate ? new Map<string, Map<number, MutableCell>>() : null
 
   for (const column of columns) {
     const name = `ulx_${column}.zip`
