@@ -20,6 +20,7 @@ import { ExcludedZones } from '@/components/today/ExcludedZones'
 import { BeforeYouGo } from '@/components/today/BeforeYouGo'
 import { SourceHealth } from '@/components/today/SourceHealth'
 import { WelcomeHero } from '@/components/WelcomeHero'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import { formatDate } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 
@@ -113,6 +114,7 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
       <h1 className="sr-only">Dove vado oggi</h1>
       <WelcomeHero zoneCount={snapshot.zones.length} />
+      <InstallPrompt />
 
       <DayPicker dates={dates} selected={date} today={today} onSelect={setDate} />
 

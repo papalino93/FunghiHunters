@@ -52,11 +52,20 @@ jobs:
       - name: Calcola lo snapshot
         run: npx tsx scripts/build-snapshot.ts --stations 45
 
+      # Le zone fuori dalla Toscana: solo modello meteo, nessuna stazione da scaricare, quindi
+      # dura molto meno del passo qui sopra nonostante i punti siano molti di piu'. Se il
+      # catalogo non e' ancora stato generato lo script esce senza fare nulla e senza fallire.
+      - name: Calcola lo snapshot nazionale
+        run: npx tsx scripts/build-snapshot-italia.ts
+
       - name: Commit se qualcosa e' cambiato
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add public/data/snapshot.json
+          # Tutta la cartella, non i singoli file: `public/data/regioni/` nasce solo quando il
+          # catalogo nazionale e' stato generato, e nominare un percorso che non esiste ancora
+          # farebbe fallire il comando nei giorni in cui non c'e'.
+          git add -A public/data
           # Senza questo controllo il job fallirebbe nei giorni in cui nulla cambia.
           if git diff --staged --quiet; then
             echo "Nessuna variazione: niente da committare."

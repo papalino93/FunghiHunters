@@ -104,7 +104,7 @@ export function pointInGeometry(lon: number, lat: number, geometry: Municipality
 }
 
 /** Centroide approssimato dell'anello esterno: non l'area vera, basta a scegliere il più vicino. */
-function ringCentroid(ring: Ring): { lon: number; lat: number } {
+export function ringCentroid(ring: Ring): { lon: number; lat: number } {
   let lonSum = 0
   let latSum = 0
   for (const [lon, lat] of ring) {
