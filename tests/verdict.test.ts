@@ -232,6 +232,31 @@ describe('fatti della zona, in parole', () => {
     expect(facts.bad).not.toContain('Manca il fresco')
     expect(facts.bad).toContain('4.5')
   })
+
+  it('quando acqua e temperatura sono entrambe scomode, nomina quella che il modello dice davvero limitante', () => {
+    // Caso reale di Garfagnana, 21/9: acqua sotto soglia (43mm) e temperatura sopra soglia
+    // (18.9°C contro ottimo 13°C, diff 5.9°C) capitano insieme, ma la campana asimmetrica
+    // (sigmaWarmC=7.5) fa sì che il modello consideri l'acqua il vero limite. Prima del fix
+    // questa frase diceva sempre "Manca il fresco", mentre "Perché" sotto diceva "il limite
+    // principale resta acqua disponibile nel suolo" — due risposte opposte alla stessa domanda.
+    const facts = zoneFacts(
+      zone('garfagnana', {
+        water: 43,
+        tMean: 18.9,
+        optimum: 13,
+        limit: 'Acqua disponibile nel suolo',
+      }),
+    )
+    expect(facts.bad).toContain('Manca acqua')
+    expect(facts.bad).not.toContain('Manca il fresco')
+  })
+
+  it('quando entrambe sono scomode ma il modello dice temperatura, resta la temperatura', () => {
+    const facts = zoneFacts(
+      zone('a', { water: 10, tMean: 19, optimum: 13, limit: 'Temperatura' }),
+    )
+    expect(facts.bad).toContain('Manca il fresco')
+  })
 })
 
 describe('nomi delle bande', () => {

@@ -332,8 +332,23 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
         ? `Manca il fresco: ${temp}`
         : `Troppo freddo: ${temp}`
 
+  const waterProblem = waterOk ? null : `Manca acqua: solo ${water}`
+
+  // Le due soglie sopra (±3°C, 45mm) dicono solo "questo fattore è scomodo", non quanto pesa sul
+  // punteggio: la campana termica è asimmetrica (più tollerante sopra l'ottimo), quindi un caso
+  // può avere sia temperatura sia acqua "scomode" mentre il modello, che le pesa insieme, ne
+  // considera una sola davvero limitante. Quando è così, va nominata per prima quella — altrimenti
+  // questa frase e "Perché" (che legge `zone.limitingFactor`) raccontano due storie diverse dello
+  // stesso numero, come nel caso di Garfagnana del 21/9.
+  const bad =
+    tempProblem !== null && waterProblem !== null
+      ? zone.limitingFactor === 'Acqua disponibile nel suolo'
+        ? waterProblem
+        : tempProblem
+      : (tempProblem ?? waterProblem)
+
   return {
     good: waterOk ? `L'acqua c'è: ${water}` : tempOk && temp !== null ? `Temperatura giusta: ${temp}` : null,
-    bad: tempProblem ?? (!waterOk ? `Manca acqua: solo ${water}` : null),
+    bad,
   }
 }
