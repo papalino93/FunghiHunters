@@ -24,7 +24,7 @@ const SYNC_LABEL: Readonly<Record<string, string>> = {
  * "prima di partire" — resta piena senza account: il login serve solo a chi vuole salvare il
  * diario su più dispositivi.
  */
-export function AccountScreen() {
+export function AccountScreen({ algorithmVersion }: { algorithmVersion: string }) {
   const hydrated = useIsHydrated()
   const auth = useAuth()
   const repo = hydrated ? createDiaryRepository().repo : null
@@ -34,7 +34,7 @@ export function AccountScreen() {
 
   if (auth.status === 'unavailable') {
     return (
-      <Shell>
+      <Shell algorithmVersion={algorithmVersion}>
         <p className="rounded-lg border border-edge bg-surface-1 px-3 py-2 text-sm leading-snug text-ink-dim">
           La sincronizzazione fra dispositivi non è configurata su questo deploy: mancano le
           variabili d&apos;ambiente di Supabase. Il diario resta pienamente utilizzabile su questo
@@ -46,20 +46,26 @@ export function AccountScreen() {
 
   if (auth.status === 'signed-out') {
     return (
-      <Shell>
+      <Shell algorithmVersion={algorithmVersion}>
         <SignInPanel />
       </Shell>
     )
   }
 
   return (
-    <Shell>
+    <Shell algorithmVersion={algorithmVersion}>
       <SignedInPanel email={auth.user.email} sync={diarySync} />
     </Shell>
   )
 }
 
-function Shell({ children }: { children: React.ReactNode }) {
+function Shell({
+  children,
+  algorithmVersion,
+}: {
+  children: React.ReactNode
+  algorithmVersion: string
+}) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
       <header className="mb-4">
@@ -97,7 +103,9 @@ function Shell({ children }: { children: React.ReactNode }) {
         * sapere se l'app che si ha davanti è davvero l'ultima pubblicata, o una copia rimasta in
         * cache. Un numero che non serve a nessuno finché non serve moltissimo.
         */}
-      <p className="mt-8 text-center text-[10px] text-ink-faint">versione {versionLabel()}</p>
+      <p className="mt-8 text-center text-[10px] text-ink-faint">
+        versione {versionLabel()} · modello {algorithmVersion}
+      </p>
     </div>
   )
 }
