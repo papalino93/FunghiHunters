@@ -38,6 +38,21 @@ const TABS: readonly Tab[] = [
     ),
   },
   {
+    href: '/italia',
+    label: 'Italia',
+    icon: (
+      <path
+        d="M10 1.8a1 1 0 0 1 1 1v14.4a1 1 0 0 1-2 0V2.8a1 1 0 0 1 1-1Z
+           M3.2 6.2a8.5 8.5 0 0 1 13.6 0M3.2 13.8a8.5 8.5 0 0 0 13.6 0
+           M10 1.8a12 12 0 0 1 0 16.4M10 1.8a12 12 0 0 0 0 16.4"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.3"
+        strokeLinecap="round"
+      />
+    ),
+  },
+  {
     href: '/diario',
     label: 'Diario',
     icon: (
@@ -88,7 +103,10 @@ export function BottomNav() {
     >
       <ul className="flex">
         {TABS.map((tab) => {
-          const active = pathname === tab.href
+          // Anche le pagine figlie accendono la loro voce: `/italia/toscana` è dentro "Italia",
+          // e lasciare la barra spenta mentre ci si sta dentro farebbe perdere il segno.
+          const active =
+            pathname === tab.href || (tab.href !== '/' && pathname.startsWith(`${tab.href}/`))
           return (
             <li key={tab.href} className="flex-1">
               <Link

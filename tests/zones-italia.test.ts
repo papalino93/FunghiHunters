@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
+import { regionSlug } from '@/../scripts/build-snapshot-italia'
 import { capByRegion, type ItalianZone } from '@/../scripts/ingest-zones-italia'
 import { parseComuniCsv, referencePoint } from '@/lib/sources/istat-national'
 
@@ -106,5 +107,20 @@ describe('capByRegion', () => {
     const piemonte = kept.filter((z) => z.region === 'Piemonte').map((z) => z.elevationM)
     expect(piemonte).not.toContain(900)
     expect(piemonte).toContain(1800)
+  })
+})
+
+describe('regionSlug', () => {
+  it('regge i nomi bilingui con barre e accenti', () => {
+    // Sono i due casi che romperebbero un nome di file: la barra e' un separatore di percorso,
+    // le dieresi non sono ASCII.
+    expect(regionSlug('Trentino-Alto Adige/Südtirol')).toBe('trentino-alto-adige-sudtirol')
+    expect(regionSlug("Valle d'Aosta/Vallée d'Aoste")).toBe('valle-d-aosta-vallee-d-aoste')
+  })
+
+  it('produce sempre uno slug sicuro come nome di file', () => {
+    for (const region of ['Toscana', 'Emilia-Romagna', 'Friuli-Venezia Giulia', 'Puglia']) {
+      expect(regionSlug(region)).toMatch(/^[a-z0-9-]+$/)
+    }
   })
 })
