@@ -18,7 +18,7 @@ on:
         required: false
         default: '600'
       max_zones:
-        description: 'Tetto al numero di zone (1200 e' il massimo che il piano gratuito Open-Meteo regge ogni giorno)'
+        description: "Tetto al numero di zone: 1200 e' il massimo che il piano gratuito Open-Meteo regge ogni giorno"
         required: false
         default: '1200'
 
