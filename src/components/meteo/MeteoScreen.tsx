@@ -215,6 +215,16 @@ function PlaceWeather({
           <span className="ml-1.5 text-xs font-normal text-ink-faint">{place.admin1}</span>
         )}
       </h2>
+      {/*
+        * "La mia posizione" (id sentinella 0, vedi `useMyLocation`) non ha un nome geocodificato:
+        * senza le coordinate, chi tocca il pulsante non ha modo di sapere se il GPS ha agganciato
+        * il punto giusto prima di guardare le previsioni. Stesso formato di `EntryForm.tsx`.
+        */}
+      {place.id === 0 && (
+        <p className="mt-0.5 text-xs text-ink-faint">
+          {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
+        </p>
+      )}
 
       {loading && <p className="mt-2 text-xs text-ink-faint">Scarico il meteo…</p>}
       {!loading && error !== null && <p className="mt-2 text-xs text-warn">{error}</p>}
@@ -341,7 +351,18 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                     <td className="py-1.5 text-ink-dim">{formatValue(day.et0Mm, 'mm', 1)}</td>
                   </tr>
                   {expanded && (
-                    <tr>
+                    <tr
+                      ref={(node) => {
+                        /*
+                         * Il giorno toccato può stare in fondo alla lista, con poco schermo
+                         * rimasto sotto: senza portare in vista la riga appena apparsa, il
+                         * dettaglio si apre fuori dallo schermo e sembra che non sia successo
+                         * niente — proprio il giorno "oggi" ne è il caso più comune, a metà
+                         * tabella dopo aver già scorso i giorni passati.
+                         */
+                        node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                      }}
+                    >
                       <td colSpan={7} className="bg-surface-2 p-0">
                         <HourlyDetail hours={forecast.hourlyByDate[day.date] ?? []} />
                       </td>
