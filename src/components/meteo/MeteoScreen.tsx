@@ -99,16 +99,37 @@ export function MeteoScreen() {
     if (typeof navigator === 'undefined' || navigator.geolocation === undefined) return
     navigator.geolocation.getCurrentPosition(
       (result) => {
+        const { latitude, longitude } = result.coords
         selectPlace({
           id: 0,
           name: 'La mia posizione',
           admin1: null,
           admin2: null,
           country: null,
-          latitude: result.coords.latitude,
-          longitude: result.coords.longitude,
+          latitude,
+          longitude,
           elevationM: null,
         })
+
+        /*
+         * A parte, senza bloccare la previsione: il nome è un di più, le coordinate (già mostrate,
+         * vedi `PlaceWeather`) restano il riscontro che conta comunque se questa chiamata è lenta
+         * o non trova nulla. Aggiorna solo se nel frattempo l'utente non ha cercato altro.
+         */
+        fetch(`/api/meteo?lat=${latitude}&lon=${longitude}&reverse=1`)
+          .then(async (res) => (await res.json()) as { place?: { name: string; admin1: string | null } | null })
+          .then((body) => {
+            if (body.place === undefined || body.place === null) return
+            const resolved = body.place
+            setPlace((prev) =>
+              prev !== null && prev.id === 0 && prev.latitude === latitude && prev.longitude === longitude
+                ? { ...prev, name: resolved.name, admin1: resolved.admin1 }
+                : prev,
+            )
+          })
+          .catch(() => {
+            // Il nome resta "La mia posizione": le coordinate già mostrate bastano da riscontro.
+          })
       },
       () => {
         setForecastError('Posizione non disponibile: cerca un luogo per nome.')
