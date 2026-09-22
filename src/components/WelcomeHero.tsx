@@ -119,9 +119,9 @@ export function WelcomeHero({ zoneCount }: WelcomeHeroProps) {
           * essere una porta — che è il difetto da cui questa scheda nasce.
           */}
         <p className="mt-1.5 text-sm leading-snug text-ink-dim">
-          Qui sotto {zoneCount === 1 ? "l'unica area coperta" : `le ${zoneCount} aree`} della
-          Toscana in fila, ognuna con un punteggio da 0 a 100: quanto pioggia, temperature e
-          stagione di quel bosco somigliano — oggi — alle condizioni in cui nasce il porcino.
+          Qui sotto {zoneCount === 1 ? "l'unica area coperta" : `le ${zoneCount} aree`} in fila,
+          ognuna con un punteggio da 0 a 100: quanto pioggia, temperature e stagione di quel bosco
+          somigliano — oggi — alle condizioni in cui nasce il porcino.
         </p>
         <p className="mt-2 text-sm leading-snug text-ink-dim">
           <strong className="font-medium text-ink">Non dice dove ci sono i funghi</strong>: non può

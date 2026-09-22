@@ -9,6 +9,8 @@ import { getBrowserClient } from '@/lib/supabase/client'
 import { useDiarySync } from '@/lib/sync/useDiarySync'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { versionLabel } from '@/lib/ui/version'
+import { RegionPicker } from '@/components/RegionPicker'
+import type { RegionChoice } from '@/lib/region/preference'
 
 const SYNC_LABEL: Readonly<Record<string, string>> = {
   local: 'Salvato solo su questo dispositivo',
@@ -24,7 +26,18 @@ const SYNC_LABEL: Readonly<Record<string, string>> = {
  * "prima di partire" — resta piena senza account: il login serve solo a chi vuole salvare il
  * diario su più dispositivi.
  */
-export function AccountScreen({ algorithmVersion }: { algorithmVersion: string }) {
+export interface AccountScreenProps {
+  readonly algorithmVersion: string
+  /** La regione di riferimento attuale e quelle fra cui scegliere. */
+  readonly regionSlug: string
+  readonly regionChoices: readonly RegionChoice[]
+}
+
+export function AccountScreen({
+  algorithmVersion,
+  regionSlug,
+  regionChoices,
+}: AccountScreenProps) {
   const hydrated = useIsHydrated()
   const auth = useAuth()
   const repo = hydrated ? createDiaryRepository().repo : null
@@ -34,7 +47,7 @@ export function AccountScreen({ algorithmVersion }: { algorithmVersion: string }
 
   if (auth.status === 'unavailable') {
     return (
-      <Shell algorithmVersion={algorithmVersion}>
+      <Shell algorithmVersion={algorithmVersion} regionSlug={regionSlug} regionChoices={regionChoices}>
         <p className="rounded-lg border border-edge bg-surface-1 px-3 py-2 text-sm leading-snug text-ink-dim">
           La sincronizzazione fra dispositivi non è configurata su questo deploy: mancano le
           variabili d&apos;ambiente di Supabase. Il diario resta pienamente utilizzabile su questo
@@ -46,14 +59,14 @@ export function AccountScreen({ algorithmVersion }: { algorithmVersion: string }
 
   if (auth.status === 'signed-out') {
     return (
-      <Shell algorithmVersion={algorithmVersion}>
+      <Shell algorithmVersion={algorithmVersion} regionSlug={regionSlug} regionChoices={regionChoices}>
         <SignInPanel />
       </Shell>
     )
   }
 
   return (
-    <Shell algorithmVersion={algorithmVersion}>
+    <Shell algorithmVersion={algorithmVersion} regionSlug={regionSlug} regionChoices={regionChoices}>
       <SignedInPanel email={auth.user.email} sync={diarySync} />
     </Shell>
   )
@@ -62,9 +75,13 @@ export function AccountScreen({ algorithmVersion }: { algorithmVersion: string }
 function Shell({
   children,
   algorithmVersion,
+  regionSlug,
+  regionChoices,
 }: {
   children: React.ReactNode
   algorithmVersion: string
+  regionSlug: string
+  regionChoices: readonly RegionChoice[]
 }) {
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
@@ -74,6 +91,22 @@ function Shell({
           Accedi solo se vuoi ritrovare diario, aree salvate e preferenze su un altro telefono.
         </p>
       </header>
+      {/*
+        * Sopra il pannello di accesso, non dentro: la regione di riferimento vale anche senza
+        * account, e metterla fra le cose che si sbloccano accedendo direbbe il contrario. Chi si
+        * registra la trova comunque qui, che e' la prima schermata dove si mette a posto l'app.
+        */}
+      <section className="mb-4 rounded-xl border border-edge bg-surface-1 p-3">
+        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          La tua regione
+        </h2>
+        <p className="mb-2.5 mt-1.5 text-xs leading-snug text-ink-dim">
+          È da qui che partono &laquo;Dove vado&raquo; e la mappa. Le altre regioni restano tutte
+          consultabili dalla scheda Italia: questa è la casa, non un confine.
+        </p>
+        <RegionPicker current={regionSlug} choices={regionChoices} />
+      </section>
+
       {children}
 
       {/*

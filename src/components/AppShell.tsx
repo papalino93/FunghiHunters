@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
 
 import type { Snapshot } from '@/lib/snapshot/types'
+import type { RegionChoice } from '@/lib/region/preference'
+import { RegionPicker } from '@/components/RegionPicker'
 import { TimeSlider } from '@/components/TimeSlider'
 import { ZoneSheet } from '@/components/ZoneSheet'
 import { formatDate, mpiColor, mpiGradientCss } from '@/lib/ui/scale'
@@ -24,9 +26,14 @@ const MapView = dynamic(() => import('@/components/MapView').then((m) => m.MapVi
 
 export interface AppShellProps {
   readonly snapshot: Snapshot
+  /** La regione mostrata: sulla mappa dev'essere scritto, o non si sa cosa si sta guardando. */
+  readonly regionName?: string
+  readonly regionSlug?: string
+  /** Le regioni fra cui spostarsi. Cambiarle qui non cambia la regione di riferimento. */
+  readonly regionChoices?: readonly RegionChoice[]
 }
 
-export function AppShell({ snapshot }: AppShellProps) {
+export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: AppShellProps) {
   const todayDate = snapshot.referenceDate
   const dates = useMemo(
     () => snapshot.zones[0]?.series.map((p) => p.date) ?? [todayDate],
@@ -103,16 +110,36 @@ export function AppShell({ snapshot }: AppShellProps) {
                 <span className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-dim">
                   porcino
                 </span>
+                {regionName !== undefined && (
+                  <span className="truncate text-[11px] text-ink-dim">{regionName}</span>
+                )}
               </div>
               <p className="mt-0.5 max-w-[46ch] text-[11px] leading-snug text-ink-dim">
                 Compatibilità delle condizioni ambientali con una possibile fruttificazione.
                 <strong className="font-medium text-ink"> Non indica la presenza di funghi.</strong>
               </p>
+              {/*
+                * Cambiare regione da qui è navigazione, non una nuova preferenza: `remember`
+                * resta falso apposta, così guardare il Trentino non sposta la regione di casa.
+                */}
+              {regionChoices !== undefined && regionSlug !== undefined && (
+                <div className="mt-2">
+                  <RegionPicker
+                    current={regionSlug}
+                    choices={regionChoices}
+                    label="Regione"
+                    remember={false}
+                    hrefFor={(slug) => `/mappa?regione=${encodeURIComponent(slug)}`}
+                  />
+                </div>
+              )}
             </div>
           </header>
 
           {/* Classifica compatta: risponde a "dove conviene andare" senza aprire nulla. */}
-          <div className="pointer-events-none absolute inset-x-0 top-[104px] z-10 overflow-x-auto px-3 pb-1">
+          <div className={`pointer-events-none absolute inset-x-0 z-10 overflow-x-auto px-3 pb-1 ${
+              regionChoices === undefined ? 'top-[104px]' : 'top-[156px]'
+            }`}>
             <ul className="pointer-events-auto flex gap-1.5">
               {ranked.map((zone) => {
                 const score = scores[zone.code]?.mpi ?? 0

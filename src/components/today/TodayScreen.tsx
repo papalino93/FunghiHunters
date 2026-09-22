@@ -21,6 +21,8 @@ import { BeforeYouGo } from '@/components/today/BeforeYouGo'
 import { SourceHealth } from '@/components/today/SourceHealth'
 import { WelcomeHero } from '@/components/WelcomeHero'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { RegionPicker } from '@/components/RegionPicker'
+import { DEFAULT_REGION_SLUG, type RegionChoice } from '@/lib/region/preference'
 import { formatDate } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 
@@ -36,8 +38,33 @@ function readStoredPosition(): UserPosition | null {
   }
 }
 
+/**
+ * La regione a cui appartengono le zone mostrate.
+ *
+ * `catalogue` distingue i due modi in cui una regione arriva qui, e non e' un dettaglio: la
+ * Toscana esiste sia come le sette zone di taratura (home, `catalogue: false`) sia come i
+ * ventiquattro comuni del catalogo nazionale (Italia -> Toscana, `catalogue: true`). I link verso
+ * la mappa devono dire quale dei due si sta guardando, altrimenti la mappa apre l'altro.
+ */
+export interface TodayRegion {
+  readonly slug: string
+  readonly name: string
+  /** `true` quando le zone vengono da `regioni/<slug>.json` e non dallo snapshot di taratura. */
+  readonly catalogue: boolean
+  /** Presente solo in home: attiva il selettore della regione di riferimento. */
+  readonly choices?: readonly RegionChoice[]
+}
+
+const TUSCANY_CALIBRATION: TodayRegion = {
+  slug: DEFAULT_REGION_SLUG,
+  name: 'Toscana',
+  catalogue: false,
+}
+
 export interface TodayScreenProps {
   readonly snapshot: Snapshot
+  /** Senza, si assume la Toscana delle sette zone: e' cio' che questa schermata ha sempre mostrato. */
+  readonly region?: TodayRegion
 }
 
 /**
@@ -48,7 +75,7 @@ export interface TodayScreenProps {
  * concedere un permesso. I filtri stanno sotto il primo risultato, non sopra: quasi sempre la
  * risposta giusta è la prima, e chi deve filtrare sa cercare il controllo.
  */
-export function TodayScreen({ snapshot }: TodayScreenProps) {
+export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScreenProps) {
   const today = snapshot.referenceDate
   const hydrated = useIsHydrated()
 
@@ -112,9 +139,21 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 pb-8 pt-4">
-      <h1 className="sr-only">Dove vado oggi</h1>
+      {/*
+        * La regione nel titolo separata da una virgola e non da una preposizione: "in Marche" e
+        * "in Umbria" sono sbagliati, e una preposizione articolata per ognuna delle venti regioni
+        * sarebbe una tabella da mantenere per una riga che nessuno vede. Il nome per esteso lo
+        * dice comunque il selettore qui sotto.
+        */}
+      <h1 className="sr-only">Dove vado oggi, {region.name}</h1>
       <WelcomeHero zoneCount={snapshot.zones.length} />
       <InstallPrompt />
+
+      {region.choices !== undefined && (
+        <div className="mb-3">
+          <RegionPicker current={region.slug} choices={region.choices} />
+        </div>
+      )}
 
       <DayPicker dates={dates} selected={date} today={today} onSelect={setDate} />
 
@@ -132,11 +171,29 @@ export function TodayScreen({ snapshot }: TodayScreenProps) {
           <ol className="space-y-3">
             {top.map((suggestion) => (
               <li key={suggestion.zone.code}>
-                <SuggestionCard suggestion={suggestion} today={today} />
+                <SuggestionCard suggestion={suggestion} today={today} region={region} />
               </li>
             ))}
           </ol>
         </>
+      )}
+
+      {/*
+        * Le sette zone toscane sono macro-aree (la Garfagnana, il Casentino), non comuni: chi
+        * cerca il proprio paese non lo trova in questo elenco e non ha modo di indovinare che i
+        * comuni stanno sotto Italia. Una riga, solo dove il caso si presenta.
+        */}
+      {!region.catalogue && (
+        <p className="mt-4 text-center text-xs text-ink-faint">
+          Cerchi il tuo comune?{' '}
+          <Link
+            href={`/italia/${region.slug}`}
+            className="text-accent underline underline-offset-2 hover:text-ink
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Vedi l&apos;elenco completo
+          </Link>
+        </p>
       )}
 
       <div className="mt-5 space-y-4">

@@ -110,6 +110,15 @@ export function GuideScreen() {
       </Sezione>
 
       <Sezione id="uso" titolo="Come si usa, schermata per schermata">
+        <Voce titolo="La tua regione">
+          Dalla scheda Account, o dal selettore in cima a &laquo;Dove vado&raquo;, scegli la
+          regione da cui parte l&apos;app: sono quelle le zone che vedi aprendo
+          &laquo;Dove vado&raquo;, la mappa e il diario. Senza sceglierne una vale la Toscana,
+          l&apos;unica regione con stazioni di misura collegate.{' '}
+          <strong className="text-ink">Non è un confine:</strong> tutte le altre regioni restano
+          consultabili dalla scheda Italia, e dalla mappa puoi spostarti fra una e l&apos;altra
+          senza cambiare quella di casa.
+        </Voce>
         <Voce titolo="Dove vado">
           È la schermata di apertura. In alto scegli il giorno; sotto trovi una frase che riassume
           la situazione (&laquo;Oggi no&raquo;, &laquo;Oggi ci sta andare&raquo;) e il motivo in
@@ -119,8 +128,10 @@ export function GuideScreen() {
           per quello serve un navigatore.
         </Voce>
         <Voce titolo="Mappa">
-          Da &laquo;Dettaglio e mappa&raquo; su una zona. Mostra il meteo dei giorni intorno alla
-          data scelta, le stazioni usate per la stima e la spiegazione completa del punteggio.{' '}
+          Da &laquo;Dettaglio e mappa&raquo; su una zona, o dalla barra in basso. Mostra le zone
+          della regione che stai guardando — quella di casa se arrivi dalla barra, quella della
+          zona se arrivi da una scheda — con il meteo dei giorni intorno alla data scelta, le
+          stazioni usate per la stima e la spiegazione completa del punteggio.{' '}
           <strong className="text-ink">Le zone sono aree ampie, non punti:</strong> un pallino
           preciso suggerirebbe una precisione che i dati non hanno ancora.
         </Voce>
