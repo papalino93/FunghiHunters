@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from 'react'
 
+import { today } from '@/lib/domain/time'
 import type { PlaceCandidate, PlaceForecast, PlaceHourlyWeather } from '@/lib/sources/open-meteo-place'
 import { formatDate, formatValue } from '@/lib/ui/scale'
 import { weatherCodeLabel } from '@/lib/ui/weatherCode'
@@ -290,6 +291,10 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
   const days = forecast.daily
   if (days.length === 0) return null
 
+  // Non deducibile da `isForecast` (vero solo per i giorni futuri): serve il confronto esplicito
+  // per distinguere oggi dagli altri giorni passati, che altrimenti si equivalgono a colpo d'occhio.
+  const todayIso = today()
+
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold text-ink-dim">Giorno per giorno</p>
@@ -310,22 +315,31 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
           <tbody>
             {days.map((day) => {
               const expanded = expandedDate === day.date
+              const isToday = day.date === todayIso
               return (
                 <Fragment key={day.date}>
-                  <tr className="border-t border-edge">
+                  <tr className={`border-t border-edge ${isToday ? 'bg-accent/5' : ''}`}>
                     <td className="py-1.5 pr-2 text-ink">
                       <button
                         type="button"
                         onClick={() => setExpandedDate(expanded ? null : day.date)}
                         aria-expanded={expanded}
-                        className="-my-1.5 flex min-h-11 items-center gap-1 rounded text-left font-medium
-                                   text-ink transition-colors hover:text-accent focus:outline-none
-                                   focus-visible:ring-2 focus-visible:ring-accent"
+                        className={`-my-1.5 flex min-h-11 items-center gap-1 rounded text-left
+                                    transition-colors hover:text-accent focus:outline-none
+                                    focus-visible:ring-2 focus-visible:ring-accent ${
+                                      isToday ? 'font-semibold text-ink' : 'font-medium text-ink'
+                                    }`}
                       >
                         <span aria-hidden="true" className="text-ink-faint">
                           {expanded ? '▾' : '▸'}
                         </span>
                         {formatDate(day.date)}
+                        {isToday && (
+                          <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px]
+                                            font-semibold text-accent">
+                            oggi
+                          </span>
+                        )}
                         {day.isForecast && (
                           <span className="text-[10px] text-ink-faint">previsto</span>
                         )}
