@@ -40,7 +40,15 @@ export default async function Page({ params }: { params: Promise<{ regione: stri
         </Link>
         <h1 className="mt-1 text-lg font-semibold text-ink">{name}</h1>
       </div>
-      <TodayScreen snapshot={snapshot} />
+      {/*
+        * `catalogue: true`: queste sono le zone del catalogo nazionale, e i collegamenti verso la
+        * mappa devono dirlo. Senza, la mappa aprirebbe la regione di riferimento dell'utente —
+        * cioe' il difetto per cui da una zona trentina si finiva a guardare la Toscana.
+        */}
+      <TodayScreen
+        snapshot={snapshot}
+        region={{ slug: regione, name, catalogue: true }}
+      />
     </div>
   )
 }

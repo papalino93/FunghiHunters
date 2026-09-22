@@ -1,9 +1,21 @@
+import { cookies } from 'next/headers'
+
 import { DiaryScreen } from '@/components/diary/DiaryScreen'
-import { loadSnapshot } from '@/lib/snapshot/load'
+import { REGION_COOKIE } from '@/lib/region/preference'
+import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 
 export const metadata = { title: 'Diario uscite · FungiCast' }
-export const revalidate = 3600
 
+/**
+ * Il diario segue la regione di riferimento come la home.
+ *
+ * Non è un capriccio di coerenza: le zone dello snapshot sono l'elenco fra cui si sceglie dove si
+ * è stati. Finché era fisso sulla Toscana, chi sta altrove non aveva *nessuna* zona da indicare,
+ * e quindi non poteva registrare un'uscita — cioè il modello non poteva imparare niente fuori
+ * dalla Toscana. Per chi sta in Toscana non cambia nulla: è la regione predefinita.
+ */
 export default async function DiarioPage() {
-  return <DiaryScreen snapshot={await loadSnapshot()} />
+  const cookieStore = await cookies()
+  const region = await loadReferenceRegion(cookieStore.get(REGION_COOKIE)?.value)
+  return <DiaryScreen snapshot={region.snapshot} />
 }

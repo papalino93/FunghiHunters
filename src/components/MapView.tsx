@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 // MapLibre 6 non ha un default export: si importa il namespace.
 import * as maplibregl from 'maplibre-gl'
 import type { Map as MapLibreMap, StyleSpecification } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
 import type { SnapshotZone } from '@/lib/snapshot/types'
+import { boundsOfZones } from '@/lib/ui/bounds'
 import { confidenceOpacity, isLowConfidence, mpiColor, readableTextOn } from '@/lib/ui/scale'
 
 /**
@@ -26,12 +27,6 @@ const STYLES = {
  * `scripts/copy-maplibre-worker.mjs` prima di ogni dev e build, e qui li indichiamo esplicitamente.
  */
 maplibregl.setWorkerUrl('/maplibre/maplibre-gl-worker.mjs')
-
-/** Riquadro della Toscana, con un margine. */
-const TUSCANY_BOUNDS: [[number, number], [number, number]] = [
-  [9.6, 42.2],
-  [12.5, 44.6],
-]
 
 /**
  * Geometria del segnaposto, in coordinate del suo viewBox.
@@ -107,6 +102,7 @@ export function MapView({
    */
   const [mapStatus, setMapStatus] = useState<'loading' | 'ready' | 'error'>('loading')
   const [retryToken, setRetryToken] = useState(0)
+  const bounds = useMemo(() => boundsOfZones(zones), [zones])
   // Il callback cambia a ogni render: lo teniamo in un ref per non ricreare i marker a ogni
   // render del genitore. La sincronizzazione va in un effetto, perche' scrivere su un ref
   // durante il render e' proprio cio' che rende imprevedibile quale valore leggera' l'handler.
@@ -114,6 +110,17 @@ export function MapView({
   useEffect(() => {
     onSelectRef.current = onSelect
   }, [onSelect])
+  /*
+   * L'inquadratura iniziale, letta una volta sola alla creazione della mappa: il valore al
+   * montaggio e' gia' quello giusto, e passarla come dipendenza farebbe ricostruire l'intera
+   * mappa a ogni cambio di regione. A reinquadrarla dopo pensa l'effetto piu' in basso; il ref
+   * resta aggiornato per il caso in cui la mappa venga ricostruita (tema, ritentativo) con zone
+   * diverse da quelle di partenza.
+   */
+  const boundsRef = useRef(bounds)
+  useEffect(() => {
+    boundsRef.current = bounds
+  }, [bounds])
 
   useEffect(() => {
     const container = containerRef.current
@@ -124,7 +131,7 @@ export function MapView({
     const map = new maplibregl.Map({
       container,
       style: STYLES[theme] as unknown as StyleSpecification | string,
-      bounds: TUSCANY_BOUNDS,
+      bounds: boundsRef.current,
       // Il margine tiene conto dei pannelli sovrapposti: intestazione in alto, cursore in basso.
       fitBoundsOptions: { padding: { top: 150, bottom: 150, left: 16, right: 16 } },
       attributionControl: { compact: true },
@@ -272,6 +279,25 @@ export function MapView({
       )
     }
   }, [zones, selectedCode, showStations])
+
+  /*
+   * Reinquadra quando cambiano le zone, cioe' quando si passa da una regione all'altra senza
+   * ricaricare la pagina. Salta il giro in cui la mappa e' appena nata, che e' gia' inquadrata:
+   * rifarlo non sarebbe sbagliato, ma sarebbe un movimento in piu' a ogni apertura.
+   */
+  const fittedRef = useRef(false)
+  useEffect(() => {
+    const map = mapRef.current
+    if (map === null) return
+    if (!fittedRef.current) {
+      fittedRef.current = true
+      return
+    }
+    map.fitBounds(bounds, {
+      padding: { top: 150, bottom: 150, left: 16, right: 16 },
+      animate: false,
+    })
+  }, [bounds])
 
   // Centra sulla zona scelta, lasciando spazio al pannello inferiore.
   useEffect(() => {

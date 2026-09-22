@@ -20,9 +20,11 @@ import { formatDate } from '@/lib/ui/scale'
 export function SuggestionCard({
   suggestion,
   today,
+  region,
 }: {
   suggestion: Suggestion
   today: string
+  region?: { readonly slug: string; readonly catalogue: boolean }
 }) {
   const { zone, mpi, distanceKm, bestDay } = suggestion
   const facts = zoneFacts(zone)
@@ -77,7 +79,7 @@ export function SuggestionCard({
       </p>
 
       <Link
-        href={`/mappa?zona=${zone.code}`}
+        href={mapHref(zone.code, region)}
         className="mt-3 flex min-h-11 items-center justify-center rounded-lg border border-edge
                    bg-surface-2 text-sm font-medium text-ink transition-colors hover:bg-surface-3
                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -86,6 +88,23 @@ export function SuggestionCard({
       </Link>
     </article>
   )
+}
+
+/**
+ * L'indirizzo della mappa per una zona.
+ *
+ * Senza `regione` la mappa apre la regione di riferimento dell'utente, che e' esattamente quella
+ * da cui arriva questo collegamento quando si parte dalla home: l'indirizzo resta corto e non
+ * duplica un'informazione che il cookie ha gia'.
+ *
+ * Con `regione` si sta navigando il catalogo (Italia -> una regione), e allora va detto: la
+ * regione di riferimento potrebbe essere un'altra, e senza il parametro la mappa aprirebbe quella
+ * — che e' il difetto per cui da una zona trentina si finiva a guardare la Toscana.
+ */
+function mapHref(code: string, region?: { readonly slug: string; readonly catalogue: boolean }): string {
+  const zona = `zona=${encodeURIComponent(code)}`
+  if (region === undefined || !region.catalogue) return `/mappa?${zona}`
+  return `/mappa?regione=${encodeURIComponent(region.slug)}&${zona}`
 }
 
 /**
