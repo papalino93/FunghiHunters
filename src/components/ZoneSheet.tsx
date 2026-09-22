@@ -6,6 +6,7 @@ import type { SnapshotFactor, SnapshotSource, SnapshotZone } from '@/lib/snapsho
 import { Sparkline } from '@/components/Sparkline'
 import { SourceStatusList } from '@/components/SourceStatusList'
 import { PotentialBar } from '@/components/today/PotentialBar'
+import { FollowButton } from '@/components/today/FollowButton'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
 import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
@@ -20,6 +21,9 @@ export interface ZoneSheetProps {
   readonly showStations: boolean
   readonly onToggleStations: () => void
   readonly sources: readonly SnapshotSource[]
+  /** Assente se seguire non è disponibile in questo contesto (es. l'archivio non è ancora pronto). */
+  readonly following?: boolean
+  readonly onToggleFollow?: () => void
 }
 
 type Tab = 'sintesi' | 'meteo' | 'dove' | 'perche' | 'dati'
@@ -41,6 +45,8 @@ export function ZoneSheet({
   showStations,
   onToggleStations,
   sources,
+  following = false,
+  onToggleFollow,
 }: ZoneSheetProps) {
   const [tab, setTab] = useState<Tab>('sintesi')
   const point = zone.series.find((p) => p.date === selectedDate) ?? zone.series[0]
@@ -68,22 +74,27 @@ export function ZoneSheet({
             </p>
           </div>
 
-          <button
-          type="button"
-          onClick={onClose}
-          aria-label="Chiudi"
-          className="-mr-1 -mt-1 rounded-lg p-2 text-ink-faint transition-colors hover:bg-surface-2
-                     hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-        >
-            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
-              <path
-                d="M4 4l8 8M12 4l-8 8"
-                stroke="currentColor"
-                strokeWidth="1.6"
-                strokeLinecap="round"
-              />
-            </svg>
-          </button>
+          <div className="-mr-1 -mt-1 flex shrink-0 items-center gap-1">
+            {onToggleFollow !== undefined && (
+              <FollowButton following={following} onToggle={onToggleFollow} compact />
+            )}
+            <button
+              type="button"
+              onClick={onClose}
+              aria-label="Chiudi"
+              className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-surface-2
+                         hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
+                <path
+                  d="M4 4l8 8M12 4l-8 8"
+                  stroke="currentColor"
+                  strokeWidth="1.6"
+                  strokeLinecap="round"
+                />
+              </svg>
+            </button>
+          </div>
         </div>
 
         {/* La scala invece del numero isolato: si capisce dove cade senza sapere cosa sia un 24. */}

@@ -20,12 +20,28 @@
  * onestamente al confronto.
  */
 
-import type { DiaryRepository } from '@/lib/diary/store'
-import type { SyncBackend, SyncOutcome } from '@/lib/sync/types'
+import type { SyncBackend, SyncableEntity, SyncOutcome } from '@/lib/sync/types'
 
-export async function runSync(
-  repo: DiaryRepository,
-  backend: SyncBackend,
+/**
+ * Cio' che il motore chiede a un repository, a prescindere da cosa stia sincronizzando.
+ *
+ * Sottoinsieme di `DiaryRepository`: quest'ultimo la implementa gia' di fatto (stessa forma dei
+ * tre metodi), quindi passare un `DiaryRepository` qui non richiede alcun adattamento. Un
+ * repository nuovo — le zone seguite, o una lista personale futura — deve solo avere questi tre
+ * metodi per riusare lo stesso motore, testato qui, invece di riscriverne uno.
+ */
+export interface SyncRepository<T extends SyncableEntity> {
+  /** Voci vive e tombstone: il motore deve vedere le cancellazioni per propagarle. */
+  listAll(): Promise<T[]>
+  /** Applica una voce arrivata dal server così com'è, senza rigenerare id o timestamp. */
+  upsertRaw(entry: T): Promise<void>
+  /** Toglie fisicamente la riga, dopo che la cancellazione è stata confermata sincronizzata. */
+  purge(id: string): Promise<boolean>
+}
+
+export async function runSync<T extends SyncableEntity>(
+  repo: SyncRepository<T>,
+  backend: SyncBackend<T>,
   lastSyncedAt: string | null,
 ): Promise<SyncOutcome> {
   /*
