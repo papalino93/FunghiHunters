@@ -6,7 +6,28 @@ ragione. **"Cronologia degli interventi"** (dopo il separatore) è un registro s
 la fotografia di una sessione passata, non aggiornata quando il codice cambia sotto di lei. Utile
 per capire perché una scelta è stata fatta, non affidabile come descrizione di oggi.
 
-## Stato attuale (18 settembre 2026, sessione "roadmap outdoor")
+## Stato attuale (22 settembre 2026, sessione "audit scalabilità")
+
+**Copertura geografica**: non più solo Toscana. Dal 21/09/2026 l'app copre tutte le 20 regioni
+(1.202 zone, comuni sopra i 600 m) — vedi `docs/CATALOGO-FONTI.md` e `README.md`. Le sette zone
+toscane restano le uniche con stazioni SIR reali e la regione predefinita; il resto vive dal solo
+modello meteo, con confidence più bassa e nota esplicita in app. Il bosco (copertura e tipo di
+ospite) è entrato nel punteggio dal 22/09/2026, invece della sola etichetta manuale delle sette
+zone toscane.
+
+**Audit di scalabilità (22/09/2026)**: quattro correzioni, tutte descritte nel dettaglio nel
+report consegnato ad Andrea (https://claude.ai/artifact/MatHCfZAPmBcXBHu5VY4Ho):
+`README.md` allineato alla copertura reale (era ancora fermo alla v1 Toscana-sola); un controllo
+di coerenza (`findMismatched`/`checkConsistency` in `scripts/build-snapshot-italia.ts`) che fa
+fallire in modo visibile la corsa nazionale se si interrompe a metà lasciando regioni
+disallineate, invece di scrivere sopra in silenzio al giro dopo; le pagine elenco (home, diario,
+`/italia/[regione]`) non ricevono più `positiveFactors`/`neutralFactors`/`bestWindow`/
+`nearbyMunicipalities` di ogni zona (`src/lib/snapshot/list-view.ts`) — campi che solo la scheda
+di dettaglio legge, ~30% del payload sul Piemonte; `/api/mpi` è diventato `/api/v1/mpi` (il
+vecchio indirizzo resta un alias) e lo snapshot porta un `schemaVersion` esplicito, distinto da
+`algorithmVersion`.
+
+## Aggiornamento — roadmap outdoor (18 settembre 2026, superato come "stato attuale" dalla sezione sopra)
 
 **Diario uscite**: niente foto (rimosse — vedi sotto il perché), posizione GPS reale distinta dal
 ripiego di zona (`positionSource`), alberi osservati, durata della ricerca e numero di cercatori

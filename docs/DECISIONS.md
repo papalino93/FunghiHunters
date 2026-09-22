@@ -139,6 +139,14 @@ Scelta delegata (*«quello che pensi meglio»*). Scelgo la via di mezzo, per una
 La griglia regionale piena resta in Phase 2, con il dimensionamento di §R.2 del report
 (~2.880 anchor, ~4.900 chiamate pesate/giorno, dentro il free tier).
 
+**Aggiornamento (21-22/09/2026): la Phase 2 è arrivata, non solo per la Toscana.** L'estensione
+non si è fermata alla griglia regionale toscana prevista qui: copre tutte le 20 regioni (1.202
+zone, comuni sopra i 600 m — vedi `docs/CATALOGO-FONTI.md`). Resta vero il principio di questa
+decisione, solo più ampio nel raggio: le sette zone toscane restano le uniche con osservazioni
+reali (stazioni SIR) e la copertura di riferimento; le altre 1.195 sono modello meteo puro, con
+confidence più bassa e dichiarata come tale in app — **non** una promozione silenziosa a "zone di
+taratura". Vedi `README.md` per lo stato aggiornato.
+
 ---
 
 ## Conseguenze aggregate sull'architettura

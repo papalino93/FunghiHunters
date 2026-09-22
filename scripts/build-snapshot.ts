@@ -38,6 +38,7 @@ import {
   seriesUrl,
   stationsUrl,
 } from '@/lib/sources/sir-archive'
+import { SNAPSHOT_SCHEMA_VERSION } from '@/lib/snapshot/types'
 import type {
   Snapshot,
   SnapshotNearbyMunicipality,
@@ -205,6 +206,7 @@ async function main(): Promise<void> {
   }
 
   const snapshot: Snapshot = {
+    schemaVersion: SNAPSHOT_SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
     algorithmVersion: ALGORITHM_V1.version,
     referenceDate: todayIso,

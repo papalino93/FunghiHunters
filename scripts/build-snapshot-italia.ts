@@ -38,6 +38,7 @@ import type { DailySamples } from '@/lib/pipeline/zone-series'
 import { LICENSES } from '@/lib/sources/adapter'
 import { fetchJson } from '@/lib/sources/http'
 import { OPEN_METEO_FREE_LIMITS, RatePacer } from '@/lib/sources/open-meteo-rate'
+import { SNAPSHOT_SCHEMA_VERSION } from '@/lib/snapshot/types'
 import type { Snapshot, SnapshotZone } from '@/lib/snapshot/types'
 import type { ForestFile } from '@/../scripts/ingest-forest-italia'
 import type { ItalianZone } from '@/../scripts/ingest-zones-italia'
@@ -263,6 +264,7 @@ async function main(): Promise<void> {
 
   for (const [slug, entry] of byRegion) {
     const snapshot: Snapshot = {
+      schemaVersion: SNAPSHOT_SCHEMA_VERSION,
       generatedAt,
       algorithmVersion: ALGORITHM_V1.version,
       referenceDate: todayIso,
@@ -322,6 +324,61 @@ async function main(): Promise<void> {
   await writeFile(INDEX_FILE, `${JSON.stringify(index)}\n`, 'utf8')
 
   console.log(`Scritti ${INDEX_FILE} e ${byRegion.size} file di regione in ${REGION_DIR}/`)
+
+  await checkConsistency(generatedAt, [...byRegion.keys()])
+}
+
+/**
+ * Quali regioni non portano il `generatedAt` atteso — pura, senza toccare il disco, cosi' si
+ * verifica con un test senza dover scrivere file veri.
+ *
+ * `undefined` in `written` significa "file mancante o illeggibile", che conta come disallineato
+ * tanto quanto una data diversa: in entrambi i casi quel file non riflette la corsa di oggi.
+ */
+export function findMismatched(
+  generatedAt: string,
+  written: ReadonlyMap<string, string | undefined>,
+): string[] {
+  return [...written.entries()]
+    .filter(([, value]) => value !== generatedAt)
+    .map(([slug]) => slug)
+}
+
+/**
+ * Rilegge quanto appena scritto e verifica che ogni file di regione porti lo stesso `generatedAt`
+ * dell'indice appena prodotto.
+ *
+ * Questo script scrive un file per regione in un ciclo e l'indice per ultimo (vedi il commento in
+ * cima al file): un'interruzione a metà corsa — il runner ucciso dal timeout, un disco pieno —
+ * lascerebbe alcune regioni aggiornate a oggi e altre ferme a ieri, con l'indice disallineato da
+ * entrambe, senza che niente lo segnali: la corsa successiva scriverebbe sopra in silenzio.
+ * `algorithmVersionMismatch()` (`src/lib/snapshot/types.ts`) fa la stessa verifica per la Toscana,
+ * confrontando codice e snapshot; qui si confrontano i file fra loro, perché non c'è un singolo
+ * "codice" con cui confrontare venti file scritti nella stessa corsa.
+ *
+ * Fallisce lo script (non silenziosamente) se un file manca o porta una data diversa: con
+ * `continue-on-error: true` nel workflow, questo non fa perdere l'aggiornamento toscano — dà solo
+ * un errore visibile nei log invece di un file scritto sopra in silenzio al giro successivo.
+ */
+async function checkConsistency(generatedAt: string, slugs: readonly string[]): Promise<void> {
+  const written = new Map<string, string | undefined>()
+  for (const slug of slugs) {
+    try {
+      const raw = await readFile(path.join(REGION_DIR, `${slug}.json`), 'utf-8')
+      written.set(slug, (JSON.parse(raw) as Pick<Snapshot, 'generatedAt'>).generatedAt)
+    } catch {
+      written.set(slug, undefined)
+    }
+  }
+  const mismatched = findMismatched(generatedAt, written)
+  if (mismatched.length > 0) {
+    throw new Error(
+      `Corsa incoerente: ${mismatched.length} file di regione non portano il generatedAt ` +
+        `dell'indice appena scritto (${generatedAt}): ${mismatched.join(', ')}. ` +
+        'Probabile interruzione a metà corsa (timeout, disco pieno): i file elencati restano ' +
+        'quelli della corsa precedente e vanno rigenerati.',
+    )
+  }
 }
 
 if (process.argv[1]?.includes('build-snapshot-italia')) {

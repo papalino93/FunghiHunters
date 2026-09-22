@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 
 import { TodayScreen } from '@/components/today/TodayScreen'
 import { loadItaliaIndex, loadRegion } from '@/lib/snapshot/load-italia'
+import { toListSnapshot } from '@/lib/snapshot/list-view'
 
 /**
  * Le zone di una regione.
@@ -46,7 +47,7 @@ export default async function Page({ params }: { params: Promise<{ regione: stri
         * cioe' il difetto per cui da una zona trentina si finiva a guardare la Toscana.
         */}
       <TodayScreen
-        snapshot={snapshot}
+        snapshot={toListSnapshot(snapshot)}
         region={{ slug: regione, name, catalogue: true }}
       />
     </div>
