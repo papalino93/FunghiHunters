@@ -38,10 +38,26 @@ export interface ReferenceRegion {
   readonly isTuscanyCalibration: boolean
 }
 
-/** L'elenco delle regioni disponibili, nell'ordine dell'indice (alfabetico). */
+/**
+ * L'elenco delle regioni disponibili, nell'ordine dell'indice (alfabetico).
+ *
+ * Tenuto in memoria dopo la prima lettura, e non per velocità fine a sé stessa: serve a venti
+ * nomi, ma vive dentro `italia-index.json`, che pesa 378 KB per via delle 1.202 zone che gli
+ * stanno accanto. Senza questa riga ogni apertura della home ne pagherebbe la lettura e
+ * l'analisi per intero.
+ *
+ * Il file cambia solo quando il catalogo viene rigenerato, e quello arriva sempre con un deploy
+ * nuovo — cioè con un processo nuovo, che riparte da zero. Un risultato vuoto non si tiene: in
+ * quel caso il file mancava, ed è un guasto da non congelare fino al prossimo rilascio.
+ */
+let cachedChoices: RegionChoice[] | null = null
+
 export async function regionChoices(): Promise<RegionChoice[]> {
+  if (cachedChoices !== null) return cachedChoices
   const index = await loadItaliaIndex()
-  return index.regions.map((r) => ({ slug: r.slug, name: r.name }))
+  const choices = index.regions.map((r) => ({ slug: r.slug, name: r.name }))
+  if (choices.length > 0) cachedChoices = choices
+  return choices
 }
 
 /**
