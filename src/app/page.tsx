@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { TodayScreen } from '@/components/today/TodayScreen'
 import { REGION_COOKIE } from '@/lib/region/preference'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
+import { toListSnapshot } from '@/lib/snapshot/list-view'
 
 /**
  * La home è la schermata della decisione, non la mappa.
@@ -22,7 +23,7 @@ export default async function Page() {
 
   return (
     <TodayScreen
-      snapshot={region.snapshot}
+      snapshot={toListSnapshot(region.snapshot)}
       region={{
         slug: region.slug,
         name: region.name,

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { regionSlug } from '@/../scripts/build-snapshot-italia'
+import { findMismatched, regionSlug } from '@/../scripts/build-snapshot-italia'
 import { capByRegion, type ItalianZone } from '@/../scripts/ingest-zones-italia'
 import { buildCandidates, referencePoint } from '@/lib/sources/istat-national'
 import type { MunicipalityCollection } from '@/lib/sources/istat-boundaries'
@@ -149,5 +149,30 @@ describe('regionSlug', () => {
     for (const region of ['Toscana', 'Emilia-Romagna', 'Friuli-Venezia Giulia', 'Puglia']) {
       expect(regionSlug(region)).toMatch(/^[a-z0-9-]+$/)
     }
+  })
+})
+
+describe('findMismatched', () => {
+  it('nessuna regione in ritardo quando tutte portano il generatedAt della corsa', () => {
+    const written = new Map([
+      ['piemonte', '2026-09-22T11:40:00.000Z'],
+      ['lombardia', '2026-09-22T11:40:00.000Z'],
+    ])
+    expect(findMismatched('2026-09-22T11:40:00.000Z', written)).toEqual([])
+  })
+
+  it('segnala una regione rimasta alla corsa precedente', () => {
+    // Il caso reale: la corsa si interrompe dopo aver scritto il Piemonte ma prima della
+    // Lombardia, che resta con la data di ieri mentre l'indice porta gia' oggi.
+    const written = new Map([
+      ['piemonte', '2026-09-22T11:40:00.000Z'],
+      ['lombardia', '2026-09-21T11:40:00.000Z'],
+    ])
+    expect(findMismatched('2026-09-22T11:40:00.000Z', written)).toEqual(['lombardia'])
+  })
+
+  it('un file mancante o illeggibile conta come disallineato', () => {
+    const written = new Map([['piemonte', undefined]])
+    expect(findMismatched('2026-09-22T11:40:00.000Z', written)).toEqual(['piemonte'])
   })
 })

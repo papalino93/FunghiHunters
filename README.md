@@ -12,7 +12,16 @@ App funzionante: motore MPI versionato, interpolazione spaziale validata, snapsh
 precalcolato, mappa, diario uscite con calibrazione (posizione GPS reale, alberi osservati, durata
 della ricerca e numero di cercatori), punti salvati locali (auto, accessi, riferimenti, punti di
 partenza — mai sincronizzati), PWA offline, account e sincronizzazione fra dispositivi (opzionale).
-Ambito v1: **solo porcino**, un unico indice, sulle sette zone di taratura toscane.
+
+Ambito: **solo porcino**, un unico indice. Copertura geografica a due livelli, e non vanno confusi:
+
+- **Sette zone di taratura in Toscana** (Amiata, Casentino, Pratomagno, Garfagnana, Appennino
+  pistoiese, Mugello, Colline Metallifere) — le uniche corrette con osservazioni reali (stazioni
+  SIR al suolo), e la regione predefinita dell'app.
+- **1.202 zone in tutte le 20 regioni** (comuni sopra i 600 m), estensione in produzione dal
+  21/09/2026 — punteggio dal solo modello meteo, senza stazioni di misura collegate: l'app lo dice
+  esplicitamente e la confidence mostrata ne tiene conto. Non è una copertura validata quanto
+  quella toscana, solo più ampia.
 
 - [`docs/DISCOVERY-AND-ARCHITECTURE.md`](docs/DISCOVERY-AND-ARCHITECTURE.md) — fonti, licenze,
   limiti verificati, schema DB, MPI v1, confidence, costi
