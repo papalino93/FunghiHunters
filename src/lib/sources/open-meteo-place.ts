@@ -10,7 +10,7 @@
 
 import { z } from 'zod'
 
-import { PROJECT_TIMEZONE, today } from '@/lib/domain/time'
+import { PROJECT_TIMEZONE, addDays, today } from '@/lib/domain/time'
 import { fetchJson } from '@/lib/sources/http'
 import { aggregateHourlyToDaily } from '@/lib/sources/open-meteo'
 
@@ -73,8 +73,8 @@ export interface PlaceCurrentWeather {
   readonly apparentTemperatureC: number | null
   readonly humidityPercent: number | null
   readonly precipitationMm: number | null
-  readonly windSpeedMs: number | null
-  readonly windGustMs: number | null
+  readonly windSpeedKmh: number | null
+  readonly windGustKmh: number | null
   readonly windDirectionDeg: number | null
   /** Codice WMO del tempo (0 = sereno, 61 = pioggia debole, ...). Tradotto in UI, non qui. */
   readonly weatherCode: number | null
@@ -86,8 +86,8 @@ export interface PlaceDailyWeather {
   readonly temperatureMaxC: number | null
   readonly temperatureMinC: number | null
   /** Massimo giornaliero, non una media — stessa cautela di `windMean7d` in `model/features.ts`. */
-  readonly windMaxMs: number | null
-  readonly windGustMaxMs: number | null
+  readonly windMaxKmh: number | null
+  readonly windGustMaxKmh: number | null
   readonly et0Mm: number | null
   readonly humidityMeanPercent: number | null
   readonly vpdMeanKpa: number | null
@@ -101,8 +101,8 @@ export interface PlaceHourlyWeather {
   readonly time: string
   readonly temperatureC: number | null
   readonly precipitationMm: number | null
-  readonly windSpeedMs: number | null
-  readonly windGustMs: number | null
+  readonly windSpeedKmh: number | null
+  readonly windGustKmh: number | null
   readonly humidityPercent: number | null
   readonly vpdKpa: number | null
   readonly soilMoisture: number | null
@@ -173,8 +173,14 @@ const CURRENT_VARS = [
   'weather_code',
 ] as const
 
-/** Quanti giorni passati e futuri mostrare: abbastanza per vedere un trend, non un archivio. */
-const PAST_DAYS = 5
+/**
+ * Quanti giorni passati chiedere: 30, per poter dire «ultima pioggia vera 13 giorni fa» anche dopo
+ * due settimane asciutte (vedi `lib/meteo/forager.ts`). La tabella ne mostra solo gli ultimi
+ * `TABLE_PAST_DAYS`, e il dettaglio ora per ora viene tagliato allo stesso intervallo prima di
+ * lasciare il server: il mese intero serve alle somme giornaliere, non a una tabella da scorrere.
+ */
+const PAST_DAYS = 30
+export const TABLE_PAST_DAYS = 5
 const FORECAST_DAYS = 10
 
 export function buildPlaceForecastUrl(
@@ -189,6 +195,13 @@ export function buildPlaceForecastUrl(
   params.set('current', CURRENT_VARS.join(','))
   params.set('daily', DAILY_VARS.join(','))
   params.set('hourly', HOURLY_VARS.join(','))
+  /*
+   * Km/h, e detto esplicitamente. È già il predefinito di Open-Meteo, ma fino al 23/09/2026 la
+   * pagina Meteo li mostrava con l'etichetta «m/s»: un vento di 18 km/h letto come 18 m/s (65
+   * km/h). Scritto qui, l'unità non dipende più da un predefinito altrui, e i km/h sono quelli con
+   * cui in Italia si ragiona del vento.
+   */
+  params.set('wind_speed_unit', 'kmh')
   params.set('past_days', String(PAST_DAYS))
   params.set('forecast_days', String(FORECAST_DAYS))
   params.set('timezone', PROJECT_TIMEZONE)
@@ -258,8 +271,8 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
       precipitationMm: precip[i] ?? null,
       temperatureMaxC: tMax[i] ?? null,
       temperatureMinC: tMin[i] ?? null,
-      windMaxMs: windMax[i] ?? null,
-      windGustMaxMs: gustMax[i] ?? null,
+      windMaxKmh: windMax[i] ?? null,
+      windGustMaxKmh: gustMax[i] ?? null,
       et0Mm: et0[i] ?? null,
       humidityMeanPercent: humidityByDay.get(date) ?? null,
       vpdMeanKpa: vpdByDay.get(date) ?? null,
@@ -280,15 +293,17 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
   const hourlySoilTemp = numberColumn(parsed.hourly, 'soil_temperature_0_to_7cm')
 
   const hourlyByDate: Record<string, PlaceHourlyWeather[]> = {}
+  const firstHourlyDate = addDays(todayIso, -TABLE_PAST_DAYS)
   for (const [i, time] of hourlyTimes.entries()) {
     if (time === '') continue
     const date = time.slice(0, 10)
+    if (date < firstHourlyDate) continue
     const hour: PlaceHourlyWeather = {
       time,
       temperatureC: hourlyTemp[i] ?? null,
       precipitationMm: hourlyPrecip[i] ?? null,
-      windSpeedMs: hourlyWind[i] ?? null,
-      windGustMs: hourlyGust[i] ?? null,
+      windSpeedKmh: hourlyWind[i] ?? null,
+      windGustKmh: hourlyGust[i] ?? null,
       humidityPercent: hourlyHumidity[i] ?? null,
       vpdKpa: hourlyVpd[i] ?? null,
       soilMoisture: hourlySoilMoisture[i] ?? null,
@@ -307,8 +322,8 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
           apparentTemperatureC: parsed.current.apparent_temperature ?? null,
           humidityPercent: parsed.current.relative_humidity_2m ?? null,
           precipitationMm: parsed.current.precipitation ?? null,
-          windSpeedMs: parsed.current.wind_speed_10m ?? null,
-          windGustMs: parsed.current.wind_gusts_10m ?? null,
+          windSpeedKmh: parsed.current.wind_speed_10m ?? null,
+          windGustKmh: parsed.current.wind_gusts_10m ?? null,
           windDirectionDeg: parsed.current.wind_direction_10m ?? null,
           weatherCode: parsed.current.weather_code ?? null,
         }

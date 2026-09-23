@@ -176,6 +176,9 @@ export function buildUrl(options: BuildUrlOptions): string {
     params.set('start_date', options.range.start)
     params.set('end_date', options.range.end)
   }
+  // Open-Meteo restituisce il vento in km/h se non si chiede altro: `UNIT_BY_VARIABLE` dichiara
+  // m/s, quindi va chiesto, altrimenti ogni valore sarebbe 3,6 volte quello dichiarato.
+  params.set('wind_speed_unit', 'ms')
   if (options.pastDays !== undefined) params.set('past_days', String(options.pastDays))
   if (options.forecastDays !== undefined) {
     params.set('forecast_days', String(options.forecastDays))
