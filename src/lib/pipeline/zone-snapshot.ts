@@ -159,6 +159,7 @@ export function buildZoneSnapshot(input: ZoneSnapshotInput): SnapshotZone | null
       observationAgeDays: ageDays + Math.max(0, offset),
       horizonDays: horizon,
       habitatCertainty: habitat.certainty,
+      habitatMeasured: habitat.measured,
     })
 
     const day = full[dayIndex]

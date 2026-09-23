@@ -45,7 +45,7 @@ export async function GET(request: Request): Promise<NextResponse> {
         return NextResponse.json({ error: 'Coordinate non valide' }, { status: 400 })
       }
 
-      if (url.searchParams.get('reverse') !== null) {
+      if (url.searchParams.get('reverse') === '1') {
         const place = await reverseGeocode(latitude, longitude)
         return NextResponse.json({ place })
       }

@@ -159,7 +159,14 @@ export function ZoneSheet({
               document.getElementById(`zona-tab-${next.id}`)?.focus()
             }}
             aria-selected={tab === entry.id}
-            aria-controls={`zona-panel-${entry.id}`}
+            /*
+             * Un solo id statico, non `zona-panel-${entry.id}`: esiste un solo pannello nel DOM
+             * alla volta (il contenuto cambia, non il numero di pannelli — niente `hidden` su
+             * quattro pannelli inattivi), quindi puntare all'id specifico di ogni tab produrrebbe
+             * un riferimento a un id inesistente per i tab non selezionati, che un controllo
+             * automatico (axe-core, Lighthouse) segnalerebbe come rotto.
+             */
+            aria-controls="zona-panel"
             tabIndex={tab === entry.id ? 0 : -1}
             className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium
                         transition-colors focus:outline-none focus-visible:ring-2
@@ -176,7 +183,7 @@ export function ZoneSheet({
 
       <div
         role="tabpanel"
-        id={`zona-panel-${tab}`}
+        id="zona-panel"
         aria-labelledby={`zona-tab-${tab}`}
         className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3"
       >

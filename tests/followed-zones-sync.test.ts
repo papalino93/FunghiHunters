@@ -83,6 +83,36 @@ describe('runSync con le zone che seguo', () => {
     expect(followedAgain.deletedAt).toBeNull()
   })
 
+  it('seguire di nuovo una zona mentre un giro di sync è in corso non la fa sparire per il purge', async () => {
+    // Il difetto reale che questo test chiude: il ciclo di purge finale decideva sulla base dello
+    // stato catturato a *inizio* giro (`toPush`), non su quello attuale. Per il diario è innocuo
+    // (non esiste un'azione che resusciti un id tombstonato), ma `follow()` è pensato apposta per
+    // essere idempotente sullo stesso id: se l'utente segue di nuovo la stessa zona mentre `pull`
+    // è ancora in volo (un vero giro di rete, non sincrono), il vecchio ciclo avrebbe purgato la
+    // riga appena ricreata sulla base di un tombstone ormai superato — cancellandola dal disco in
+    // silenzio subito dopo che l'utente ha toccato "segui".
+    const repo = new InMemoryFollowedZoneRepository()
+    const zone = await repo.follow({ zoneCode: 'amiata', zoneName: 'Monte Amiata', regionSlug: 'toscana' })
+    const backend = new FakeZonesBackend()
+    backend.rows.set(zone.id, zone) // già sincronizzata in un giro precedente
+    await repo.unfollow('amiata') // tombstone locale
+
+    // Simula il "segui di nuovo" arrivato fra il pull e il push, esattamente come farebbe un
+    // tocco dell'utente intercalato con un vero round-trip di rete (stesso schema del test
+    // "modifica concorrente durante un giro di sync" in tests/sync.test.ts).
+    const originalPull = backend.pull.bind(backend)
+    backend.pull = async (since) => {
+      await repo.follow({ zoneCode: 'amiata', zoneName: 'Monte Amiata', regionSlug: 'toscana' })
+      return originalPull(since)
+    }
+
+    await runSync(repo, backend, '2020-01-01T00:00:00.000Z')
+
+    const stored = await repo.list()
+    expect(stored.map((z) => z.id)).toEqual(['amiata'])
+    expect(stored[0]?.deletedAt).toBeNull()
+  })
+
   it('un "non seguire più" fatto su un altro dispositivo non resuscita la zona qui', async () => {
     const repo = new InMemoryFollowedZoneRepository()
     const zone = await repo.follow({ zoneCode: 'mugello', zoneName: 'Mugello', regionSlug: 'toscana' })

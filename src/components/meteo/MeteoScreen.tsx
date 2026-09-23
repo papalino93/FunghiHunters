@@ -1,6 +1,6 @@
 'use client'
 
-import { Fragment, useEffect, useState } from 'react'
+import { Fragment, useEffect, useRef, useState } from 'react'
 
 import { today } from '@/lib/domain/time'
 import type { PlaceCandidate, PlaceForecast, PlaceHourlyWeather } from '@/lib/sources/open-meteo-place'
@@ -26,6 +26,13 @@ export function MeteoScreen() {
   const [forecast, setForecast] = useState<PlaceForecast | null>(null)
   const [loadingForecast, setLoadingForecast] = useState(false)
   const [forecastError, setForecastError] = useState<string | null>(null)
+  /*
+   * La richiesta di previsione in volo, per poterla annullare. A differenza della ricerca per
+   * nome (che già usa un `AbortController` nell'effetto qui sotto), questa parte da un evento
+   * (il tocco su un risultato o su "Usa la mia posizione"), non da un effetto: serve un
+   * riferimento che sopravviva al render, non la funzione di pulizia di un `useEffect`.
+   */
+  const forecastRequestRef = useRef<AbortController | null>(null)
 
   // Sotto due caratteri i risultati non vanno mostrati: si deriva dalla query invece di azzerare
   // lo stato in un effetto, così l'effetto sotto ha un solo compito, cercare quando c'è da cercare.
@@ -77,22 +84,40 @@ export function MeteoScreen() {
     setForecastError(null)
     setLoadingForecast(true)
 
+    /*
+     * Annulla una richiesta di previsione ancora in volo per il luogo precedente. Senza questo,
+     * due tocchi ravvicinati (due "Usa la mia posizione" di seguito, con letture GPS leggermente
+     * diverse; oppure un risultato di ricerca scelto subito dopo un altro) fanno partire due
+     * fetch concorrenti: se la risposta della prima richiesta (ormai superata) arriva dopo quella
+     * della seconda, sovrascriverebbe in silenzio la previsione corretta con quella del luogo
+     * sbagliato — l'utente vedrebbe il nome/le coordinate del luogo giusto ma il meteo di un
+     * altro.
+     */
+    forecastRequestRef.current?.abort()
+    const controller = new AbortController()
+    forecastRequestRef.current = controller
+
     const params = new URLSearchParams({
       lat: String(candidate.latitude),
       lon: String(candidate.longitude),
     })
     if (candidate.elevationM !== null) params.set('elevation', String(candidate.elevationM))
 
-    fetch(`/api/meteo?${params.toString()}`)
+    fetch(`/api/meteo?${params.toString()}`, { signal: controller.signal })
       .then(async (res) => {
         const body = (await res.json()) as PlaceForecast & { error?: string }
         if (!res.ok) throw new Error(body.error ?? 'Previsione non disponibile')
         setForecast(body)
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
         setForecastError('Non sono riuscito a scaricare il meteo per questo luogo. Riprova.')
       })
-      .finally(() => setLoadingForecast(false))
+      .finally(() => {
+        // Solo se questa è ancora la richiesta corrente: quella annullata non deve spegnere lo
+        // stato di caricamento acceso dalla richiesta che l'ha sostituita.
+        if (forecastRequestRef.current === controller) setLoadingForecast(false)
+      })
   }
 
   const useMyLocation = (): void => {

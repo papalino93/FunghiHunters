@@ -159,6 +159,13 @@ export interface ZoneConfidenceInput {
    * peggiore. Chi legge deve vedere un numero meno affidabile, non un numero piu' basso.
    */
   readonly habitatCertainty?: number
+  /**
+   * `false` quando la zona non ha bosco misurato affatto (vedi `HabitatResult.measured` in
+   * `forest.ts`), `true` quando è misurato ma la classificazione è generica o ambigua. Serve solo
+   * a scegliere la frase giusta qui sotto: "non misurato" e "riconosciuto solo in parte" sono
+   * situazioni diverse, e usare la stessa frase per entrambe direbbe il falso su una delle due.
+   */
+  readonly habitatMeasured?: boolean
   readonly config?: AlgorithmConfig
 }
 
@@ -220,7 +227,10 @@ export function zoneConfidence(input: ZoneConfidenceInput): AggregateConfidence 
       ...aggregate.factors,
       {
         key: 'habitat',
-        label: 'Tipo di bosco riconosciuto solo in parte',
+        label:
+          input.habitatMeasured === false
+            ? 'Bosco di questa zona non ancora misurato'
+            : 'Tipo di bosco riconosciuto solo in parte',
         value: `fattore ${habitatCertainty.toFixed(2)}`,
         impact: 1 - habitatCertainty,
       },

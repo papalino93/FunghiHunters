@@ -172,6 +172,9 @@ describe('validazione geografica', () => {
     const righePoggio = split.filter((s) => s.label === 'Poggio')
     expect(righePoggio).toHaveLength(2)
     expect(righePoggio.map((s) => s.count)).toEqual([1, 1])
+    // La chiave (per la lista React) deve restare distinta anche quando l'etichetta coincide:
+    // altrimenti due righe omonime avrebbero la stessa `key`, e React può scambiarne i nodi DOM.
+    expect(new Set(righePoggio.map((s) => s.key)).size).toBe(2)
   })
 
   it('avvisa comunque per zone omonime, ognuna sotto la propria etichetta ripetuta', () => {
