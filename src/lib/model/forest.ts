@@ -53,13 +53,22 @@ export interface HabitatResult {
   readonly detail: string
 }
 
-const UNMEASURED: HabitatResult = {
-  factor: 1,
-  cover: 1,
-  host: 1,
-  certainty: 1,
-  measured: false,
-  detail: 'bosco non misurato per questa zona',
+/*
+ * Non un `certainty: 1` fisso: non sapere se una zona ha bosco, e di che tipo, non puo' valere
+ * piu' della certezza che resta a una zona misurata ma completamente ambigua (`ambiguousCertainty`
+ * qui sotto) — altrimenti "non so nulla" risulterebbe piu' affidabile di "so qualcosa ma non
+ * quale genere", l'esatto contrario di quello che la confidence deve dire. Stesso principio del
+ * commento in testa al file: il punteggio non si tocca, ma la confidence sì.
+ */
+function unmeasured(config: AlgorithmConfig): HabitatResult {
+  return {
+    factor: 1,
+    cover: 1,
+    host: 1,
+    certainty: config.habitat.ambiguousCertainty.value,
+    measured: false,
+    detail: 'bosco non misurato per questa zona',
+  }
 }
 
 function clamp(value: number, min: number, max: number): number {
@@ -96,7 +105,7 @@ export function habitatSuitability(
   forest: ForestHabitat | null | undefined,
   config: AlgorithmConfig,
 ): HabitatResult {
-  if (forest === null || forest === undefined) return UNMEASURED
+  if (forest === null || forest === undefined) return unmeasured(config)
   const h = config.habitat
 
   const coverRaw =

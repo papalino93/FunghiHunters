@@ -57,9 +57,22 @@ describe('il bosco nel punteggio', () => {
     const result = habitatSuitability(null, ALGORITHM_V1)
     expect(result.factor).toBe(1)
     expect(result.measured).toBe(false)
-    expect(result.certainty).toBe(1)
     // Regola 1: chi non ha il dato non deve risultare peggiore di chi ce l'ha.
     expect(scoreWith(null)).toBe(scoreWith(BEECH))
+  })
+
+  it('non e\' mai piu\' certo di una zona misurata ma completamente ambigua', () => {
+    // Il bug che questo test chiude: `certainty` a 1 per il bosco non misurato faceva sembrare
+    // "non so nulla" piu' affidabile di "so che c'e' bosco ma non che genere" — l'esatto
+    // contrario di quello che la confidence deve dire. Non sapere se c'e' bosco, e di che tipo,
+    // non puo' valere piu' di sapere che c'e' ma non riconoscerne il tipo.
+    const nonMisurato = habitatSuitability(null, ALGORITHM_V1)
+    const genericoMisurato = habitatSuitability(
+      { forestFraction: 0.8, shares: { 'altre latifoglie': 1 } },
+      ALGORITHM_V1,
+    )
+    expect(nonMisurato.certainty).toBeLessThanOrEqual(genericoMisurato.certainty)
+    expect(nonMisurato.certainty).toBeCloseTo(ALGORITHM_V1.habitat.ambiguousCertainty.value, 6)
   })
 
   it('non toglie nulla a una faggeta estesa', () => {
