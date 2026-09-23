@@ -1,0 +1,238 @@
+<!doctype html>
+<!--
+  Pagina offline, servita dal service worker (`public/sw.js`) quando si apre senza rete un
+  indirizzo che su questo dispositivo non è mai stato salvato.
+
+  Esiste per non fare l'opposto: prima al suo posto arrivava la home, e sotto `/meteo` si leggeva
+  "Dove vado oggi" come se niente fosse. Qui si dice cosa succede e dove si può andare.
+
+  Autosufficiente di proposito — CSS in linea, niente font né chunk di Next — perché deve
+  funzionare proprio quando tutto il resto manca. I colori sono quelli di `src/app/globals.css`.
+-->
+<html lang="it">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <meta name="theme-color" content="#0b0e16" />
+    <title>Offline · FungiCast</title>
+    <style>
+      :root {
+        color-scheme: dark light;
+        --surface-0: #0b0e16;
+        --surface-1: #121724;
+        --border: #2c3650;
+        --text-primary: #eef1f8;
+        --text-secondary: #a3adc4;
+        --text-muted: #8098b0;
+        --accent: #4dd4ac;
+        --warn: #f2b134;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --surface-0: #f5f7fb;
+          --surface-1: #ffffff;
+          --border: #d5dbe7;
+          --text-primary: #131826;
+          --text-secondary: #4c5670;
+          --text-muted: #5c6478;
+          /* L'accento del tema scuro su fondo chiaro non passa AA: si scurisce. */
+          --accent: #0f7a5c;
+          --warn: #8a5a00;
+        }
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+        background: var(--surface-0);
+        color: var(--text-primary);
+        font: 16px/1.5 system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      }
+      main {
+        max-width: 32rem;
+        margin: 0 auto;
+        padding: 40px 16px 48px;
+      }
+      .badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border: 1px solid var(--warn);
+        border-radius: 999px;
+        color: var(--warn);
+        font-size: 13px;
+        font-weight: 600;
+      }
+      h1 {
+        margin: 16px 0 8px;
+        font-size: 26px;
+        line-height: 1.2;
+      }
+      p {
+        margin: 0 0 12px;
+        color: var(--text-secondary);
+      }
+      code {
+        font: 14px ui-monospace, 'SF Mono', Menlo, monospace;
+        color: var(--text-primary);
+        overflow-wrap: anywhere;
+      }
+      h2 {
+        margin: 28px 0 8px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+      }
+      ul {
+        margin: 0;
+        padding: 0;
+        list-style: none;
+      }
+      li + li {
+        margin-top: 8px;
+      }
+      a.link,
+      button {
+        display: flex;
+        align-items: center;
+        min-height: 44px;
+        width: 100%;
+        padding: 10px 14px;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        background: var(--surface-1);
+        color: var(--text-primary);
+        font: inherit;
+        text-decoration: none;
+        text-align: left;
+        cursor: pointer;
+      }
+      a.link span {
+        margin-left: auto;
+        padding-left: 12px;
+        color: var(--text-muted);
+        font-size: 14px;
+      }
+      button {
+        justify-content: center;
+        margin-top: 24px;
+        border-color: var(--accent);
+        color: var(--accent);
+        font-weight: 600;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <span class="badge">Offline</span>
+      <h1>Sei senza rete</h1>
+      <p>
+        La pagina <code id="indirizzo">richiesta</code> non è ancora stata salvata su questo
+        dispositivo, quindi senza connessione non si può aprire.
+      </p>
+      <p>Queste invece funzionano anche offline, con i dati dell'ultima volta che le hai aperte:</p>
+
+      <h2>Disponibili offline</h2>
+      <ul id="pagine">
+        <li><a class="link" href="/">Dove vado oggi <span>Home</span></a></li>
+        <li><a class="link" href="/diario">Diario <span>Uscite salvate</span></a></li>
+      </ul>
+
+      <button type="button" id="riprova">Riprova</button>
+    </main>
+    <script>
+      // Tutto facoltativo: se lo script non gira, la pagina resta comunque completa e utile.
+      ;(function () {
+        var here = location.pathname + location.search
+        var slot = document.getElementById('indirizzo')
+        if (here !== '/offline.html') slot.textContent = here
+        else slot.textContent = 'richiesta'
+
+        document.getElementById('riprova').addEventListener('click', function () {
+          location.reload()
+        })
+
+        /*
+         * Le altre pagine davvero salvate su questo telefono, oltre alle due fisse: chi ha aperto
+         * una regione o la guida prima di perdere la rete la ritrova qui, invece di doverne
+         * ricordare l'indirizzo. Si leggono solo le copie HTML delle cache dell'app.
+         */
+        if (!('caches' in window)) return
+        var NAMES = {
+          '/mappa': 'Mappa',
+          '/meteo': 'Meteo',
+          '/guida': 'Guida',
+          '/italia': 'Regioni',
+          '/account': 'Account',
+        }
+        var listed = { '/': true, '/diario': true, '/offline.html': true }
+        listed[here] = true
+        var list = document.getElementById('pagine')
+        caches
+          .keys()
+          .then(function (keys) {
+            var names = keys.filter(function (k) {
+              return k.indexOf('fungicast-') === 0 && !/-static$/.test(k)
+            })
+            return Promise.all(
+              names.map(function (name) {
+                return caches.open(name).then(function (cache) {
+                  return cache.keys().then(function (requests) {
+                    return Promise.all(
+                      requests.map(function (request) {
+                        return cache.match(request).then(function (response) {
+                          var type = (response && response.headers.get('content-type')) || ''
+                          return type.indexOf('text/html') !== -1 ? request.url : null
+                        })
+                      }),
+                    )
+                  })
+                })
+              }),
+            )
+          })
+          .then(function (groups) {
+            groups.forEach(function (urls) {
+              urls.forEach(function (href) {
+                if (href === null) return
+                var url = new URL(href)
+                if (url.origin !== location.origin) return
+                var path = url.pathname + url.search
+                if (listed[path]) return
+                listed[path] = true
+                var label = NAMES[url.pathname]
+                var match = /^\/italia\/([^/]+)$/.exec(url.pathname)
+                if (label === undefined && match !== null) {
+                  var slug = decodeURIComponent(match[1]).replace(/-/g, ' ')
+                  label = 'Regione ' + slug.charAt(0).toUpperCase() + slug.slice(1)
+                }
+                var li = document.createElement('li')
+                var a = document.createElement('a')
+                a.className = 'link'
+                a.href = path
+                a.textContent = label || path
+                if (label) {
+                  var hint = document.createElement('span')
+                  hint.textContent = path
+                  a.appendChild(hint)
+                }
+                li.appendChild(a)
+                list.appendChild(li)
+              })
+            })
+          })
+          .catch(function () {})
+      })()
+    </script>
+  </body>
+</html>

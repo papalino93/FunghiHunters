@@ -22,3 +22,13 @@ export function versionLabel(): string {
   })
   return `${APP_VERSION} · ${quando}`
 }
+
+/*
+ * Identità della build per il service worker, che la usa nel nome delle proprie cache.
+ *
+ * Il commit quando c'è (Vercel); altrimenti l'ora della build, che distingue comunque due build
+ * locali fra loro. "sviluppo" da solo non basterebbe: due `next build` di fila avrebbero lo stesso
+ * nome di cache e la seconda erediterebbe HTML e chunk della prima, che non esistono più.
+ */
+export const BUILD_ID =
+  APP_VERSION !== 'sviluppo' ? APP_VERSION : BUILD_TIME.replace(/[^0-9]/g, '') || APP_VERSION
