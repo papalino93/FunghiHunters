@@ -7,7 +7,6 @@ export interface SparklineProps {
   readonly points: readonly SnapshotSeriesPoint[]
   readonly todayDate: string
   readonly selectedDate: string
-  readonly onSelectDate?: (date: string) => void
   readonly height?: number
 }
 
@@ -17,12 +16,19 @@ export interface SparklineProps {
  * Il passato e il futuro sono disegnati diversamente — pieno contro tratteggiato — perche' sono
  * cose diverse e mescolarle su un'unica linea continua e' il modo piu' comune di far credere a
  * una previsione quanto a una misura.
+ *
+ * **Puramente illustrativo, non un secondo modo di cambiare giorno.** I punti erano cliccabili,
+ * ma solo col mouse: `<circle>` non e' raggiungibile da tastiera ne' annunciato da uno screen
+ * reader, e l'area sensibile reale (raggio 1.6-3.2 in un viewBox 100x64) e' ben sotto ogni
+ * bersaglio di tocco dell'app. `TimeSlider`, sempre visibile insieme a questo grafico (vedi
+ * `AppShell.tsx`), copre esattamente la stessa selezione con un `<input type="range">` gia'
+ * accessibile: aggiungere qui una seconda via, solo parzialmente accessibile, sarebbe un
+ * doppione peggiore dell'originale, non un miglioramento.
  */
 export function Sparkline({
   points,
   todayDate,
   selectedDate,
-  onSelectDate,
   height = 64,
 }: SparklineProps) {
   if (points.length < 2) return null
@@ -95,8 +101,6 @@ export function Sparkline({
           stroke={index === selectedIndex ? 'var(--text-primary)' : 'none'}
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"
-          onClick={onSelectDate === undefined ? undefined : () => { onSelectDate(point.date) }}
-          style={{ cursor: onSelectDate === undefined ? 'default' : 'pointer' }}
         />
       ))}
     </svg>
