@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import type { UserPosition } from '@/lib/recommend/rank'
 import type { SnapshotZone } from '@/lib/snapshot/types'
@@ -31,6 +31,19 @@ export function LocationPrompt({
   const [manual, setManual] = useState(false)
   const hydrated = useIsHydrated()
   const [saved, setSaved] = useState<readonly Waypoint[]>([])
+
+  /*
+   * Alfabetico su `reference` (il testo che compare sul chip), non l'ordine di arrivo.
+   *
+   * `zones` arriva già ordinato per punteggio del giorno (vedi `build-snapshot-italia.ts`), utile
+   * per una classifica ma non per una scelta manuale: con le 190 zone del Piemonte o le 183 della
+   * Lombardia, un ordine che cambia ogni giorno rende impossibile sia impararlo a memoria sia
+   * scandirlo a colpo d'occhio. Qui si sceglie un punto di partenza per nome, non il migliore.
+   */
+  const zonesAlphabetical = useMemo(
+    () => [...zones].sort((a, b) => a.reference.localeCompare(b.reference, 'it')),
+    [zones],
+  )
 
   // I punti di partenza preferiti si salvano dal Diario ("Punti fissi"): qui si leggono soltanto,
   // per offrirli come terza scelta accanto al GPS e ai riferimenti di zona. Restano locali, come
@@ -172,7 +185,7 @@ export function LocationPrompt({
             </p>
           )}
           <ul className="flex flex-wrap gap-1.5">
-            {zones.map((zone) => (
+            {zonesAlphabetical.map((zone) => (
               <li key={zone.code}>
                 <button
                   type="button"

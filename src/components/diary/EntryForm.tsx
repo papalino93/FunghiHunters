@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import {
@@ -80,6 +80,17 @@ export function EntryForm({
   } | null>(null)
 
   const zone = snapshot.zones.find((z) => z.code === zoneCode)
+
+  /*
+   * Alfabetico per nome, non l'ordine di arrivo dello snapshot (per punteggio del giorno). Scelto
+   * qui, non nel motore di raccomandazione: si sceglie dove si è stati, non dove conviene andare
+   * oggi. Con le 190 zone del Piemonte o le 183 della Lombardia, un ordine che cambia ogni giorno
+   * renderebbe la propria zona impossibile da trovare a colpo d'occhio nel menu.
+   */
+  const zonesAlphabetical = useMemo(
+    () => [...snapshot.zones].sort((a, b) => a.name.localeCompare(b.name, 'it')),
+    [snapshot.zones],
+  )
   // Il punteggio di quel giorno, se lo snapshot lo copre. Fuori finestra resta null, ed è
   // corretto: inventarlo renderebbe la calibrazione una finzione.
   const point = zone?.series.find((p) => p.date === date)
@@ -178,7 +189,7 @@ export function EntryForm({
             className="min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
                        text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            {snapshot.zones.map((z) => (
+            {zonesAlphabetical.map((z) => (
               <option key={z.code} value={z.code}>
                 {z.name} — {z.reference}
               </option>
