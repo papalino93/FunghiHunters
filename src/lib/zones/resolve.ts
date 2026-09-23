@@ -23,7 +23,13 @@ import type { ItaliaIndexEntry } from '@/../scripts/build-snapshot-italia'
 import type { SnapshotZone } from '@/lib/snapshot/types'
 
 export type ZoneReliability =
-  | { readonly kind: 'quality'; readonly dataQuality: number }
+  /**
+   * `hasStations` viaggia insieme a `dataQuality`: senza, `Reliability` non saprebbe distinguere
+   * una zona nazionale di solo modello da una delle sette zone toscane tarate su stazioni reali,
+   * e le etichetterebbe entrambe "stima solida" a parità di numero — vedi il commento in
+   * `components/today/Reliability.tsx`.
+   */
+  | { readonly kind: 'quality'; readonly dataQuality: number; readonly hasStations: boolean }
   | { readonly kind: 'confidence'; readonly confidence: number }
 
 export interface ResolvedZoneData {
@@ -34,7 +40,7 @@ export interface ResolvedZoneData {
 }
 
 export interface SnapshotSource {
-  readonly zones: readonly Pick<SnapshotZone, 'code' | 'mpi' | 'label' | 'dataQuality'>[]
+  readonly zones: readonly Pick<SnapshotZone, 'code' | 'mpi' | 'label' | 'dataQuality' | 'stations'>[]
   readonly referenceDate: string
 }
 
@@ -54,7 +60,11 @@ export function resolveFollowedZone(
       mpi: inSnapshot.mpi,
       label: inSnapshot.label,
       referenceDate: snapshot.referenceDate,
-      reliability: { kind: 'quality', dataQuality: inSnapshot.dataQuality },
+      reliability: {
+        kind: 'quality',
+        dataQuality: inSnapshot.dataQuality,
+        hasStations: inSnapshot.stations.length > 0,
+      },
     }
   }
 

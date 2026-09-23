@@ -93,7 +93,7 @@ export function SuggestionCard({
         <span aria-hidden="true" className="text-ink-faint">
           ·
         </span>
-        <Reliability dataQuality={zone.dataQuality} />
+        <Reliability dataQuality={zone.dataQuality} hasStations={zone.stations.length > 0} />
       </p>
 
       <Link

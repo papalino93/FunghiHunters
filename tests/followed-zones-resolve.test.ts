@@ -11,10 +11,27 @@
 import { describe, expect, it } from 'vitest'
 
 import { resolveFollowedZone } from '@/lib/zones/resolve'
+import type { SnapshotStation } from '@/lib/snapshot/types'
+
+const STATION: SnapshotStation = {
+  code: 'TOS11000114',
+  name: 'Laghetto Verde',
+  latitude: 42.88,
+  longitude: 11.66,
+  elevationM: 900,
+  distanceKm: 1.2,
+  elevationDiffM: 10,
+  effectiveKm: 1.2,
+  variable: 'rain',
+}
 
 const snapshot = {
   referenceDate: '2026-09-22',
-  zones: [{ code: 'amiata', mpi: 42, label: 'discrete', dataQuality: 81 }],
+  zones: [
+    { code: 'amiata', mpi: 42, label: 'discrete', dataQuality: 81, stations: [STATION] },
+    // Una zona nazionale di solo modello, nella stessa regione: nessuna stazione vicina.
+    { code: 'it-nazionale', mpi: 55, label: 'buone', dataQuality: 69, stations: [] },
+  ],
 }
 
 const index = {
@@ -29,8 +46,16 @@ describe('resolveFollowedZone', () => {
       mpi: 42,
       label: 'discrete',
       referenceDate: '2026-09-22',
-      reliability: { kind: 'quality', dataQuality: 81 },
+      reliability: { kind: 'quality', dataQuality: 81, hasStations: true },
     })
+  })
+
+  it('segnala l\'assenza di stazioni: una zona nazionale di solo modello non è "hasStations"', () => {
+    // Il difetto che questo test chiude: senza `hasStations`, questa zona sarebbe indistinguibile
+    // da "amiata" qui sopra a parità di `dataQuality` — e "Reliability" le etichetterebbe entrambe
+    // con la stessa parola, anche se una sola delle due ha una stazione reale vicina.
+    const result = resolveFollowedZone('it-nazionale', snapshot, index)
+    expect(result?.reliability).toEqual({ kind: 'quality', dataQuality: 69, hasStations: false })
   })
 
   it('ricade sull\'indice nazionale per una zona fuori dalla regione corrente, con confidence', () => {
