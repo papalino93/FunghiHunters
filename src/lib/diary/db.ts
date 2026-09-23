@@ -6,9 +6,10 @@
  */
 
 export const DB_NAME = 'fungicast'
-export const DB_VERSION = 2
+export const DB_VERSION = 3
 export const DIARY_STORE = 'diary'
 export const WAYPOINTS_STORE = 'waypoints'
+export const FOLLOWED_ZONES_STORE = 'followed_zones'
 
 /**
  * Il database è bloccato da un'altra scheda ferma su una versione precedente.
@@ -46,6 +47,13 @@ export function openDatabase(): Promise<IDBDatabase> {
        */
       if (!db.objectStoreNames.contains(WAYPOINTS_STORE)) {
         db.createObjectStore(WAYPOINTS_STORE, { keyPath: 'id' })
+      }
+      /*
+       * `id` qui e' il codice zona stesso (vedi `src/lib/zones/store.ts`), non un uuid: seguire
+       * la stessa zona da due dispositivi deve convergere sulla stessa riga, non crearne due.
+       */
+      if (!db.objectStoreNames.contains(FOLLOWED_ZONES_STORE)) {
+        db.createObjectStore(FOLLOWED_ZONES_STORE, { keyPath: 'id' })
       }
     }
     /*

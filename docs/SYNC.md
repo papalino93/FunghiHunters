@@ -1,7 +1,10 @@
 # Sincronizzazione e account
 
-Stato: implementata per il **diario uscite**. Non ancora collegata per aree salvate/preferenze
-(le colonne di sincronizzazione esistono già su `user_locations`, la UI no — vedi "Cosa manca").
+Stato: implementata per il **diario uscite** e, dal 22 settembre 2026, per le **zone che seguo**
+(`src/lib/zones/`, tabella `user_followed_zones`) — stesso motore (`runSync()`), generalizzato con
+un tipo generico `SyncableEntity` così la logica di conflitto/tombstone/cambio-account resta una
+sola, non duplicata. `user_locations` resta a parte: le colonne di sincronizzazione esistono già,
+la UI no — vedi "Cosa manca".
 
 ## Architettura
 
@@ -143,8 +146,22 @@ crearne uno solo per la CI, con relativa manutenzione). Prima di fidarsi in prod
 ## Cosa manca
 
 - **Aree salvate e piani** (`user_locations`) hanno le colonne di sync pronte ma nessuna UI di
-  salvataggio: oggi l'app non permette di salvare un'area o un piano da nessuna parte, quindi non
-  c'era niente da sincronizzare. Prossimo passo naturale una volta che quella funzione esiste.
+  salvataggio: oggi l'app non permette di salvare un punto GPS personale da nessuna parte, quindi
+  non c'era niente da sincronizzare. Non riusata per "zone che seguo" (sotto): `user_locations` ha
+  `geom geography(point) not null`, una coordinata obbligatoria, incompatibile con il vincolo "mai
+  punti GPS" di quella funzione — vedi i commenti in `db/migrations/0007_followed_zones.sql`.
+  Resta scope non coperto, non un bug.
+- **Zone che seguo** (22 settembre 2026): sincronizzazione fra dispositivi per le zone del catalogo
+  che l'utente sceglie di seguire (mai coordinate — solo un codice zona già nel catalogo/modello).
+  Riusa lo stesso motore del diario tramite `SyncRepository<T>`/`SyncBackend<T>` generici
+  (`src/lib/sync/engine.ts`, `src/lib/sync/types.ts`), con le stesse garanzie: pull-prima-di-push,
+  ultimo aggiornamento vince su `updatedAt`, tombstone per il "non seguire più", protezione dal
+  cambio account su dispositivo condiviso. Chiave naturale: l'id è il codice zona stesso (non un
+  uuid), quindi seguire/non seguire la stessa zona da due dispositivi converge sempre allo stesso
+  risultato senza righe duplicate. Cancellazione account: la tabella `user_followed_zones` è nella
+  lista ripulita da `/api/account/delete`. Test: `tests/followed-zones-sync.test.ts` riusa
+  `runSync()` con un backend finto specifico per questo tipo, senza duplicare i casi già coperti da
+  `tests/sync.test.ts`.
 - **Apple Sign In**: rimandato come da `docs/DECISIONS.md` (D7), serve solo per un'eventuale
   distribuzione iOS/App Store.
 - **Merge a grana fine**: non implementato per scelta (vedi sopra), non per limite tecnico. Se in

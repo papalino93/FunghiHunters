@@ -6,7 +6,7 @@ ragione. **"Cronologia degli interventi"** (dopo il separatore) è un registro s
 la fotografia di una sessione passata, non aggiornata quando il codice cambia sotto di lei. Utile
 per capire perché una scelta è stata fatta, non affidabile come descrizione di oggi.
 
-## Stato attuale (22 settembre 2026, sessione "audit scalabilità")
+## Stato attuale (aggiornato 22 settembre 2026 — sessioni "audit scalabilità" e "Zone che seguo"; le parti sotto datate 18 settembre restano valide salvo dove queste correzioni le contraddicono)
 
 **Copertura geografica**: non più solo Toscana. Dal 21/09/2026 l'app copre tutte le 20 regioni
 (1.202 zone, comuni sopra i 600 m) — vedi `docs/CATALOGO-FONTI.md` e `README.md`. Le sette zone
@@ -27,7 +27,34 @@ di dettaglio legge, ~30% del payload sul Piemonte; `/api/mpi` è diventato `/api
 vecchio indirizzo resta un alias) e lo snapshot porta un `schemaVersion` esplicito, distinto da
 `algorithmVersion`.
 
-## Aggiornamento — roadmap outdoor (18 settembre 2026, superato come "stato attuale" dalla sezione sopra)
+**Zone che seguo** (22 settembre 2026): funzione gratuita per salvare le zone del catalogo (calibrazione
+toscana o catalogo nazionale, mai coordinate GPS) che si vogliono ritrovare senza rifare la ricerca.
+Azione "Segui"/"Non seguire più" nella scheda zona (mappa e home), sezione compatta "Le tue zone" in
+home subito sotto il verdetto. Funziona in locale per chi non ha fatto login (IndexedDB, store
+`followed_zones`); per chi è autenticato si sincronizza fra dispositivi con lo **stesso motore di
+sincronizzazione del diario** (`src/lib/sync/engine.ts`, generalizzato con un tipo generico
+`SyncableEntity` così la logica provata — conflitti per `updatedAt`, tombstone, protezione dal
+cambio account su dispositivo condiviso — non viene riscritta, solo riusata). Tabella dedicata
+`user_followed_zones` (migrazione `0007_followed_zones.sql`), **non** `user_locations`: quella
+tabella ha `geom geography(point) not null`, una coordinata obbligatoria, incompatibile con il
+vincolo "mai punti GPS" di questa funzione — dettagli della decisione nei commenti della
+migrazione. Seguire una zona non tocca `rankZones` (verificato con un test di invarianza, vedi
+sotto) né gonfia l'affidabilità mostrata: il potenziale e l'affidabilità di una zona seguita si
+leggono sempre dal vivo (snapshot corrente o, per una zona fuori dalla regione aperta, dall'indice
+nazionale leggero `italia-index.json`), mai da un valore congelato al momento del "segui" — se
+nessuna delle due fonti ha la zona si mostra "dati non disponibili", mai un numero inventato.
+Cancellazione account: `user_followed_zones` aggiunta alla lista delle tabelle ripulite in
+`/api/account/delete`.
+
+Corrette nella sessione "Zone che seguo" anche due cose trovate lungo il percorso, non richieste
+esplicitamente ma dentro lo scopo dell'audit UX/leggibilità chiesto: (1) `--text-muted` del tema
+chiaro (`#79839c`) falliva il contrasto WCAG AA su ogni sfondo in cui è usato — corretto a
+`#5c6478`, stesso bug del fix G2 mai riportato dal tema scuro a quello chiaro; (2) "Prima di
+partire" mostrava sempre la normativa toscana (L.R. 16/1999, tesserino, limiti in kg) anche aprendo
+zone di altre regioni — ora quel blocco è condizionato alla regione davvero aperta, con un
+messaggio onesto ("nessuna norma verificata per questa regione") altrove invece di dati inventati.
+
+## Aggiornamento — roadmap outdoor (18 settembre 2026, superato come "stato attuale" dalle sezioni sopra)
 
 **Diario uscite**: niente foto (rimosse — vedi sotto il perché), posizione GPS reale distinta dal
 ripiego di zona (`positionSource`), alberi osservati, durata della ricerca e numero di cercatori
@@ -65,12 +92,17 @@ ingrandire testo e interfaccia dal browser, una barriera reale su un'app pensata
 
 ### Rischi aperti, in ordine di priorità
 
-1. **Nessuna delle nuove funzioni (waypoint estesi, punti di partenza, contesto del diario) ha un
-   test end-to-end in un browser reale**, solo test di logica e alcune verifiche manuali con
-   Playwright durante lo sviluppo. Un giro reale su dispositivo fisico non è stato fatto.
-2. **Le aree salvate (`user_locations`) hanno ancora solo lo schema di sync, zero UI.** Diverso dai
-   punti di partenza (locali, non sincronizzati): questa resta la funzione "salva un'area sul
-   server" mai costruita. Non è un bug, è scope non coperto.
+1. **Nessuna delle nuove funzioni (waypoint estesi, punti di partenza, contesto del diario, zone che
+   seguo) ha un test end-to-end in un browser reale**, solo test di logica (per "zone che seguo":
+   `tests/followed-zones.test.ts`, `tests/followed-zones-sync.test.ts`,
+   `tests/followed-zones-resolve.test.ts`, `tests/followed-zones-rank-invariant.test.ts`) e alcune
+   verifiche manuali con Playwright durante lo sviluppo. Un giro reale su dispositivo fisico non è
+   stato fatto — anche perché questa sessione ha l'accesso di rete ristretto (vedi sotto).
+2. **Le aree salvate (`user_locations`) hanno ancora solo lo schema di sync, zero UI** — invariato,
+   quella tabella resta non usata. "Zone che seguo" (22 settembre 2026, sopra) copre un bisogno
+   simile ma non è quella funzione: salva un codice zona del catalogo con sync fra dispositivi, mai
+   una coordinata, in una tabella nuova (`user_followed_zones`). "Salva un punto GPS personale sul
+   server" resta scope non coperto, non è un bug.
 3. **Nuove fonti dati (copertura forestale, DTM/DEM, umidità del suolo)**: valutate a livello di
    requisiti e licenza in `docs/CATALOGO-FONTI.md`, **nessuna integrata**. Farlo richiede
    individuare un dataset reale con licenza verificata, non semplicemente aggiungere un adattatore

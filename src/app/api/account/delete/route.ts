@@ -42,7 +42,7 @@ export async function POST(request: Request): Promise<NextResponse> {
   // Le tabelle utente, in ordine: non ci sono foreign key fra loro che impongano un ordine
   // particolare, ma cancellare prima i dati e poi l'account evita di lasciare righe orfane se
   // uno dei passaggi fallisce a metà.
-  for (const table of ['alerts', 'user_observations', 'user_locations'] as const) {
+  for (const table of ['alerts', 'user_observations', 'user_followed_zones', 'user_locations'] as const) {
     const { error } = await admin.from(table).delete().eq('user_id', userId)
     if (error !== null) {
       return NextResponse.json(

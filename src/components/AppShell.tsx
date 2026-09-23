@@ -6,10 +6,12 @@ import { useSearchParams } from 'next/navigation'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import type { RegionChoice } from '@/lib/region/preference'
+import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
 import { RegionPicker } from '@/components/RegionPicker'
 import { TimeSlider } from '@/components/TimeSlider'
 import { ZoneSheet } from '@/components/ZoneSheet'
 import { formatDate, mpiColor, mpiGradientCss } from '@/lib/ui/scale'
+import { useFollowedZones } from '@/lib/zones/useFollowedZones'
 
 // MapLibre tocca `window` all'import: non puo' essere renderizzata sul server.
 const MapView = dynamic(() => import('@/components/MapView').then((m) => m.MapView), {
@@ -76,6 +78,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
   )
 
   const selectedZone = snapshot.zones.find((z) => z.code === selectedCode) ?? null
+  const followed = useFollowedZones()
   const selectedProvenance =
     selectedZone?.series.find((p) => p.date === selectedDate)?.provenance ??
     (selectedDate > todayDate ? 'FORECAST' : 'MODELLED')
@@ -262,6 +265,14 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               showStations={showStations}
               onToggleStations={() => { setShowStations((v) => !v) }}
               sources={snapshot.sources}
+              following={followed.isFollowed(selectedZone.code)}
+              onToggleFollow={() => {
+                void followed.toggle({
+                  zoneCode: selectedZone.code,
+                  zoneName: selectedZone.name,
+                  regionSlug: regionSlug ?? DEFAULT_REGION_SLUG,
+                })
+              }}
             />
           </>
         )}
