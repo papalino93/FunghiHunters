@@ -129,16 +129,38 @@ export function ZoneSheet({
         </p>
       </header>
 
-      <nav
-        className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
+      {/*
+        * `role="tablist"`/`role="tab"`, non `aria-current="page"`: quest'ultimo e' per la pagina
+        * corrente in un insieme di pagine (es. un breadcrumb), non per una scheda attiva dentro
+        * un pannello — con `aria-current` uno screen reader non annuncia ne' "scheda 2 di 5" ne'
+        * quale sia selezionata nel modo che si aspetta. Tabindex roving (0 solo sulla scheda
+        * attiva) piu' le frecce sinistra/destra sono il comportamento da tastiera atteso su un
+        * tablist, non solo un optional.
+        */}
+      <div
+        role="tablist"
         aria-label="Sezioni"
+        className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
       >
-        {TABS.map((entry) => (
+        {TABS.map((entry, index) => (
           <button
             key={entry.id}
+            id={`zona-tab-${entry.id}`}
+            role="tab"
             type="button"
             onClick={() => { setTab(entry.id) }}
-            aria-current={tab === entry.id ? 'page' : undefined}
+            onKeyDown={(event) => {
+              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+              event.preventDefault()
+              const delta = event.key === 'ArrowRight' ? 1 : -1
+              const next = TABS[(index + delta + TABS.length) % TABS.length]
+              if (next === undefined) return
+              setTab(next.id)
+              document.getElementById(`zona-tab-${next.id}`)?.focus()
+            }}
+            aria-selected={tab === entry.id}
+            aria-controls={`zona-panel-${entry.id}`}
+            tabIndex={tab === entry.id ? 0 : -1}
             className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium
                         transition-colors focus:outline-none focus-visible:ring-2
                         focus-visible:ring-accent ${
@@ -150,9 +172,14 @@ export function ZoneSheet({
             {entry.label}
           </button>
         ))}
-      </nav>
+      </div>
 
-      <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3">
+      <div
+        role="tabpanel"
+        id={`zona-panel-${tab}`}
+        aria-labelledby={`zona-tab-${tab}`}
+        className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3"
+      >
         {tab === 'sintesi' && (
           <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} />
         )}

@@ -474,6 +474,34 @@ describe('shock termico', () => {
     expect(shock?.applied).toBe(false)
     expect(shock?.factor).toBe(1)
   })
+
+  it('la spiegazione cita la fonte della soglia, non quella del peso', () => {
+    // Il difetto che questo test chiude: `penaltyParam` in explain.ts restituiva
+    // `penalties.thermalShock.weight` invece di `.threshold` per questo fattore — l'unico dei
+    // sei a farlo, tutti gli altri restituiscono coerentemente `.threshold`. Oggi è innocuo
+    // perché nessuno dei due ha una fonte in ALGORITHM_V1, ma il giorno in cui `.threshold`
+    // (come già successo per `heatShock.threshold`) ne avesse una, la spiegazione mostrerebbe
+    // per errore la nota di trasferibilità del peso invece di quella reale della soglia.
+    const days = scenario({ rainByDaysAgo: { 15: 40 } })
+    const features = buildFeatures(days, AUTUMN_CELL, ALGORITHM_V1)
+    const result = computeMpi({ features, cell: AUTUMN_CELL })
+
+    const config = {
+      ...ALGORITHM_V1,
+      penalties: {
+        ...ALGORITHM_V1.penalties,
+        thermalShock: {
+          ...ALGORITHM_V1.penalties.thermalShock,
+          threshold: { ...ALGORITHM_V1.penalties.thermalShock.threshold, source: 'fonte-soglia' },
+          weight: { ...ALGORITHM_V1.penalties.thermalShock.weight, source: 'fonte-peso' },
+        },
+      },
+    }
+
+    const explanation = explainScore(result, features, 78, [], config)
+    const factor = explanation.neutralFactors.find((f) => f.key === 'penalty.thermalShock')
+    expect(factor?.source).toBe('fonte-soglia')
+  })
 })
 
 describe('umidità relativa: informativa, non entra nel punteggio', () => {
