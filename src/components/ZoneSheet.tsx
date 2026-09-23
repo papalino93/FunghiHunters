@@ -11,6 +11,7 @@ import { zoneFacts } from '@/lib/recommend/verdict'
 import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
 import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
 import { habitatCuesFor } from '@/lib/model/habitat'
+import { userCautionForSource } from '@/lib/config/algorithm'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
@@ -55,7 +56,7 @@ export function ZoneSheet({
 
   return (
     <section
-      className="pointer-events-auto flex max-h-[68dvh] flex-col overflow-hidden rounded-t-2xl
+      className="pointer-events-auto flex max-h-[55dvh] flex-col lg:max-h-[calc(100dvh-20rem)] overflow-hidden rounded-t-2xl
                  border border-b-0 border-edge bg-surface-1/95 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]
                  backdrop-blur-xl"
       aria-label={`Dettaglio ${zone.name}`}
@@ -64,7 +65,9 @@ export function ZoneSheet({
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
-            <p className="truncate text-xs text-ink-dim">
+            {/* Due righe, non una troncata: a 390 px il tipo di bosco — il dato che dice dove
+                cercare — spariva sempre dietro i puntini. */}
+            <p className="line-clamp-2 text-xs text-ink-dim">
               {zone.municipality !== null && zone.municipality !== undefined
                 ? `${zone.municipality} (${zone.province})`
                 : zone.reference} ·{' '}
@@ -80,7 +83,7 @@ export function ZoneSheet({
               type="button"
               onClick={onClose}
               aria-label="Chiudi"
-              className="rounded-lg p-2 text-ink-faint transition-colors hover:bg-surface-2
+              className="grid h-11 w-11 place-items-center rounded-lg text-ink-faint transition-colors hover:bg-surface-2
                          hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
               <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true">
@@ -101,7 +104,7 @@ export function ZoneSheet({
         </div>
 
         {!isToday && (
-          <p className="mt-1 text-[11px] text-ink-faint">{formatDate(selectedDate)}</p>
+          <p className="mt-1 text-xs text-ink-faint">{formatDate(selectedDate)}</p>
         )}
 
         <ul className="mt-2 space-y-1">
@@ -120,7 +123,7 @@ export function ZoneSheet({
         </ul>
 
         {/* Provenienza del dato di questo giorno: misura, modello o previsione. */}
-        <p className="mt-1.5 text-[11px] text-ink-faint">
+        <p className="mt-1.5 text-xs text-ink-faint">
           dato {provenanceLabel(point.provenance)}
           {point.rainMm !== null && ` · pioggia ${point.rainMm.toFixed(1)} mm`}
           {point.tMinC !== null &&
@@ -140,7 +143,7 @@ export function ZoneSheet({
       <div
         role="tablist"
         aria-label="Sezioni"
-        className="flex min-h-11 items-center gap-1 overflow-x-auto border-b border-edge px-2 py-1.5"
+        className="flex items-center gap-0.5 overflow-x-auto border-b border-edge px-1.5 py-0.5"
       >
         {TABS.map((entry, index) => (
           <button
@@ -168,7 +171,7 @@ export function ZoneSheet({
              */
             aria-controls="zona-panel"
             tabIndex={tab === entry.id ? 0 : -1}
-            className={`shrink-0 whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-medium
+            className={`min-h-11 shrink-0 whitespace-nowrap rounded-lg px-2.5 text-sm font-medium sm:px-3
                         transition-colors focus:outline-none focus-visible:ring-2
                         focus-visible:ring-accent ${
                           tab === entry.id
@@ -232,7 +235,7 @@ function Summary({
       )}
 
       <div className="min-w-0">
-        <div className="mb-1 flex items-baseline justify-between gap-2 text-[11px] text-ink-faint">
+        <div className="mb-1 flex items-baseline justify-between gap-2 text-xs text-ink-faint">
           <span className="truncate">{formatDate(zone.series[0]?.date ?? todayDate)}</span>
           <span className="shrink-0">oggi</span>
           <span className="truncate text-right">
@@ -318,7 +321,7 @@ function WindRow({ title, assessment }: { title: string; assessment: WindAssessm
         : 'text-ink-dim'
   return (
     <div className="rounded-lg bg-surface-2 px-3 py-2">
-      <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">{title}</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">{title}</p>
       <p className={`mt-0.5 text-xs leading-snug ${tone}`}>{assessment.message}</p>
     </div>
   )
@@ -406,7 +409,7 @@ function Where({ zone }: { zone: SnapshotZone }) {
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
           Che bosco cercare
         </h3>
         {cues.length === 0 ? (
@@ -425,12 +428,12 @@ function Where({ zone }: { zone: SnapshotZone }) {
             ))}
           </ul>
         )}
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+        <p className="mt-2 text-xs leading-relaxed text-ink-faint">
           Ecologia generale del genere, valida ovunque compaia questo tipo di bosco: non è
           calibrata su questa zona e non promette nulla su questa uscita.
         </p>
         {zone.forestFraction !== undefined && (
-          <p className="mt-1 text-[11px] leading-relaxed text-ink-faint">
+          <p className="mt-1 text-xs leading-relaxed text-ink-faint">
             Bosco sul {Math.round(zone.forestFraction * 100)}% dell&apos;area attorno al punto di
             riferimento, da copertura misurata da satellite a 10 m (2020). La carta riconosce il
             genere e non la tipologia: il castagno ricade in «altre latifoglie» e l&apos;abete
@@ -440,7 +443,7 @@ function Where({ zone }: { zone: SnapshotZone }) {
       </div>
 
       <div>
-        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
           Comuni della zona
         </h3>
         {nearby.length === 0 ? (
@@ -463,7 +466,7 @@ function Where({ zone }: { zone: SnapshotZone }) {
             ))}
           </ul>
         )}
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+        <p className="mt-2 text-xs leading-relaxed text-ink-faint">
           Comuni reali entro 15 km in linea d&apos;aria dal punto di riferimento della zona,
           verificati contro i confini ISTAT — non il confine della zona, che non esiste: una zona
           qui è un punto, non un poligono.
@@ -479,7 +482,7 @@ function Why({ zone }: { zone: SnapshotZone }) {
       <FactorList title="Cosa alza il punteggio" factors={zone.positiveFactors} tone="positive" />
       <FactorList title="Cosa lo abbassa" factors={zone.negativeFactors} tone="negative" />
       <FactorList title="Ininfluenti oggi" factors={zone.neutralFactors} tone="neutral" />
-      <p className="border-t border-edge pt-3 text-[11px] leading-relaxed text-ink-faint">
+      <p className="border-t border-edge pt-3 text-xs leading-relaxed text-ink-faint">
         Ogni contributo è la differenza rispetto allo stesso calcolo con quel fattore neutralizzato.
         I fattori marcati <em>da calibrare</em> usano parametri non ancora validati da una fonte:
         sono stime, non dati scientifici.
@@ -503,11 +506,24 @@ function FactorList({
 
   return (
     <div>
-      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
         {title}
       </h3>
       <ul className="space-y-2">
-        {factors.map((factor) => (
+        {factors.map((factor) => {
+          /*
+           * Cercata per fonte, non letta da `factor.transferabilityCaution`: gli snapshot gia'
+           * pubblicati contengono ancora il ragionamento completo per chi rivede il modello
+           * (riferimenti a parametri interni, date di verifica), che qui era un appunto di lavoro
+           * mostrato all'utente. Il ripiego sul campo salvato vale solo per una fonte che il
+           * codice attuale non conosce piu', e solo se e' gia' la versione breve.
+           */
+          const caution =
+            userCautionForSource(factor.source) ??
+            (factor.transferabilityCaution !== undefined && factor.transferabilityCaution.length <= 140
+              ? factor.transferabilityCaution
+              : undefined)
+          return (
           <li key={factor.key} className="rounded-lg bg-surface-2 px-3 py-2">
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-medium text-ink">{factor.label}</span>
@@ -518,21 +534,20 @@ function FactorList({
             </div>
             <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">{factor.value}</p>
             {factor.provenance === 'calibrate' ? (
-              <p className="mt-1 text-[10px] uppercase tracking-wide text-warn">da calibrare</p>
+              <p className="mt-1 text-xs uppercase tracking-wide text-warn">da calibrare</p>
             ) : (
               <>
-                <p className="mt-1 line-clamp-2 text-[10px] leading-snug text-ink-faint">
+                <p className="mt-1 line-clamp-2 text-xs leading-snug text-ink-faint">
                   fonte: {factor.source}
                 </p>
-                {factor.transferabilityCaution !== undefined && (
-                  <p className="mt-1 text-[10px] leading-snug text-warn">
-                    ⚠ studiato altrove o su altro habitat: {factor.transferabilityCaution}
-                  </p>
+                {caution !== undefined && (
+                  <p className="mt-1 text-xs leading-snug text-warn">⚠ {caution}</p>
                 )}
               </>
             )}
           </li>
-        ))}
+          )
+        })}
       </ul>
     </div>
   )
@@ -554,11 +569,11 @@ function DataProvenance({
   return (
     <div className="space-y-4">
       <div>
-        <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
           Fonti di questo dato
         </h3>
         <SourceStatusList sources={sources} />
-        <p className="mt-2 text-[11px] leading-relaxed text-ink-faint">
+        <p className="mt-2 text-xs leading-relaxed text-ink-faint">
           Stesse fonti di tutta l&apos;app, qui nel contesto di questa zona: se una risulta &quot;non
           raggiungibile&quot; o &quot;in parte&quot;, si riflette nella qualità dati e nella certezza
           di previsione mostrate nella scheda Sintesi — mai in un numero silenziosamente inventato.
@@ -583,13 +598,13 @@ function DataProvenance({
 
       <div>
         <div className="mb-2 flex items-center justify-between">
-          <h3 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <h3 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Stazioni usate ({unique.size})
           </h3>
           <button
             type="button"
             onClick={onToggleStations}
-            className="rounded-md px-2 py-1 text-[11px] font-medium text-accent transition-colors
+            className="rounded-md px-2 py-1 text-xs font-medium text-accent transition-colors
                        hover:bg-surface-2 focus:outline-none focus-visible:ring-2
                        focus-visible:ring-accent"
           >
@@ -605,7 +620,7 @@ function DataProvenance({
                   {station.distanceKm.toFixed(1)} km
                 </span>
               </div>
-              <p className="mt-0.5 text-[11px] text-ink-faint">
+              <p className="mt-0.5 text-xs text-ink-faint">
                 {station.code} · {station.elevationM === null ? '—' : `${station.elevationM.toFixed(0)} m`}
                 {' · '}
                 {station.elevationDiffM.toFixed(0)} m di dislivello
@@ -617,7 +632,7 @@ function DataProvenance({
         </ul>
       </div>
 
-      <p className="rounded-lg bg-surface-2 px-3 py-2 text-[11px] leading-relaxed text-ink-dim">
+      <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs leading-relaxed text-ink-dim">
         {zone.stationNotes}
       </p>
     </div>
@@ -627,7 +642,7 @@ function DataProvenance({
 function Group({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-2 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-ink-faint">
         {title}
       </h3>
       <dl className="divide-y divide-edge overflow-hidden rounded-lg bg-surface-2">{children}</dl>
@@ -650,7 +665,7 @@ function Row({
     <div className="flex items-baseline justify-between gap-3 px-3 py-2">
       <dt className="min-w-0 text-xs text-ink-dim">
         {label}
-        {hint !== undefined && <span className="block text-[10px] text-ink-faint">{hint}</span>}
+        {hint !== undefined && <span className="block text-xs text-ink-faint">{hint}</span>}
       </dt>
       <dd
         className={`tabular shrink-0 text-sm ${emphasis === true ? 'font-semibold text-ink' : 'text-ink-dim'}`}
@@ -664,9 +679,9 @@ function Row({
 function Stat({ label, value, hint }: { label: string; value: string; hint: string }) {
   return (
     <div className="rounded-lg bg-surface-2 px-2.5 py-2">
-      <dt className="text-[10px] uppercase tracking-wide text-ink-faint">{label}</dt>
+      <dt className="text-xs uppercase tracking-wide text-ink-faint">{label}</dt>
       <dd className="mt-0.5 truncate text-sm font-semibold text-ink">{value}</dd>
-      <p className="truncate text-[10px] text-ink-faint">{hint}</p>
+      <p className="text-xs leading-snug text-ink-faint">{hint}</p>
     </div>
   )
 }

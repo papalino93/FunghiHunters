@@ -57,7 +57,7 @@ export function PotentialBar({
       <div className="mt-1 flex items-baseline justify-between">
         <span className="text-sm font-medium text-ink">condizioni {band}</span>
         {showValue && (
-          <span className="tabular text-[11px] text-ink-faint">{clamped.toFixed(0)}/100</span>
+          <span className="tabular text-xs text-ink-faint">{clamped.toFixed(0)}/100</span>
         )}
       </div>
     </div>

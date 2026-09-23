@@ -11,7 +11,7 @@ export function SourceStatusList({ sources }: { sources: readonly SnapshotSource
   return (
     <ul className="space-y-1.5">
       {sources.map((source) => (
-        <li key={source.name} className="flex items-start gap-2 text-[11px] leading-snug">
+        <li key={source.name} className="flex items-start gap-2 text-xs leading-snug">
           <span
             aria-hidden="true"
             className={`mt-1 inline-block h-2 w-2 shrink-0 rounded-full ${

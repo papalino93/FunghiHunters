@@ -1,5 +1,6 @@
 'use client'
 
+import { formatAge, isSnapshotStale, snapshotAgeHours } from '@/lib/snapshot/freshness'
 import { algorithmVersionMismatch, type Snapshot } from '@/lib/snapshot/types'
 import { SourceStatusList } from '@/components/SourceStatusList'
 import { formatDate } from '@/lib/ui/scale'
@@ -12,19 +13,20 @@ import { formatDate } from '@/lib/ui/scale'
  * nessuno se ne accorge. Qui lo stato è dichiarato, con quanti dati sono arrivati davvero.
  */
 export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
-  const ageDays = daysSince(snapshot.referenceDate)
-  const stale = ageDays > 1
+  // Soglia e motivo in `src/lib/snapshot/freshness.ts` (`STALE_AFTER_HOURS`).
+  const ageHours = ageHoursNow(snapshot)
+  const stale = isSnapshotStale(ageHours)
   const versionMismatch = algorithmVersionMismatch(snapshot)
 
   return (
     <section className="rounded-xl border border-edge bg-surface-1 p-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
         Dati e fonti
       </h2>
 
       <p className={`mt-1.5 text-xs ${stale ? 'text-warn' : 'text-ink-dim'}`}>
         {stale
-          ? `Ultimo calcolo ${ageDays} giorni fa (${formatDate(snapshot.referenceDate)}): i numeri potrebbero non riflettere il meteo recente.`
+          ? `Ultimo calcolo ${formatAge(ageHours)} (${formatDate(snapshot.referenceDate)}): i numeri potrebbero non riflettere il meteo recente.`
           : `Calcolato il ${formatDate(snapshot.referenceDate)} · modello ${snapshot.algorithmVersion}`}
       </p>
 
@@ -40,7 +42,7 @@ export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
         <SourceStatusList sources={snapshot.sources} />
       </div>
 
-      <p className="mt-2 border-t border-edge pt-2 text-[11px] leading-snug text-ink-faint">
+      <p className="mt-2 border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
         {snapshot.uncalibratedParams.length} parametri del modello non hanno ancora una fonte in
         letteratura e sono dichiarati da calibrare. Compaiono marcati così anche nella spiegazione
         dei punteggi.
@@ -49,7 +51,10 @@ export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
   )
 }
 
-function daysSince(date: string): number {
-  const then = Date.parse(`${date}T12:00:00Z`)
-  return Math.max(0, Math.floor((Date.now() - then) / 86_400_000))
+/**
+ * L'orologio sta qui, fuori dal corpo del componente, come stava il vecchio `daysSince`: la
+ * logica e la soglia restano pure (e testate) in `freshness.ts`, che l'ora la riceve.
+ */
+function ageHoursNow(snapshot: Snapshot): number {
+  return snapshotAgeHours(snapshot, Date.now())
 }

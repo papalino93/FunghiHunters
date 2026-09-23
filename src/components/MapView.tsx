@@ -360,7 +360,7 @@ function MapErrorState({ onRetry }: { onRetry: () => void }) {
         <button
           type="button"
           onClick={onRetry}
-          className="mt-3 rounded-lg border border-edge bg-surface-2 px-3 py-1.5 text-xs
+          className="mt-3 min-h-11 rounded-lg border border-edge bg-surface-2 px-4 text-sm
                      font-medium text-ink transition-colors hover:bg-surface-3
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >

@@ -8,7 +8,7 @@
  */
 export function ModelLimitsNotice() {
   return (
-    <p className="text-[11px] leading-snug text-ink-faint">
+    <p className="text-xs leading-snug text-ink-faint">
       L&apos;indice descrive condizioni ambientali compatibili con la fruttificazione, non la
       presenza reale di funghi: non indica quantità, commestibilità né sicurezza della raccolta.
     </p>

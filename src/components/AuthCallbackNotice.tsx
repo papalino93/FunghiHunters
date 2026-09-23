@@ -39,7 +39,7 @@ export function AuthCallbackNotice() {
             * esattamente il pezzo che gli manca per sistemarlo.
             */}
           {error.configuration && (
-            <p className="mt-1 text-[11px] text-ink-dim">
+            <p className="mt-1 text-xs text-ink-dim">
               Codice <span className="font-mono">{error.code}</span>
               {error.detail !== null && <> — {error.detail}</>}
               <br />

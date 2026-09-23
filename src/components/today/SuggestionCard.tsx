@@ -22,12 +22,18 @@ import { formatDate } from '@/lib/ui/scale'
 export function SuggestionCard({
   suggestion,
   today,
+  date = today,
   region,
   following = false,
   onToggleFollow,
 }: {
   suggestion: Suggestion
   today: string
+  /**
+   * Il giorno che l'utente sta guardando in home. Viaggia nell'indirizzo della mappa: prima la
+   * scheda ripartiva sempre da oggi, e chi aveva scelto sabato si ritrovava a leggere mercoledì.
+   */
+  date?: string
   region?: { readonly slug: string; readonly catalogue: boolean }
   /** `true` se questa zona è fra quelle che l'utente segue — vedi "Le tue zone" in home. */
   readonly following?: boolean
@@ -36,7 +42,7 @@ export function SuggestionCard({
 }) {
   const { zone, mpi, distanceKm, bestDay } = suggestion
   const facts = zoneFacts(zone)
-  const betterLater = bestDay !== null && bestDay.date !== today && bestDay.mpi > mpi + 3
+  const betterLater = bestDay !== null && bestDay.date !== date && bestDay.mpi > mpi + 3
 
   return (
     <article className="rounded-xl border border-edge bg-surface-1 p-3.5">
@@ -44,7 +50,7 @@ export function SuggestionCard({
         <div className="flex min-w-0 items-baseline gap-1.5">
           <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
           {following && (
-            <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+            <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-xs font-medium text-accent">
               seguita
             </span>
           )}
@@ -69,13 +75,13 @@ export function SuggestionCard({
 
       <ul className="mt-2.5 space-y-1.5">
         {facts.good !== null && (
-          <li className="flex gap-2 text-xs leading-snug text-ink-dim">
+          <li className="flex gap-2 text-sm leading-snug text-ink-dim">
             <Mark kind="good" />
             {facts.good}
           </li>
         )}
         {facts.bad !== null && (
-          <li className="flex gap-2 text-xs leading-snug text-ink-dim">
+          <li className="flex gap-2 text-sm leading-snug text-ink-dim">
             <Mark kind="bad" />
             {facts.bad}
           </li>
@@ -83,21 +89,25 @@ export function SuggestionCard({
       </ul>
 
       <p className="mt-2.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-dim">
-        {betterLater ? (
-          <span>
-            Meglio <strong className="font-medium text-ink">{formatDate(bestDay.date)}</strong>
-          </span>
-        ) : (
-          <span>Nessun giorno migliore in vista</span>
+        {/*
+          * Solo quando c'è davvero un giorno migliore: «Nessun giorno migliore in vista» ripetuto
+          * identico su ogni scheda era rumore, e il suo contrario si nota comunque.
+          */}
+        {betterLater && (
+          <>
+            <span>
+              Meglio <strong className="font-medium text-ink">{formatDate(bestDay.date)}</strong>
+            </span>
+            <span aria-hidden="true" className="text-ink-faint">
+              ·
+            </span>
+          </>
         )}
-        <span aria-hidden="true" className="text-ink-faint">
-          ·
-        </span>
         <Reliability dataQuality={zone.dataQuality} hasStations={zone.stations.length > 0} />
       </p>
 
       <Link
-        href={mapHref(zone.code, region)}
+        href={mapHref(zone.code, region, date === today ? null : date)}
         className="mt-3 flex min-h-11 items-center justify-center rounded-lg border border-edge
                    bg-surface-2 text-sm font-medium text-ink transition-colors hover:bg-surface-3
                    focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
@@ -119,10 +129,16 @@ export function SuggestionCard({
  * regione di riferimento potrebbe essere un'altra, e senza il parametro la mappa aprirebbe quella
  * — che e' il difetto per cui da una zona trentina si finiva a guardare la Toscana.
  */
-function mapHref(code: string, region?: { readonly slug: string; readonly catalogue: boolean }): string {
-  const zona = `zona=${encodeURIComponent(code)}`
-  if (region === undefined || !region.catalogue) return `/mappa?${zona}`
-  return `/mappa?regione=${encodeURIComponent(region.slug)}&${zona}`
+function mapHref(
+  code: string,
+  region: { readonly slug: string; readonly catalogue: boolean } | undefined,
+  date: string | null,
+): string {
+  const params = new URLSearchParams()
+  if (region !== undefined && region.catalogue) params.set('regione', region.slug)
+  params.set('zona', code)
+  if (date !== null) params.set('giorno', date)
+  return `/mappa?${params.toString()}`
 }
 
 function Mark({ kind }: { kind: 'good' | 'bad' }) {

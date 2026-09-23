@@ -198,7 +198,7 @@ export function EntryForm({
         </Field>
 
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Quanti ne hai trovati
           </legend>
           <div className="grid grid-cols-3 gap-1.5">
@@ -220,7 +220,7 @@ export function EntryForm({
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
+          <p className="mt-1.5 text-xs leading-snug text-ink-faint">
             Una scala grossolana basta: serve a ordinare gli esiti, non a pesare il raccolto.
           </p>
         </fieldset>
@@ -258,22 +258,22 @@ export function EntryForm({
           </Field>
         </div>
         {!durationValid && (
-          <p className="-mt-2 text-[11px] text-danger">
+          <p className="-mt-2 text-xs text-danger">
             Fra {DURATION_MINUTES_MIN} e {DURATION_MINUTES_MAX} minuti.
           </p>
         )}
         {!searchersValid && (
-          <p className="-mt-2 text-[11px] text-danger">
+          <p className="-mt-2 text-xs text-danger">
             Fra {SEARCHERS_MIN} e {SEARCHERS_MAX} persone.
           </p>
         )}
-        <p className="-mt-2 text-[11px] leading-snug text-ink-faint">
+        <p className="-mt-2 text-xs leading-snug text-ink-faint">
           Servono a leggere meglio uno &quot;zero&quot;: dopo dieci minuti non dice molto, dopo
           quattro ore sì. Facoltativi entrambi.
         </p>
 
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Posizione del punto trovato
           </legend>
           {capturedPosition !== null ? (
@@ -281,7 +281,7 @@ export function EntryForm({
               <p className="text-xs leading-snug text-ink-dim">
                 Posizione GPS salvata: {capturedPosition.latitude.toFixed(5)},{' '}
                 {capturedPosition.longitude.toFixed(5)}
-                <span className="mt-0.5 block text-[11px] text-ink-faint">
+                <span className="mt-0.5 block text-xs text-ink-faint">
                   Basterà questa per ritrovare il punto in futuro.
                 </span>
               </p>
@@ -309,24 +309,24 @@ export function EntryForm({
                 {gpsState === 'asking' ? 'Attendo la posizione…' : 'Usa la mia posizione'}
               </button>
               {gpsState === 'denied' && (
-                <p className="mt-1.5 text-[11px] leading-snug text-warn">
+                <p className="mt-1.5 text-xs leading-snug text-warn">
                   Permesso negato. Senza, si salva il punto di riferimento della zona, non il posto
                   esatto in cui hai cercato.
                 </p>
               )}
               {gpsState === 'unavailable' && (
-                <p className="mt-1.5 text-[11px] leading-snug text-warn">
+                <p className="mt-1.5 text-xs leading-snug text-warn">
                   Posizione non disponibile qui. Si salva il punto di riferimento della zona invece
                   del posto esatto.
                 </p>
               )}
               {gpsState === 'timeout' && (
-                <p className="mt-1.5 text-[11px] leading-snug text-warn">
+                <p className="mt-1.5 text-xs leading-snug text-warn">
                   Il GPS non ha risposto in tempo. Puoi riprovare, o proseguire con il punto di
                   riferimento della zona.
                 </p>
               )}
-              <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
+              <p className="mt-1.5 text-xs leading-snug text-ink-faint">
                 Senza posizione GPS si salva solo il riferimento generico della zona: utile per la
                 calibrazione, ma non per ritrovare il punto esatto.
               </p>
@@ -348,7 +348,7 @@ export function EntryForm({
         </Field>
 
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Alberi presenti <span className="normal-case tracking-normal">(facoltativo)</span>
           </legend>
           <div className="flex flex-wrap gap-1.5">
@@ -370,7 +370,7 @@ export function EntryForm({
               </button>
             ))}
           </div>
-          <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
+          <p className="mt-1.5 text-xs leading-snug text-ink-faint">
             Aiuta a riconoscere l&apos;habitat in futuro, qui e nelle altre uscite.
           </p>
         </fieldset>
@@ -388,7 +388,7 @@ export function EntryForm({
         </Field>
 
         <fieldset>
-          <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Precisione della posizione salvata
           </legend>
           <div className="flex gap-1.5">
@@ -404,7 +404,7 @@ export function EntryForm({
                   onClick={() => { setPrivacy(level) }}
                   disabled={disabled}
                   aria-pressed={active}
-                  className={`min-h-11 flex-1 rounded-lg border px-2 text-[11px] font-medium
+                  className={`min-h-11 flex-1 rounded-lg border px-2 text-xs font-medium
                               transition-colors focus:outline-none focus-visible:ring-2
                               focus-visible:ring-accent disabled:cursor-not-allowed
                               disabled:opacity-40 ${
@@ -418,7 +418,7 @@ export function EntryForm({
               )
             })}
           </div>
-          <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">
+          <p className="mt-1.5 text-xs leading-snug text-ink-faint">
             {capturedPosition === null
               ? 'Acquisisci la posizione qui sopra per poter salvare più di "solo la zona".'
               : 'L’arrotondamento è definitivo: una volta salvata l’area, le coordinate precise non esistono più.'}
@@ -428,14 +428,14 @@ export function EntryForm({
             * saperlo prima di salvare, non scoprirlo dopo controllando Account.
             */}
           {auth.status === 'signed-in' && privacy === 'exact' && capturedPosition !== null && (
-            <p className="mt-1.5 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-dim">
+            <p className="mt-1.5 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-dim">
               Sei connesso: queste coordinate esatte verranno sincronizzate nel tuo account cloud,
               non solo su questo dispositivo.
             </p>
           )}
         </fieldset>
 
-        <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-faint">
+        <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-faint">
           {point === undefined ? (
             <>
               Per questo giorno lo snapshot non ha un punteggio: la voce si salva comunque, ma non
@@ -473,14 +473,14 @@ export function EntryForm({
         </button>
       </div>
       {abundance === null && (
-        <p className="mt-2 text-center text-[11px] text-ink-faint">
+        <p className="mt-2 text-center text-xs text-ink-faint">
           Scegli quanti ne hai trovati per salvare.
         </p>
       )}
       {saveError !== null && (
         <p
           role="alert"
-          className="mt-2 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-2 text-[11px]
+          className="mt-2 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-2 text-xs
                      leading-snug text-danger"
         >
           {saveError} La voce non è stata registrata: puoi riprovare.
@@ -505,7 +505,7 @@ function Field({
     <div>
       <label
         htmlFor={htmlFor}
-        className="mb-1.5 block text-[11px] font-semibold uppercase tracking-wide text-ink-faint"
+        className="mb-1.5 block text-xs font-semibold uppercase tracking-wide text-ink-faint"
       >
         {label}
         {optional === true && <span className="ml-1 normal-case tracking-normal">(facoltativo)</span>}

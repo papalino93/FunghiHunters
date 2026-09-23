@@ -23,8 +23,8 @@ export function reliabilityLabel(
 ): { readonly label: string; readonly colour: string } {
   if (!hasStations) {
     return dataQuality >= 50
-      ? { label: 'stima da modello', colour: 'text-ink-dim' }
-      : { label: 'stima da modello, incerta', colour: 'text-warn' }
+      ? { label: 'anteprima, solo modello', colour: 'text-ink-dim' }
+      : { label: 'anteprima, solo modello, incerta', colour: 'text-warn' }
   }
   if (dataQuality >= 70) return { label: 'stima solida', colour: 'text-accent' }
   if (dataQuality >= 50) return { label: 'stima discreta', colour: 'text-ink-dim' }

@@ -18,26 +18,26 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
 
   return (
     <section className="rounded-xl border border-edge bg-surface-1 p-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
         Il punteggio ci prende?
       </h2>
       <p className="mt-1.5 text-xs leading-relaxed text-ink-dim">{report.verdict}</p>
 
       {report.usable > 0 && (
-        <p className="mt-1 text-[11px] text-ink-faint">
+        <p className="mt-1 text-xs text-ink-faint">
           Con la durata della ricerca: {report.contextual} su {report.usable}. Solo per quelle uno
           &quot;zero&quot; si legge davvero.
         </p>
       )}
 
       {report.shortSearchCaveat !== null && (
-        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-warn">
+        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-warn">
           {report.shortSearchCaveat}
         </p>
       )}
 
       {report.hasSignal && report.biasDirection !== null && report.biasDirection !== 'nessuna' && (
-        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-ink-dim">
+        <p className="mt-2 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-dim">
           {report.biasDirection === 'sovrastima'
             ? 'Il modello tende a sovrastimare: assegna probabilità più alte di quante se ne osservino davvero.'
             : 'Il modello tende a sottostimare: assegna probabilità più basse di quante se ne osservino davvero.'}
@@ -54,7 +54,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
                   className="h-3 w-3 shrink-0 rounded-sm"
                   style={{ backgroundColor: mpiColor((band.from + band.to) / 2) }}
                 />
-                <span className="w-28 shrink-0 truncate text-[11px] text-ink-dim">
+                <span className="w-28 shrink-0 truncate text-xs text-ink-dim">
                   {band.label}
                 </span>
                 <span className="relative h-4 flex-1 overflow-hidden rounded bg-surface-2">
@@ -65,7 +65,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
                     />
                   )}
                 </span>
-                <span className="tabular w-16 shrink-0 text-right text-[11px] text-ink-faint">
+                <span className="tabular w-16 shrink-0 text-right text-xs text-ink-faint">
                   {band.count === 0
                     ? '—'
                     : `${band.count} · ${(band.successRate * 100).toFixed(0)}%`}
@@ -73,7 +73,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[11px] leading-snug text-ink-faint">
+          <p className="mt-2 text-xs leading-snug text-ink-faint">
             Per ogni fascia di punteggio previsto: quante uscite e in quante hai trovato almeno
             qualcosa. Se la percentuale non cresce scendendo verso il basso, il punteggio non sta
             ordinando nulla.
@@ -82,7 +82,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
       )}
 
       {report.hasSignal && report.rankCorrelation !== null && (
-        <p className="mt-2 border-t border-edge pt-2 text-[11px] text-ink-faint">
+        <p className="mt-2 border-t border-edge pt-2 text-xs text-ink-faint">
           Correlazione di rango fra previsto e osservato:{' '}
           <span className="tabular text-ink-dim">{report.rankCorrelation.toFixed(2)}</span>. Di
           rango e non lineare, perché &laquo;molti&raquo; non è il doppio di &laquo;discreti&raquo;.
@@ -95,7 +95,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
             type="button"
             onClick={() => { setDetail((v) => !v) }}
             aria-expanded={detail}
-            className="text-[11px] font-medium text-ink-dim underline decoration-dotted
+            className="text-xs font-medium text-ink-dim underline decoration-dotted
                        underline-offset-2 hover:text-ink focus:outline-none focus-visible:ring-2
                        focus-visible:ring-accent"
           >
@@ -118,7 +118,7 @@ function CalibrationDetail({ report }: { report: CalibrationReport }) {
   const { brier, classification: c } = report
 
   return (
-    <div className="mt-2 space-y-3 text-[11px] leading-snug text-ink-dim">
+    <div className="mt-2 space-y-3 text-xs leading-snug text-ink-dim">
       {brier.modelScore !== null && (
         <div>
           <p className="font-medium text-ink-faint">Brier score (più basso è meglio)</p>

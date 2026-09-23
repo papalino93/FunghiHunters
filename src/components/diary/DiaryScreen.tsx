@@ -143,7 +143,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
         <div className="flex items-start justify-between gap-2">
           <h1 className="text-xl font-semibold tracking-tight text-ink">Diario uscite</h1>
           {auth.status === 'signed-in' && (
-            <span className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-edge bg-surface-1 px-2 py-1 text-[10px] font-medium text-ink-dim">
+            <span className="mt-1 inline-flex shrink-0 items-center gap-1.5 rounded-full border border-edge bg-surface-1 px-2 py-1 text-xs font-medium text-ink-dim">
               <span
                 className={`h-1.5 w-1.5 rounded-full ${
                   diarySync.status === 'synced'
@@ -237,7 +237,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
 
       {entries.length > 0 && (
         <>
-          <h2 className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+          <h2 className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             {entries.length} {entries.length === 1 ? 'uscita' : 'uscite'}
           </h2>
           <ul className="space-y-2">
@@ -272,7 +272,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       )}
 
       <section className="mt-5 rounded-xl border border-edge bg-surface-1 p-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           I tuoi dati
         </h2>
         {auth.status === 'signed-in' && diarySync.accountMismatch ? (
@@ -402,7 +402,7 @@ function EntryRow({
             )}
           </p>
           {entry.positionSource === 'gps' && (
-            <p className="mt-0.5 text-[11px] text-ink-faint">
+            <p className="mt-0.5 text-xs text-ink-faint">
               posizione GPS salvata, puoi ritrovare il punto
             </p>
           )}
@@ -411,7 +411,7 @@ function EntryRow({
               {entry.trees.map((species) => (
                 <li
                   key={species}
-                  className="rounded-full bg-surface-2 px-2 py-0.5 text-[10px] text-ink-dim"
+                  className="rounded-full bg-surface-2 px-2 py-0.5 text-xs text-ink-dim"
                 >
                   {TREE_LABELS[species]}
                 </li>

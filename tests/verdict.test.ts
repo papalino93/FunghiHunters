@@ -27,6 +27,8 @@ function zone(
     negativeFactors?: Array<{ key: string; label: string; contribution: number }>
     forest?: readonly string[]
     forestFraction?: number
+    /** `true` per una zona tarata sulle stazioni (le sette toscane), `false` per solo modello. */
+    withStations?: boolean
   } = {},
 ): SnapshotZone {
   const mpi = o.mpi ?? 10
@@ -53,7 +55,11 @@ function zone(
       value: '',
       provenance: 'calibrate' as const,
     })),
-    neutralFactors: [], stations: [],
+    neutralFactors: [],
+    stations: o.withStations === true
+      ? [{ code: 's1', name: 'Stazione', latitude: 44, longitude: 10.4, elevationM: 900, distanceKm: 3,
+          elevationDiffM: 100, effectiveKm: 4, variable: 'pioggia' }]
+      : [],
     bestWindow: null, observedDays: 60, windowDays: 61, lastObservedDate: '2026-09-16',
     thermalOptimumC: o.optimum ?? 13, lapseRateCPerKm: null,
   }
@@ -104,7 +110,46 @@ describe('il verdetto risponde in parole', () => {
     expect(verdictFor([zone('a', { mpi: 30 })]).tone).toBe('weak')
     expect(verdictFor([zone('a', { mpi: 50 })]).tone).toBe('worth')
     expect(verdictFor([zone('a', { mpi: 70 })]).tone).toBe('good')
-    expect(verdictFor([zone('a', { mpi: 70 })]).headline).toBe('Oggi sì.')
+    expect(verdictFor([zone('a', { mpi: 70, withStations: true })]).headline).toBe('Oggi sì.')
+  })
+
+  it('senza stazioni un verdetto positivo dice che viene dal solo modello', () => {
+    const good = verdictFor([zone('a', { mpi: 98 })])
+    expect(good.tone).toBe('good')
+    expect(good.modelOnly).toBe(true)
+    expect(good.headline).toBe('Oggi buone condizioni, secondo il modello.')
+    expect(verdictFor([zone('a', { mpi: 50 })]).headline).toContain('secondo il modello')
+    // Un no resta un no: non serve ammorbidirlo.
+    expect(verdictFor([zone('a', { mpi: 10 })]).headline).toBe('Oggi no.')
+    expect(verdictFor([zone('a', { mpi: 70, withStations: true })]).modelOnly).toBe(false)
+  })
+
+  it('non propone come giorno migliore il giorno stesso di cui parla', () => {
+    // Serie piatta a 98 da oggi: il vecchio confronto con il primo giorno di storia diceva
+    // «meglio 2026-09-17» proprio il 17.
+    const flat = zone('carrega', {
+      mpi: 98,
+      series: [
+        { date: '2026-08-01', mpi: 20 },
+        { date: TODAY, mpi: 98 },
+        { date: '2026-09-18', mpi: 98 },
+      ],
+    })
+    expect(verdictFor([flat]).advice).toBe('carrega.')
+    const later = zone('carrega', {
+      mpi: 60,
+      series: [
+        { date: TODAY, mpi: 60 },
+        { date: '2026-09-18', mpi: 80 },
+      ],
+    })
+    expect(verdictFor([later]).advice).toBe('carrega, meglio 2026-09-18.')
+  })
+
+  it('con due zone quasi pari non dice che una è l unica', () => {
+    const v = verdictFor([zone('pratomagno', { mpi: 19, water: 42 }), zone('garfagnana', { mpi: 18 })])
+    expect(v.advice).not.toContain("l'unica")
+    expect(v.advice).toContain('messa meglio')
   })
 
   it('quando manca acqua lo dice invece di parlare di temperatura', () => {

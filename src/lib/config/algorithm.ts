@@ -53,6 +53,14 @@ export interface EvidenceAssessment {
   /** Perche' vale (o non vale, o vale con cautela) per il porcino in Toscana. */
   readonly transferability: string
   readonly status: 'applicable' | 'applicable-with-caution' | 'not-applicable-without-calibration'
+  /**
+   * La stessa cautela in una riga, per chi usa l'app: `transferability` resta il ragionamento
+   * completo per chi rivede il modello (riferimenti ad altri parametri, ricerche secondarie,
+   * date di verifica), ma mostrata cosi' com'e' nella scheda "Perche'" era un appunto di lavoro
+   * in arancio da 10 px, non un'avvertenza. Obbligatoria per ogni fonte non `applicable`
+   * (verificato in `tests/model.test.ts`): senza, la scheda non mostrerebbe alcuna cautela.
+   */
+  readonly userCaution?: string
 }
 
 export interface Param {
@@ -190,6 +198,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'non un valore numerico. Per ora sostiene l\'impianto del modello — il meteo come predittore ' +
       'a breve termine — non un singolo parametro.',
     status: 'applicable-with-caution',
+    userCaution: 'Studio sulle abetine toscane: vale soprattutto dove c\'è abete.',
   },
   salerni2004: {
     speciesStudied: 'Boletus edulis s.l.',
@@ -208,6 +217,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'si volesse introdurre un fattore di gestione forestale, e la ragione per cui ' +
       '`water.canopyDensity` (oggi sempre nullo) non e\' un dettaglio cosmetico.',
     status: 'applicable-with-caution',
+    userCaution: 'Misurato in rimboschimenti di abete sul Monte Amiata: altrove è un\'indicazione, non una misura.',
   },
   salerni2002: {
     speciesStudied: 'Macrofunghi in generale (non solo Boletus edulis)',
@@ -221,6 +231,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'faggeta). Usata solo come corroborazione indipendente del ritardo di 12 giorni misurato da ' +
       'Salerni 2023 sull\'Amiata, non come fonte primaria di nessun parametro.',
     status: 'applicable-with-caution',
+    userCaution: 'Studio sui querceti della Toscana meridionale: in altri boschi è un\'indicazione, non una misura.',
   },
   habitatItalia: {
     speciesStudied: 'Boletus edulis (porcino estivo e autunnale, distinzione tradizionale)',
@@ -236,6 +247,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'uno studio quantitativo: nessun numero qui ha un margine d\'errore dichiarato. Trattata come ' +
       'punto di partenza da correggere col diario, non come misura.',
     status: 'applicable-with-caution',
+    userCaution: 'Indicazione generale della letteratura italiana, non uno studio su un sito preciso.',
   },
   brejon2026: {
     speciesStudied: 'Boletus edulis',
@@ -263,6 +275,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       '"quanto conta la temperatura" non e\' universale nemmeno fra siti europei, e rafforza — non ' +
       'indebolisce — la cautela gia\' dichiarata qui.',
     status: 'applicable-with-caution',
+    userCaution: 'Studio su una faggeta tedesca, non ancora revisionato: usato solo per l\'autunno in quota.',
   },
   karavani2018: {
     speciesStudied: 'Funghi ectomicorrizici in generale (non Boletus edulis specificamente)',
@@ -276,6 +289,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'pineta, non porcino in faggeta/querceto). Usata solo per corroborare l\'ordine di grandezza ' +
       'della finestra idrica di 26 giorni, non come fonte primaria di nessun parametro.',
     status: 'applicable-with-caution',
+    userCaution: 'Studio su pinete spagnole: per i boschi italiani è un\'indicazione, non una misura.',
   },
   sirCrossValidation2026: {
     speciesStudied: 'Non applicabile — non riguarda il fungo, riguarda l\'interpolazione meteo',
@@ -305,6 +319,17 @@ const EVIDENCE_BY_CITATION_TEXT: ReadonlyMap<string, EvidenceAssessment> = new M
 
 export function evidenceForSource(source: string | undefined): EvidenceAssessment | undefined {
   return source === undefined ? undefined : EVIDENCE_BY_CITATION_TEXT.get(source)
+}
+
+/**
+ * La riga di cautela da mostrare accanto a una fonte, oppure `undefined` se la fonte vale cosi'
+ * com'e'. Cerca per testo di citazione, come `evidenceForSource`: la scheda la usa sulla fonte
+ * salvata nello snapshot invece del testo di cautela salvato insieme, cosi' anche gli snapshot gia'
+ * pubblicati (che contengono ancora il ragionamento completo) mostrano la versione breve.
+ */
+export function userCautionForSource(source: string | undefined): string | undefined {
+  const evidence = evidenceForSource(source)
+  return evidence === undefined || evidence.status === 'applicable' ? undefined : evidence.userCaution
 }
 
 // ============================================================================

@@ -38,8 +38,8 @@ export function FollowedZonesSection({
   if (state.zones.length === 0) {
     return (
       <p className="text-xs leading-snug text-ink-faint">
-        Nessuna zona seguita. Tocca <span className="text-ink-dim">★ Segui</span> su una scheda
-        per ritrovarla qui.
+        Nessuna zona seguita. Tocca la <span className="text-ink-dim">★</span> su una scheda per
+        ritrovarla qui.
       </p>
     )
   }
@@ -62,14 +62,14 @@ export function FollowedZonesSection({
   return (
     <section aria-labelledby="le-tue-zone">
       <div className="mb-2 flex items-baseline justify-between">
-        <p id="le-tue-zone" className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <p id="le-tue-zone" className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           Le tue zone
         </p>
         {sorted.length > COLLAPSED_LIMIT && (
           <button
             type="button"
             onClick={() => { setExpanded((v) => !v) }}
-            className="min-h-11 text-[11px] font-medium text-ink-dim underline underline-offset-2
+            className="min-h-11 text-xs font-medium text-ink-dim underline underline-offset-2
                        hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
             {expanded ? 'mostra meno' : `mostra tutte (${sorted.length})`}

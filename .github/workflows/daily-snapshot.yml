@@ -51,7 +51,15 @@ jobs:
       - run: npm run typecheck
       - run: npm run test
 
+      # `continue-on-error` anche qui, per un motivo diverso da quello del passo nazionale: se una
+      # fonte giornaliera e' giu' (il SIR che non risponde), lo script toscano scrive lo stesso lo
+      # snapshot dal solo modello, con la fonte dichiarata "down", e poi esce con 1. Quel file va
+      # committato, e il passo nazionale deve girare comunque. Il fallimento non si perde: lo
+      # raccoglie l'ultimo passo, che fa diventare rossa la corsa dopo il commit. Se invece manca
+      # Open-Meteo lo script esce senza scrivere niente, e resta lo snapshot di ieri.
       - name: Calcola lo snapshot
+        id: toscana
+        continue-on-error: true
         run: npx tsx scripts/build-snapshot.ts --stations 45
 
       # Le zone fuori dalla Toscana: solo modello meteo, nessuna stazione da scaricare. Costano
@@ -63,11 +71,23 @@ jobs:
       # `continue-on-error` non e' pigrizia: senza, un limite di frequenza sul pezzo nazionale
       # farebbe saltare il commit e la Toscana perderebbe il suo aggiornamento del giorno, che e'
       # la parte del sito con le stazioni vere dietro. Il pezzo nazionale puo' saltare un giro.
+      #
+      # Saltarlo pero' non vuol dire saltarlo in silenzio: da solo, `continue-on-error` lasciava
+      # la corsa verde anche con il nazionale fallito, e nessuno lo sapeva finche' non apriva i
+      # log. L'`id` serve all'ultimo passo per leggerne l'esito vero (`outcome` resta "failure"
+      # anche quando `continue-on-error` rende "success" la `conclusion`). Un singolo lotto
+      # Open-Meteo perso non fa fallire lo script: le regioni colpite tengono il file di ieri e
+      # compaiono in un avviso in cima alla corsa. Fallisce solo se non si e' salvato niente.
       - name: Calcola lo snapshot nazionale
+        id: nazionale
         if: github.event.schedule != '5 23 * * *'
         continue-on-error: true
         run: npx tsx scripts/build-snapshot-italia.ts
 
+      # Nessun `if: always()`: grazie a `continue-on-error` i due passi di calcolo non fermano il
+      # job, quindi il commit gira anche quando hanno fallito. Resta invece fermo quando sono
+      # falliti typecheck o test (numeri da un motore rotto non vanno in mappa) o quando la corsa
+      # e' stata annullata a meta'.
       - name: Commit se qualcosa e' cambiato
         run: |
           git config user.name "github-actions[bot]"
@@ -89,3 +109,15 @@ jobs:
             git pull --rebase origin main
             git push
           fi
+
+      # Per ultimo, dopo il commit: i dati che si sono potuti calcolare sono gia' salvati, e solo
+      # ora la corsa diventa rossa — cosi' GitHub manda l'email di fallimento al proprietario
+      # invece di lasciare un job verde con un pezzo mancante.
+      - name: Segnala i calcoli falliti
+        if: ${{ !cancelled() && (steps.toscana.outcome == 'failure' || steps.nazionale.outcome == 'failure') }}
+        env:
+          TOSCANA: ${{ steps.toscana.outcome }}
+          NAZIONALE: ${{ steps.nazionale.outcome }}
+        run: |
+          echo "::error title=Snapshot incompleto::snapshot toscano: $TOSCANA, nazionale: $NAZIONALE. I dati calcolati sono stati committati, il resto e' rimasto alla corsa precedente: dettagli nelle annotazioni e nei log dei due passi."
+          exit 1

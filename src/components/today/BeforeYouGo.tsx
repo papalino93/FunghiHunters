@@ -116,7 +116,7 @@ export function BeforeYouGo({
           </Block>
 
           {isToscana && (
-            <p className="border-t border-edge pt-2.5 text-[11px] text-ink-faint">
+            <p className="border-t border-edge pt-2.5 text-xs text-ink-faint">
               Norme da L.R. Toscana 16/1999 e successive modifiche, verificate il {RULES_CHECKED_ON}{' '}
               su{' '}
               <a
@@ -131,13 +131,13 @@ export function BeforeYouGo({
             </p>
           )}
 
-          <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-warn">
+          <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-warn">
             L&apos;app non riconosce le specie e non dice mai se un fungo è commestibile. Per
             quello esistono gli ispettorati micologici delle ASL, che offrono il controllo
             gratuito.
           </p>
 
-          <p className="text-[11px] text-ink-faint">
+          <p className="text-xs text-ink-faint">
             <Link
               href="/guida#regole"
               className="underline decoration-dotted underline-offset-2 hover:text-ink-dim"
@@ -154,7 +154,7 @@ export function BeforeYouGo({
 function Block({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div>
-      <h3 className="mb-0.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h3 className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
         {title}
       </h3>
       <p>{children}</p>

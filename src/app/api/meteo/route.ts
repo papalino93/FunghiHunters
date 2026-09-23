@@ -23,6 +23,8 @@ import { reverseGeocode } from '@/lib/sources/nominatim'
  */
 export const revalidate = 0
 
+const MAX_QUERY_LENGTH = 100
+
 function isValidLatitude(value: number): boolean {
   return Number.isFinite(value) && value >= -90 && value <= 90
 }
@@ -59,6 +61,19 @@ export async function GET(request: Request): Promise<NextResponse> {
     }
 
     if (q !== null) {
+      /*
+       * Limiti sulla ricerca prima di girarla a Open-Meteo. Sotto i due caratteri non c'è un
+       * nome di luogo da cercare (e il client non li manda); sopra i cento nessun comune italiano
+       * ci arriva, e una stringa lunga a piacere è solo un modo di far lavorare il servizio
+       * esterno a nostro nome. Contano i caratteri dopo `trim`, come in `searchPlaces`.
+       */
+      const length = q.trim().length
+      if (length < 2 || length > MAX_QUERY_LENGTH) {
+        return NextResponse.json(
+          { error: `La ricerca deve avere fra 2 e ${String(MAX_QUERY_LENGTH)} caratteri` },
+          { status: 400 },
+        )
+      }
       const results = await searchPlaces(q)
       return NextResponse.json({ results })
     }

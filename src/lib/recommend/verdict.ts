@@ -26,6 +26,12 @@ export interface Verdict {
   readonly outlook: string | null
   /** Suggerimento operativo, se ne esiste uno sensato. */
   readonly advice: string | null
+  /**
+   * `true` se la zona di cui parla il verdetto non ha nemmeno una stazione vicina: il punteggio
+   * viene solo dal modello meteo, mai confrontato con misure. Serve alla scheda per dirlo in
+   * chiaro accanto al titolo, non in grigio piccolo sotto.
+   */
+  readonly modelOnly: boolean
 }
 
 /** Le bande della scala, con il nome che compare in UI. */
@@ -102,6 +108,7 @@ export function buildVerdict(input: VerdictInput): Verdict {
       reason: 'I filtri attivi escludono tutte le aree coperte.',
       outlook: null,
       advice: null,
+      modelOnly: false,
     }
   }
 
@@ -121,12 +128,15 @@ export function buildVerdict(input: VerdictInput): Verdict {
   const limit = top.zone.limitingFactor
   const regional = dominantLimit(zones)
 
+  const modelOnly = top.zone.stations.length === 0
+
   return {
     tone,
-    headline: headlineFor(tone, date === today),
+    headline: headlineFor(tone, date === today, modelOnly),
     reason: reasonFor(tone, top, limit, regional, zones, date),
     outlook: outlookFor(best, top, date, formatDate),
-    advice: adviceFor(tone, top, formatDate),
+    advice: adviceFor(tone, top, date, formatDate),
+    modelOnly,
   }
 }
 
@@ -137,8 +147,20 @@ export function toneFor(mpi: number): VerdictTone {
   return 'good'
 }
 
-function headlineFor(tone: VerdictTone, isToday: boolean): string {
+/**
+ * Il titolo del verdetto.
+ *
+ * **Senza stazioni il sì non è secco.** Con la copertura nazionale una zona di solo modello poteva
+ * scrivere «Oggi sì.» a 98/100, mentre le sette zone toscane tarate sulle stazioni non superavano
+ * 24: dove la stima è più debole l'app sembrava più sicura. Il punteggio resta quello (cambiarlo
+ * senza dati vorrebbe dire cambiare il modello), ma un verdetto positivo detto dal solo modello lo
+ * dichiara nel titolo. I verdetti negativi restano asciutti: sbagliare un «no» costa un'uscita
+ * mancata, sbagliare un «sì» costa una giornata e un viaggio.
+ */
+function headlineFor(tone: VerdictTone, isToday: boolean, modelOnly: boolean): string {
   const when = isToday ? 'Oggi' : 'Quel giorno'
+  if (modelOnly && tone === 'good') return `${when} buone condizioni, secondo il modello.`
+  if (modelOnly && tone === 'worth') return `${when} potrebbe valerne la pena, secondo il modello.`
   switch (tone) {
     case 'no':
       return `${when} no.`
@@ -267,20 +289,29 @@ function outlookFor(
 function adviceFor(
   tone: VerdictTone,
   top: Suggestion,
+  date: string,
   formatDate: (date: string) => string,
 ): string | null {
   const where = `${top.zone.name}${top.distanceKm === null ? '' : `, a ${top.distanceKm.toFixed(0)} km`}`
 
   switch (tone) {
     case 'no':
-      return `Se esci lo stesso, ${where} è l'unica con qualcosa: ${strengthOf(top)}.`
+      // «quella messa meglio», non «l'unica con qualcosa»: la prima è quasi sempre vera per un
+      // punto o due (19 contro 18), e allora «l'unica» era falso proprio nella frase da seguire.
+      return `Se esci lo stesso, ${where} è quella messa meglio: ${strengthOf(top)}.`
     case 'weak':
       return `Se ci vai, ${where}: ${strengthOf(top)}.`
     case 'worth':
     case 'good':
       return (
         `${where}${
-          top.bestDay !== null && top.bestDay.date !== top.zone.series[0]?.date
+          /*
+           * Confronto con il giorno scelto e con la stessa soglia della scheda zona
+           * (`SuggestionCard`). Prima si confrontava con `series[0]`, il primo giorno di storia
+           * (due mesi fa): il giorno migliore non era mai quello, e usciva «meglio mer 23 set»
+           * anche quando mer 23 set era oggi.
+           */
+          top.bestDay !== null && top.bestDay.date !== date && top.bestDay.mpi > top.mpi + 3
             ? `, meglio ${formatDate(top.bestDay.date)}`
             : ''
         }.`
@@ -291,7 +322,7 @@ function adviceFor(
 /** La cosa buona che quella zona ha, detta in parole. */
 function strengthOf(top: Suggestion): string {
   const water = top.zone.weather.effectiveWaterMm
-  if (water >= 60) return `è l'unica con acqua vera nel terreno, ${water.toFixed(0)} mm utili`
+  if (water >= 60) return `ha acqua vera nel terreno, ${water.toFixed(0)} mm utili`
   if (water >= 30) return `ha ancora ${water.toFixed(0)} mm utili nel terreno`
   return 'ha il punteggio più alto, per quanto basso'
 }

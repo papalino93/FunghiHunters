@@ -6,7 +6,15 @@ import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { AuthProvider } from '@/lib/auth/context'
+import {
+  BASE_OPEN_GRAPH,
+  DEFAULT_DESCRIPTION,
+  SITE_NAME,
+  SITE_URL,
+  TITLE_SUFFIX,
+} from '@/lib/seo/metadata'
 import { APP_VERSION, BUILD_TIME } from '@/lib/ui/version'
+import { WELCOME_BOOT_SCRIPT } from '@/lib/ui/welcome'
 import './globals.css'
 
 const sans = Inter({ variable: '--font-inter', subsets: ['latin'], display: 'swap' })
@@ -16,40 +24,32 @@ const mono = JetBrains_Mono({
   display: 'swap',
 })
 
-const DESCRIPTION =
-  'Compatibilità delle condizioni ambientali con la possibile fruttificazione del porcino ' +
-  'in Italia. Non indica la presenza di funghi.'
-
-/**
- * Serve un URL assoluto per generare i link `og:image`/`twitter:image` che WhatsApp, Telegram e
- * simili leggono dall'HTML — senza, Next li risolverebbe su `localhost` in produzione. Su Vercel
- * `VERCEL_PROJECT_PRODUCTION_URL` è già il dominio giusto; `NEXT_PUBLIC_SITE_URL` resta il modo
- * per fissarlo a mano su un altro host.
- */
-const SITE_URL =
-  process.env.NEXT_PUBLIC_SITE_URL ??
-  (process.env.VERCEL_PROJECT_PRODUCTION_URL !== undefined
-    ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-    : 'http://localhost:3000')
-
 export const metadata: Metadata = {
+  /*
+   * Serve un URL assoluto per i link `og:image`/`twitter:image` che WhatsApp, Telegram e simili
+   * leggono dall'HTML, e per i canonical che ogni pagina dichiara con un percorso relativo (vedi
+   * `pageMetadata`). Da dove arriva l'indirizzo è spiegato in `lib/seo/metadata.ts`.
+   */
   metadataBase: new URL(SITE_URL),
-  title: 'FungiCast',
-  description: DESCRIPTION,
+  /*
+   * Il template aggiunge " · FungiCast" ai titoli delle pagine figlie, invece di lasciarlo
+   * scrivere a mano a ognuna: così nessuna resta senza (com'era `/italia`), e nessuna lo ripete.
+   * Non vale per la home, che sta nello stesso segmento del layout e si chiama FungiCast e basta.
+   */
+  title: { default: SITE_NAME, template: `%s${TITLE_SUFFIX}` },
+  description: DEFAULT_DESCRIPTION,
   applicationName: 'FungiCast',
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'FungiCast', statusBarStyle: 'black-translucent' },
   openGraph: {
-    title: 'FungiCast',
-    description: DESCRIPTION,
-    siteName: 'FungiCast',
-    locale: 'it_IT',
-    type: 'website',
+    ...BASE_OPEN_GRAPH,
+    title: SITE_NAME,
+    description: DEFAULT_DESCRIPTION,
   },
   twitter: {
     card: 'summary_large_image',
     title: 'FungiCast',
-    description: DESCRIPTION,
+    description: DEFAULT_DESCRIPTION,
   },
   other: {
     // I dati osservati sono CC-BY-SA: l'attribuzione viaggia anche nei metadati, non solo in UI.
@@ -83,8 +83,22 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="it" className={`${sans.variable} ${mono.variable} h-full`}>
+    /*
+     * `suppressHydrationWarning` solo per l'attributo `data-welcome`, che lo script qui sotto può
+     * aggiungere a `<html>` prima dell'idratazione: React lo vedrebbe come una differenza dal
+     * markup del server. Vale per gli attributi di questo elemento, non per i figli.
+     */
+    <html
+      lang="it"
+      className={`${sans.variable} ${mono.variable} h-full`}
+      suppressHydrationWarning
+    >
       <body className="flex h-full flex-col">
+        {/*
+         * Deve girare prima che il browser disegni la home: per questo è in linea e in cima al
+         * body, e non un `next/script` (che parte dopo). Vedi `lib/ui/welcome.ts`.
+         */}
+        <script dangerouslySetInnerHTML={{ __html: WELCOME_BOOT_SCRIPT }} />
         {/* Salto alla navigazione: obbligatorio per chi usa la tastiera su una pagina con mappa. */}
         <a
           href="#contenuto"

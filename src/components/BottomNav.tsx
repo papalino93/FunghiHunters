@@ -38,24 +38,6 @@ const TABS: readonly Tab[] = [
     ),
   },
   {
-    href: '/italia',
-    /*
-     * "Regioni", non più "Italia": il nome precedente e l'icona a meridiani (cartografica, come
-     * quella di "Mappa") rendevano ambigua la differenza a un tocco veloce fra tre cose diverse —
-     * questo elenco di regioni, la mappa della regione corrente, e il selettore di regione "di
-     * casa" già presente in home/Account. Un'icona a elenco, non a globo, segna che qui si sceglie
-     * fra regioni, non si guarda un territorio.
-     */
-    label: 'Regioni',
-    icon: (
-      <>
-        <rect x="3" y="4" width="14" height="2.6" rx="1" fill="currentColor" />
-        <rect x="3" y="8.7" width="14" height="2.6" rx="1" fill="currentColor" />
-        <rect x="3" y="13.4" width="14" height="2.6" rx="1" fill="currentColor" />
-      </>
-    ),
-  },
-  {
     href: '/diario',
     label: 'Diario',
     icon: (
@@ -104,12 +86,20 @@ export function BottomNav() {
       aria-label="Navigazione principale"
       className="shrink-0 border-t border-edge bg-surface-1/95 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl"
     >
-      <ul className="flex">
+      {/* `max-w-2xl`: su un monitor le voci restano sotto la colonna del contenuto, non sparse
+          su 1440 px dove il pollice — o il mouse — le cerca a un metro di distanza. */}
+      <ul className="mx-auto flex max-w-2xl">
         {TABS.map((tab) => {
-          // Anche le pagine figlie accendono la loro voce: `/italia/toscana` è dentro "Italia",
-          // e lasciare la barra spenta mentre ci si sta dentro farebbe perdere il segno.
+          // Anche le pagine figlie accendono la loro voce (es. `/diario/...`): lasciare la barra
+          // spenta mentre ci si sta dentro farebbe perdere il segno.
+          //
+          // Le pagine delle regioni accendono "Dove vado": l'elenco delle regioni non ha più una
+          // voce sua (vedi il collegamento "Tutte" accanto al selettore in home), e una regione è
+          // lo stesso "dove vado" guardato da un'altra parte d'Italia.
           const active =
-            pathname === tab.href || (tab.href !== '/' && pathname.startsWith(`${tab.href}/`))
+            pathname === tab.href ||
+            (tab.href !== '/' && pathname.startsWith(`${tab.href}/`)) ||
+            (tab.href === '/' && (pathname === '/italia' || pathname.startsWith('/italia/')))
           return (
             <li key={tab.href} className="flex-1">
               <Link
@@ -117,7 +107,7 @@ export function BottomNav() {
                 prefetch={false}
                 aria-current={active ? 'page' : undefined}
                 className={`flex min-h-14 flex-col items-center justify-center gap-0.5 py-1
-                            text-[11px] font-medium transition-colors focus:outline-none
+                            whitespace-nowrap text-xs font-medium transition-colors focus:outline-none
                             focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-accent ${
                               active ? 'text-accent' : 'text-ink-faint hover:text-ink-dim'
                             }`}

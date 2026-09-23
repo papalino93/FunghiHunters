@@ -35,7 +35,7 @@ export function TimeSlider({
     <div className="pointer-events-auto rounded-xl border border-edge bg-surface-1/95 px-3 py-2 backdrop-blur-xl">
       <div className="flex items-baseline justify-between">
         <span className="text-sm font-medium text-ink">{formatDate(selectedDate)}</span>
-        <span className="flex items-center gap-1.5 text-[11px] text-ink-faint">
+        <span className="flex items-center gap-1.5 text-xs text-ink-faint">
           <span
             className={`inline-block h-1.5 w-1.5 rounded-full ${
               provenance === 'OBSERVED' ? 'bg-accent' : isFuture ? 'bg-warn' : 'bg-ink-faint'
@@ -72,11 +72,11 @@ export function TimeSlider({
           }}
           aria-label="Giorno da visualizzare"
           /*
-           * `h-8`: la zona sensibile al tocco, non il binario. Il cursore resta alto 16 px e
+           * `h-11`: la zona sensibile al tocco, non il binario. Il cursore resta alto 16 px e
            * centrato, ma con un'area sensibile alta quanto il binario si prendeva il giorno
            * sbagliato ogni volta che si tocca col pollice, e in bosco spesso col guanto.
            */
-          className="relative h-8 w-full cursor-pointer appearance-none bg-transparent
+          className="relative h-11 w-full cursor-pointer appearance-none bg-transparent
                      [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4
                      [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full
                      [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-surface-1
@@ -87,12 +87,12 @@ export function TimeSlider({
         />
       </div>
 
-      <div className="flex items-center justify-between text-[10px] text-ink-faint">
+      <div className="flex items-center justify-between text-xs text-ink-faint">
         <span>{formatDate(dates[0] ?? todayDate)}</span>
         <button
           type="button"
           onClick={() => { onChange(todayDate) }}
-          className="min-h-9 rounded px-3 font-medium text-ink-dim transition-colors
+          className="-my-1 min-h-11 rounded px-3 font-medium text-ink-dim transition-colors
                      hover:bg-surface-2 hover:text-ink focus:outline-none
                      focus-visible:ring-2 focus-visible:ring-accent"
         >

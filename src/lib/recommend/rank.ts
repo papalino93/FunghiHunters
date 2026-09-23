@@ -276,7 +276,10 @@ function reasonsFor(
   if (trend > 5) reasons.push('in miglioramento nelle prossime 72 ore')
   else if (trend < -5) reasons.push('in calo nelle prossime 72 ore')
 
-  if (confidence >= 70) reasons.push('stima costruita su stazioni vicine')
+  // «stazioni vicine» solo se ce ne sono davvero: una zona di solo modello può avere una
+  // confidenza alta (buona risoluzione, orizzonte breve) senza aver visto una sola misura.
+  if (zone.stations.length === 0) reasons.push('stima del solo modello, senza stazioni vicine')
+  else if (confidence >= 70) reasons.push('stima costruita su stazioni vicine')
   else if (confidence < 50) reasons.push('stima poco solida per questa zona')
 
   if (zone.limitingFactor !== null) {

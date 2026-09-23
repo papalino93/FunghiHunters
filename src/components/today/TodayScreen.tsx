@@ -69,6 +69,12 @@ export interface TodayScreenProps {
   readonly snapshot: Snapshot
   /** Senza, si assume la Toscana delle sette zone: e' cio' che questa schermata ha sempre mostrato. */
   readonly region?: TodayRegion
+  /**
+   * `false` quando la pagina che la contiene ha già il proprio `<h1>` (le regioni del catalogo):
+   * due titoli di primo livello nella stessa pagina confondono lettori di schermo e motori di
+   * ricerca su quale sia l'argomento.
+   */
+  readonly heading?: boolean
 }
 
 /**
@@ -79,7 +85,11 @@ export interface TodayScreenProps {
  * concedere un permesso. I filtri stanno sotto il primo risultato, non sopra: quasi sempre la
  * risposta giusta è la prima, e chi deve filtrare sa cercare il controllo.
  */
-export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScreenProps) {
+export function TodayScreen({
+  snapshot,
+  region = TUSCANY_CALIBRATION,
+  heading = true,
+}: TodayScreenProps) {
   const today = snapshot.referenceDate
   const hydrated = useIsHydrated()
 
@@ -147,7 +157,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
   )
   const nationalIndex = useItaliaIndexClient(needsNationalIndex)
 
-  if (snapshot.zones.length === 0) return <EmptySnapshot />
+  if (snapshot.zones.length === 0) return <EmptySnapshot heading={heading} />
 
   const top = suggestions.slice(0, 5)
   const best = top[0]
@@ -161,13 +171,31 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
         * sarebbe una tabella da mantenere per una riga che nessuno vede. Il nome per esteso lo
         * dice comunque il selettore qui sotto.
         */}
-      <h1 className="sr-only">Dove vado oggi, {region.name}</h1>
+      {heading && <h1 className="sr-only">Dove vado oggi, {region.name}</h1>}
       <WelcomeHero zoneCount={snapshot.zones.length} />
       <InstallPrompt />
 
       {region.choices !== undefined && (
-        <div className="mb-3">
-          <RegionPicker current={region.slug} choices={region.choices} />
+        <div className="mb-3 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <RegionPicker current={region.slug} choices={region.choices} />
+          </div>
+          {/*
+            * L'elenco delle regioni non ha più una voce sua nella barra in basso: era il quarto
+            * posto per cambiare regione (con questo selettore, la mappa e Account) e costava una
+            * voce su sei, quella che a 320 px mandava a capo "Dove vado". Resta raggiungibile da
+            * qui, accanto al selettore che fa la stessa cosa.
+            */}
+          <Link
+            href="/italia"
+            prefetch={false}
+            aria-label="Tutte le regioni"
+            className="flex min-h-11 shrink-0 items-center rounded-lg px-2 text-sm text-accent
+                       underline underline-offset-2 hover:text-ink focus:outline-none
+                       focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Tutte
+          </Link>
         </div>
       )}
 
@@ -192,8 +220,8 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
         <NoResults onReset={() => { setFilters({ maxDistanceKm: null, forestTypes: [], minDataQuality: null }) }} />
       ) : (
         <>
-          <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-            {position === null ? 'Le aree, dalla migliore' : 'Le aree raggiungibili, dalla migliore'}
+          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+            {position === null ? 'Le aree, dalla più consigliata' : 'Le aree raggiungibili, dalla più consigliata'}
           </p>
           <ol className="space-y-3">
             {top.map((suggestion) => (
@@ -201,6 +229,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
                 <SuggestionCard
                   suggestion={suggestion}
                   today={today}
+                  date={date}
                   region={region}
                   following={followedCodes.has(suggestion.zone.code)}
                   onToggleFollow={() => {
@@ -312,10 +341,10 @@ function NoResults({ onReset }: { onReset: () => void }) {
   )
 }
 
-function EmptySnapshot() {
+function EmptySnapshot({ heading }: { heading: boolean }) {
   return (
     <div className="mx-auto max-w-md px-6 py-12 text-center">
-      <h1 className="text-lg font-semibold text-ink">FungiCast</h1>
+      {heading && <h1 className="text-lg font-semibold text-ink">FungiCast</h1>}
       <p className="mt-2 text-sm leading-relaxed text-ink-dim">
         I dati non sono ancora stati calcolati. Vengono ricostruiti una volta al giorno; finché non
         esistono non c&apos;è niente di onesto da mostrare.

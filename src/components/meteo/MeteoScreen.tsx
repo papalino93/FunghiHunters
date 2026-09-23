@@ -281,7 +281,7 @@ function PlaceWeather({
         <div className="mt-3 space-y-4">
           <CurrentCard forecast={forecast} />
           <DailyTable forecast={forecast} />
-          <p className="border-t border-edge pt-2 text-[11px] leading-snug text-ink-faint">
+          <p className="border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
             Previsione modellata (Open-Meteo, risoluzione ~9-25 km): a livello locale — in una
             valle stretta o in cresta — i valori reali possono differire, come per ogni previsione.
           </p>
@@ -320,7 +320,7 @@ function CurrentCard({ forecast }: { forecast: PlaceForecast }) {
 function Stat({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[11px] text-ink-faint">{label}</dt>
+      <dt className="text-xs text-ink-faint">{label}</dt>
       <dd className="font-medium text-ink">{value}</dd>
     </div>
   )
@@ -345,7 +345,7 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold text-ink-dim">Giorno per giorno</p>
-      <p className="mb-1.5 text-[11px] text-ink-faint">Tocca un giorno per il dettaglio ora per ora.</p>
+      <p className="mb-1.5 text-xs text-ink-faint">Tocca un giorno per il dettaglio ora per ora.</p>
       <div className="overflow-x-auto">
         <table className="w-full min-w-[560px] text-left text-xs">
           <thead>
@@ -382,13 +382,13 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                         </span>
                         {formatDate(day.date)}
                         {isToday && (
-                          <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px]
+                          <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-xs
                                             font-semibold text-accent">
                             oggi
                           </span>
                         )}
                         {day.isForecast && (
-                          <span className="text-[10px] text-ink-faint">previsto</span>
+                          <span className="text-xs text-ink-faint">previsto</span>
                         )}
                       </button>
                     </td>
@@ -442,14 +442,14 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
 function HourlyDetail({ hours }: { hours: readonly PlaceHourlyWeather[] }) {
   if (hours.length === 0) {
     return (
-      <p className="p-2.5 text-[11px] text-ink-faint">
+      <p className="p-2.5 text-xs text-ink-faint">
         Dettaglio orario non disponibile per questo giorno.
       </p>
     )
   }
   return (
     <div className="overflow-x-auto p-2">
-      <table className="w-full min-w-[520px] text-left text-[11px]">
+      <table className="w-full min-w-[520px] text-left text-xs">
         <thead>
           <tr className="text-ink-faint">
             <th className="py-1 pr-2 font-medium">Ora</th>
