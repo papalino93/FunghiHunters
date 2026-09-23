@@ -35,13 +35,13 @@ describe('senza stazioni (zona nazionale di solo modello)', () => {
     expect(reliabilityLabel(99, false).label).not.toBe('stima solida')
   })
 
-  it('resta "stima da modello" da 50 in su, non "stima discreta"', () => {
-    expect(reliabilityLabel(68.8, false).label).toBe('stima da modello')
-    expect(reliabilityLabel(50, false).label).toBe('stima da modello')
+  it('resta "anteprima, solo modello" da 50 in su, non "stima discreta"', () => {
+    expect(reliabilityLabel(68.8, false).label).toBe('anteprima, solo modello')
+    expect(reliabilityLabel(50, false).label).toBe('anteprima, solo modello')
   })
 
   it('scende comunque a "incerta" sotto 50: la distinzione non appiattisce il numero', () => {
-    expect(reliabilityLabel(49, false).label).toBe('stima da modello, incerta')
+    expect(reliabilityLabel(49, false).label).toBe('anteprima, solo modello, incerta')
   })
 
   it('a parità di dataQuality, non è mai più affidabile di una zona con stazioni', () => {

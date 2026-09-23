@@ -18,7 +18,7 @@ export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
 
   return (
     <section className="rounded-xl border border-edge bg-surface-1 p-3">
-      <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
         Dati e fonti
       </h2>
 
@@ -40,7 +40,7 @@ export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
         <SourceStatusList sources={snapshot.sources} />
       </div>
 
-      <p className="mt-2 border-t border-edge pt-2 text-[11px] leading-snug text-ink-faint">
+      <p className="mt-2 border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
         {snapshot.uncalibratedParams.length} parametri del modello non hanno ancora una fonte in
         letteratura e sono dichiarati da calibrare. Compaiono marcati così anche nella spiegazione
         dei punteggi.

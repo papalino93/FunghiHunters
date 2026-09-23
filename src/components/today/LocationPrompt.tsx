@@ -88,7 +88,7 @@ export function LocationPrompt({
               * o se è rimasto quello di un punto di partenza scelto in un giro precedente: mostrarle
               * è l'unico riscontro immediato, prima di fidarsi delle distanze calcolate su di esse.
               */}
-            <span className="mt-0.5 block text-[11px] text-ink-faint">
+            <span className="mt-0.5 block text-xs text-ink-faint">
               {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)} · resta sul
               dispositivo, non viene inviata da nessuna parte.
             </span>
@@ -155,7 +155,7 @@ export function LocationPrompt({
         <div className="mt-2.5">
           {saved.length > 0 && (
             <>
-              <p className="mb-1.5 text-[11px] text-ink-faint">
+              <p className="mb-1.5 text-xs text-ink-faint">
                 Da un punto di partenza salvato…
               </p>
               <ul className="mb-3 flex flex-wrap gap-1.5">
@@ -176,11 +176,11 @@ export function LocationPrompt({
                   </li>
                 ))}
               </ul>
-              <p className="mb-1.5 text-[11px] text-ink-faint">…oppure da vicino a</p>
+              <p className="mb-1.5 text-xs text-ink-faint">…oppure da vicino a</p>
             </>
           )}
           {saved.length === 0 && (
-            <p className="mb-1.5 text-[11px] text-ink-faint">
+            <p className="mb-1.5 text-xs text-ink-faint">
               Parto da vicino a…
             </p>
           )}
@@ -202,7 +202,7 @@ export function LocationPrompt({
               </li>
             ))}
           </ul>
-          <p className="mt-2 text-[11px] leading-snug text-ink-faint">
+          <p className="mt-2 text-xs leading-snug text-ink-faint">
             L&apos;elenco è quello delle località di riferimento delle aree coperte. Inserire un
             indirizzo qualsiasi richiederebbe un servizio di geocodifica, che non è ancora
             collegato.

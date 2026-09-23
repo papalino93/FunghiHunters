@@ -265,7 +265,7 @@ export function WaypointsPanel({
             <ScopeIcon scope={scope} />
             <span className="text-sm font-semibold text-ink">{title}</span>
             <span
-              className={`rounded px-1.5 py-0.5 text-[10px] font-medium ${
+              className={`rounded px-1.5 py-0.5 text-xs font-medium ${
                 scope === 'fixed'
                   ? 'bg-accent/15 text-accent'
                   : 'bg-surface-3 text-ink-dim'
@@ -287,13 +287,13 @@ export function WaypointsPanel({
       {open && (
         <div className="mt-3">
           {error !== null && (
-            <p className="mb-2 rounded-lg bg-surface-2 px-2.5 py-2 text-[11px] leading-snug text-warn">
+            <p className="mb-2 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-warn">
               {error}
             </p>
           )}
 
           <fieldset>
-            <legend className="mb-1.5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
               Che punto è
             </legend>
             <div className="flex flex-wrap gap-1.5">
@@ -316,7 +316,7 @@ export function WaypointsPanel({
                 </button>
               ))}
             </div>
-            <p className="mt-1.5 text-[11px] leading-snug text-ink-faint">{KIND_HINT[kind]}</p>
+            <p className="mt-1.5 text-xs leading-snug text-ink-faint">{KIND_HINT[kind]}</p>
           </fieldset>
 
           <div className="mt-2.5 flex gap-2">
@@ -342,19 +342,19 @@ export function WaypointsPanel({
             </button>
           </div>
           {(geoState === 'denied' || geoState === 'unavailable' || geoState === 'timeout') && (
-            <p className="mt-1.5 text-[11px] leading-snug text-warn">{GEO_ERROR_TEXT[geoState]}</p>
+            <p className="mt-1.5 text-xs leading-snug text-warn">{GEO_ERROR_TEXT[geoState]}</p>
           )}
 
           {points !== null && points.length > 0 && (
             <>
               <div className="mt-3 flex items-center justify-between">
-                <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+                <p className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                   {points.length} {points.length === 1 ? 'punto' : 'punti'}
                 </p>
                 <button
                   type="button"
                   onClick={refreshHere}
-                  className="text-[11px] font-medium text-ink-dim underline underline-offset-2
+                  className="text-xs font-medium text-ink-dim underline underline-offset-2
                              hover:text-ink focus:outline-none focus-visible:ring-2
                              focus-visible:ring-accent"
                 >
@@ -371,7 +371,7 @@ export function WaypointsPanel({
                       <p className="truncate text-xs font-medium text-ink">
                         {KIND_LABEL[point.kind]}{point.label !== KIND_LABEL[point.kind] ? ` · ${point.label}` : ''}
                       </p>
-                      <p className="text-[11px] text-ink-faint">
+                      <p className="text-xs text-ink-faint">
                         {formatTime(point.createdAt)}
                         {here !== null && (
                           <>
@@ -392,7 +392,7 @@ export function WaypointsPanel({
                         <button
                           type="button"
                           onClick={() => { setConfirmingId(null); void remove(point.id) }}
-                          className="min-h-11 rounded-lg px-2 text-[11px] font-medium text-danger
+                          className="min-h-11 rounded-lg px-2 text-xs font-medium text-danger
                                      focus:outline-none focus-visible:ring-2 focus-visible:ring-danger"
                         >
                           elimina
@@ -400,7 +400,7 @@ export function WaypointsPanel({
                         <button
                           type="button"
                           onClick={() => { setConfirmingId(null) }}
-                          className="min-h-11 rounded-lg px-2 text-[11px] text-ink-faint
+                          className="min-h-11 rounded-lg px-2 text-xs text-ink-faint
                                      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                         >
                           annulla
@@ -413,7 +413,7 @@ export function WaypointsPanel({
                           target="_blank"
                           rel="noopener noreferrer"
                           title="Apre l'app mappe del dispositivo: condivide questa posizione con quell'app"
-                          className="min-h-11 shrink-0 rounded-lg px-2 text-[11px] font-medium text-accent
+                          className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-medium text-accent
                                      transition-colors hover:underline focus:outline-none
                                      focus-visible:ring-2 focus-visible:ring-accent"
                         >
@@ -436,10 +436,10 @@ export function WaypointsPanel({
                   </li>
                 ))}
               </ul>
-              <p className="mt-2 text-[11px] leading-snug text-ink-faint">
+              <p className="mt-2 text-xs leading-snug text-ink-faint">
                 {SCOPE_NOTE[scope]}
               </p>
-              <p className="mt-1 text-[11px] leading-snug text-ink-faint">
+              <p className="mt-1 text-xs leading-snug text-ink-faint">
                 &quot;Apri in mappe&quot; condivide quella coordinata con l&apos;app che scegli sul telefono.
                 Per il resto, questi punti restano solo su questo dispositivo: mai sincronizzati.
               </p>
@@ -447,7 +447,7 @@ export function WaypointsPanel({
           )}
 
           {points !== null && points.length === 0 && (
-            <p className="mt-3 text-[11px] leading-snug text-ink-faint">{emptyText}</p>
+            <p className="mt-3 text-xs leading-snug text-ink-faint">{emptyText}</p>
           )}
         </div>
       )}

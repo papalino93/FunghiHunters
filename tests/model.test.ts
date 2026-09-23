@@ -10,7 +10,13 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { ALGORITHM_V1, uncalibratedParams } from '@/lib/config/algorithm'
+import {
+  ALGORITHM_V1,
+  EVIDENCE,
+  REFERENCES,
+  uncalibratedParams,
+  userCautionForSource,
+} from '@/lib/config/algorithm'
 import { addDays } from '@/lib/domain/time'
 import { buildFeatures, detectRainEvents, maxThermalDrop, type CellContext, type DailyWeather } from '@/lib/model/features'
 import {
@@ -771,5 +777,21 @@ describe('rawMpi: lo stesso punteggio senza il tetto', () => {
       expect(result.rawMpi).toBeGreaterThan(100)
     }
     expect(result.rawMpi).toBeGreaterThanOrEqual(result.mpi)
+  })
+})
+
+describe('cautela delle fonti mostrata all\'utente', () => {
+  it('ogni fonte non pienamente applicabile ha una riga breve, senza riferimenti interni', () => {
+    for (const [key, evidence] of Object.entries(EVIDENCE)) {
+      if (evidence.status === 'applicable') continue
+      expect(evidence.userCaution, key).toBeDefined()
+      expect(evidence.userCaution!.length, key).toBeLessThanOrEqual(140)
+      expect(evidence.userCaution, key).not.toMatch(/`|e'|a'|o'/)
+      expect(userCautionForSource(REFERENCES[key as keyof typeof REFERENCES])).toBe(evidence.userCaution)
+    }
+  })
+
+  it('una fonte applicabile non porta cautela', () => {
+    expect(userCautionForSource(REFERENCES.salerni2023)).toBeUndefined()
   })
 })

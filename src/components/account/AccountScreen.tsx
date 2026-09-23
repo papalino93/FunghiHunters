@@ -88,7 +88,7 @@ function Shell({
       <header className="mb-4">
         <h1 className="text-xl font-semibold tracking-tight text-ink">Account</h1>
         <p className="mt-1 text-sm leading-snug text-ink-dim">
-          Accedi solo se vuoi ritrovare diario, aree salvate e preferenze su un altro telefono.
+          Accedi solo se vuoi ritrovare il diario e le zone che segui su un altro telefono. I punti salvati sulla mappa restano sempre e solo su questo.
         </p>
       </header>
       {/*
@@ -97,12 +97,13 @@ function Shell({
         * registra la trova comunque qui, che e' la prima schermata dove si mette a posto l'app.
         */}
       <section className="mb-4 rounded-xl border border-edge bg-surface-1 p-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           La tua regione
         </h2>
         <p className="mb-2.5 mt-1.5 text-xs leading-snug text-ink-dim">
           È da qui che partono &laquo;Dove vado&raquo; e la mappa. Le altre regioni restano tutte
-          consultabili dalla scheda Regioni: questa è la casa, non un confine.
+          consultabili da &laquo;Tutte&raquo;, accanto al selettore in &laquo;Dove vado&raquo;:
+          questa è la casa, non un confine.
         </p>
         <RegionPicker current={regionSlug} choices={regionChoices} />
       </section>
@@ -157,7 +158,7 @@ function Shell({
         * sapere se l'app che si ha davanti è davvero l'ultima pubblicata, o una copia rimasta in
         * cache. Un numero che non serve a nessuno finché non serve moltissimo.
         */}
-      <p className="mt-8 text-center text-[10px] text-ink-faint">
+      <p className="mt-8 text-center text-xs text-ink-faint">
         versione {versionLabel()} · modello {algorithmVersion}
       </p>
     </div>
@@ -197,7 +198,7 @@ function SignInPanel() {
         Continua con Google
       </button>
 
-      <div className="flex items-center gap-2 text-[11px] text-ink-faint">
+      <div className="flex items-center gap-2 text-xs text-ink-faint">
         <span className="h-px flex-1 bg-edge" /> oppure <span className="h-px flex-1 bg-edge" />
       </div>
 
@@ -298,14 +299,14 @@ function SignedInPanel({
           <p className="mt-1 text-xs text-danger">{sync.error}</p>
         )}
         {sync.lastSyncedAt !== null && sync.status !== 'syncing' && (
-          <p className="mt-1 text-[11px] text-ink-faint">
+          <p className="mt-1 text-xs text-ink-faint">
             Ultima sincronizzazione: {new Date(sync.lastSyncedAt).toLocaleString('it-IT')}
           </p>
         )}
 
         {sync.accountMismatch && (
           <div className="mt-2 rounded-lg border border-warn/30 bg-warn/10 px-2.5 py-2">
-            <p className="text-[11px] leading-snug text-warn">
+            <p className="text-xs leading-snug text-warn">
               Il diario su questo dispositivo risulta sincronizzato l&apos;ultima volta con un
               altro account. Non lo invio automaticamente: potrebbe contenere le uscite di
               qualcun altro. Guarda la scheda Diario prima di decidere — sincronizzarlo qui lo
@@ -368,7 +369,7 @@ function SignedInPanel({
       </section>
 
       <section className="rounded-xl border border-edge bg-surface-1 p-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           I tuoi dati
         </h2>
         <p className="mt-1.5 text-xs leading-snug text-ink-dim">
@@ -388,7 +389,7 @@ function SignedInPanel({
       </section>
 
       <section className="rounded-xl border border-danger/30 bg-danger/5 p-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-danger">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-danger">
           Zona pericolosa
         </h2>
         <p className="mt-1.5 text-xs leading-snug text-ink-dim">

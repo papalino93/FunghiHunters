@@ -54,6 +54,18 @@
      * surface-3), con margine.
      */
     --text-muted: #5c6478;
+
+    /*
+     * Accenti scuriti per il fondo chiaro (23/09/2026, audit leggibilità). Il verde #4dd4ac e
+     * l'ambra #f2b134 sono pensati per il tema scuro: sul bianco si fermavano a 1.85 e 1.89, cioè
+     * «stima solida», «Vedi l'elenco completo» e ogni avvertenza in arancio erano quasi invisibili
+     * al sole. Questi passano 4.5 anche su surface-3 (4.64, 4.78, 4.86). Gli accenti qui fanno da
+     * testo, bordo o velatura (`bg-accent/10`), mai da fondo pieno sotto testo scuro: nessun
+     * altro contrasto peggiora.
+     */
+    --accent: #0d7456;
+    --warn: #8a5a00;
+    --danger: #b3362c;
   }
 }
 
@@ -68,6 +80,10 @@
   --text-primary: #131826;
   --text-secondary: #4c5670;
   --text-muted: #5c6478;
+
+  --accent: #0d7456;
+  --warn: #8a5a00;
+  --danger: #b3362c;
 }
 
 @theme inline {
@@ -135,6 +151,15 @@ body {
 .maplibregl-ctrl-group {
   background: var(--surface-1) !important;
   border: 1px solid var(--border) !important;
+}
+
+/*
+ * 44 px come ogni altro controllo dell'app: i 29 px di serie di MapLibre si mancano con il
+ * pollice, e in bosco spesso con il guanto.
+ */
+.maplibregl-ctrl-group button {
+  width: 44px !important;
+  height: 44px !important;
 }
 
 .maplibregl-ctrl-group button + button {

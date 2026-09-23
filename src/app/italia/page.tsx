@@ -46,7 +46,7 @@ export default async function Page() {
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
                 >
                   <span className="text-sm font-medium text-ink">{region.name}</span>
-                  <span className="text-[11px] text-ink-faint">
+                  <span className="text-xs text-ink-faint">
                     {region.zoneCount} {region.zoneCount === 1 ? 'zona' : 'zone'}
                   </span>
                 </Link>

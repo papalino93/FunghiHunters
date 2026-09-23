@@ -42,13 +42,13 @@ export function GuideScreen() {
       </p>
 
       <nav aria-label="Indice della guida" className="mb-6 rounded-xl border border-edge bg-surface-1 p-3">
-        <h2 className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">In questa pagina</h2>
-        <ol className="mt-1.5 space-y-1">
+        <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">In questa pagina</h2>
+        <ol className="mt-1">
           {SEZIONI.map((s, i) => (
             <li key={s.id}>
               <a
                 href={`#${s.id}`}
-                className="inline-flex min-h-9 items-center text-sm text-accent underline
+                className="inline-flex min-h-11 items-center text-sm text-accent underline
                            underline-offset-2 hover:text-ink focus:outline-none focus-visible:ring-2
                            focus-visible:ring-accent"
               >
@@ -116,7 +116,8 @@ export function GuideScreen() {
           &laquo;Dove vado&raquo;, la mappa e il diario. Senza sceglierne una vale la Toscana,
           l&apos;unica regione con stazioni di misura collegate.{' '}
           <strong className="text-ink">Non è un confine:</strong> tutte le altre regioni restano
-          consultabili dalla scheda Regioni, e dalla mappa puoi spostarti fra una e l&apos;altra
+          consultabili da &laquo;Tutte&raquo;, accanto al selettore della regione in
+          &laquo;Dove vado&raquo;, e dalla mappa puoi spostarti fra una e l&apos;altra
           senza cambiare quella di casa.
         </Voce>
         <Voce titolo="Dove vado">

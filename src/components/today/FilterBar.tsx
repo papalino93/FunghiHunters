@@ -52,7 +52,7 @@ export function FilterBar({
         <span>
           Filtri
           {activeCount > 0 && (
-            <span className="ml-2 rounded bg-accent/20 px-1.5 py-0.5 text-[11px] text-accent">
+            <span className="ml-2 rounded bg-accent/20 px-1.5 py-0.5 text-xs text-accent">
               {activeCount}
             </span>
           )}
@@ -68,11 +68,11 @@ export function FilterBar({
       {open && (
         <div className="space-y-4 border-t border-edge px-3 py-3">
           <fieldset>
-            <legend className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            <legend className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
               Distanza massima
             </legend>
             {!hasPosition && (
-              <p className="mt-1 text-[11px] text-ink-faint">
+              <p className="mt-1 text-xs text-ink-faint">
                 Serve la posizione: senza, non c&apos;è da dove misurare.
               </p>
             )}
@@ -91,7 +91,7 @@ export function FilterBar({
           </fieldset>
 
           <fieldset>
-            <legend className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            <legend className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
               Tipo di bosco
             </legend>
             <div className="mt-1.5 flex flex-wrap gap-1.5">
@@ -108,7 +108,7 @@ export function FilterBar({
           </fieldset>
 
           <fieldset>
-            <legend className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+            <legend className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
               Affidabilità minima dei dati
             </legend>
             <div className="mt-1.5 flex flex-wrap gap-1.5">

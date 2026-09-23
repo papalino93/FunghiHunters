@@ -166,8 +166,26 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
       <InstallPrompt />
 
       {region.choices !== undefined && (
-        <div className="mb-3">
-          <RegionPicker current={region.slug} choices={region.choices} />
+        <div className="mb-3 flex items-center gap-2">
+          <div className="min-w-0 flex-1">
+            <RegionPicker current={region.slug} choices={region.choices} />
+          </div>
+          {/*
+            * L'elenco delle regioni non ha più una voce sua nella barra in basso: era il quarto
+            * posto per cambiare regione (con questo selettore, la mappa e Account) e costava una
+            * voce su sei, quella che a 320 px mandava a capo "Dove vado". Resta raggiungibile da
+            * qui, accanto al selettore che fa la stessa cosa.
+            */}
+          <Link
+            href="/italia"
+            prefetch={false}
+            aria-label="Tutte le regioni"
+            className="flex min-h-11 shrink-0 items-center rounded-lg px-2 text-sm text-accent
+                       underline underline-offset-2 hover:text-ink focus:outline-none
+                       focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Tutte
+          </Link>
         </div>
       )}
 
@@ -192,8 +210,8 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
         <NoResults onReset={() => { setFilters({ maxDistanceKm: null, forestTypes: [], minDataQuality: null }) }} />
       ) : (
         <>
-          <p className="mb-2 mt-5 text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
-            {position === null ? 'Le aree, dalla migliore' : 'Le aree raggiungibili, dalla migliore'}
+          <p className="mb-2 mt-5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+            {position === null ? 'Le aree, dalla più consigliata' : 'Le aree raggiungibili, dalla più consigliata'}
           </p>
           <ol className="space-y-3">
             {top.map((suggestion) => (
@@ -201,6 +219,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
                 <SuggestionCard
                   suggestion={suggestion}
                   today={today}
+                  date={date}
                   region={region}
                   following={followedCodes.has(suggestion.zone.code)}
                   onToggleFollow={() => {

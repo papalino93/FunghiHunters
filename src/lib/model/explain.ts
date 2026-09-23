@@ -11,7 +11,7 @@
  * di inventare soglie biologiche.
  */
 
-import { ALGORITHM_V1, evidenceForSource, type AlgorithmConfig, type Param } from '@/lib/config/algorithm'
+import { ALGORITHM_V1, userCautionForSource, type AlgorithmConfig, type Param } from '@/lib/config/algorithm'
 import type { CellFeatures } from '@/lib/model/features'
 import { mpiLabel, type MpiResult } from '@/lib/model/mpi'
 
@@ -59,11 +59,9 @@ function provenanceOf(
   param: Param,
 ): { provenance: 'sourced' | 'calibrate'; source?: string; transferabilityCaution?: string } {
   if (param.source === undefined) return { provenance: param.provenance }
-  const evidence = evidenceForSource(param.source)
-  const caution =
-    evidence !== undefined && evidence.status !== 'applicable'
-      ? evidence.transferability
-      : undefined
+  // La riga breve per l'utente, non `transferability`: quest'ultima e' il ragionamento completo
+  // per chi rivede il modello, e finisce nello snapshot pubblicato e poi nella scheda "Perche'".
+  const caution = userCautionForSource(param.source)
   return caution === undefined
     ? { provenance: param.provenance, source: param.source }
     : { provenance: param.provenance, source: param.source, transferabilityCaution: caution }

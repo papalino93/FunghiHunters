@@ -13,17 +13,27 @@ import type { Verdict } from '@/lib/recommend/verdict'
  * cosa succede nei prossimi giorni. I punteggi vengono dopo, per chi li vuole verificare.
  */
 export function VerdictCard({ verdict }: { verdict: Verdict }) {
+  /*
+   * Un sì detto dal solo modello non prende il verde pieno: il colore è la prima cosa che si
+   * legge, prima ancora del titolo, e deve dire la stessa cosa delle parole.
+   */
+  const tone = verdict.modelOnly && verdict.tone === 'good' ? 'worth' : verdict.tone
   const accent =
-    verdict.tone === 'good'
+    tone === 'good'
       ? 'border-accent/40 bg-accent/10'
-      : verdict.tone === 'worth'
+      : tone === 'worth'
         ? 'border-accent/30 bg-accent/[0.06]'
-        : verdict.tone === 'weak'
+        : tone === 'weak'
           ? 'border-warn/30 bg-warn/[0.06]'
           : 'border-edge bg-surface-1'
 
   return (
     <section className={`rounded-xl border p-4 ${accent}`} aria-labelledby="verdetto">
+      {verdict.modelOnly && (
+        <p className="mb-2 inline-flex items-center rounded-full border border-warn/40 bg-warn/10 px-2.5 py-0.5 text-xs font-medium text-ink">
+          Anteprima · stima da modello, non verificata da stazioni
+        </p>
+      )}
       <h2 id="verdetto" className="text-2xl font-semibold leading-tight tracking-tight text-ink">
         {verdict.headline}
       </h2>

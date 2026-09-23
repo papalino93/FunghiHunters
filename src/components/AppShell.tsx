@@ -49,8 +49,19 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
    * prometterebbe qualcosa che non fa. Il parametro vale come stato iniziale: appena l'utente
    * tocca un'altra zona, comanda lui.
    */
-  const initialCode = useSearchParams().get('zona')
-  const [selectedDate, setSelectedDate] = useState(todayDate)
+  const searchParams = useSearchParams()
+  const initialCode = searchParams.get('zona')
+  /*
+   * Stesso principio per il giorno: chi in home ha scelto sabato e tocca "Dettaglio e mappa"
+   * deve ritrovare sabato, non oggi. Vale solo se quel giorno esiste nella serie (un indirizzo
+   * vecchio salvato fra i preferiti può puntare a un giorno ormai uscito dall'orizzonte).
+   */
+  const requestedDate = searchParams.get('giorno')
+  const [selectedDate, setSelectedDate] = useState(() =>
+    requestedDate !== null && (snapshot.zones[0]?.series ?? []).some((p) => p.date === requestedDate)
+      ? requestedDate
+      : todayDate,
+  )
   const [override, setOverride] = useState<string | null | undefined>(undefined)
   const selectedCode = override === undefined ? initialCode : override
   const setSelectedCode = setOverride
@@ -106,18 +117,26 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
        */}
       {selectedZone === null && (
         <>
-          <header className="pointer-events-none absolute inset-x-0 top-0 z-10 p-3">
+          {/*
+            * Intestazione e classifica in una sola colonna, non due blocchi con un `top` fisso
+            * ciascuno: con il testo più grande l'intestazione va a capo e la classifica, messa a
+            * 104 o 156 px, le finiva sotto. `pr-16` lascia libera la colonna dei comandi di
+            * MapLibre (zoom e posizione, 44 px), che prima a 390 px coprivano il bordo destro
+            * dell'intestazione.
+            */}
+          <div className="pointer-events-none absolute inset-x-0 top-0 z-10 flex flex-col gap-2 p-3 pr-16">
+          <header>
             <div className="pointer-events-auto inline-flex max-w-full flex-col rounded-xl border border-edge bg-surface-1/90 px-3 py-2 backdrop-blur-xl">
               <div className="flex items-center gap-2">
                 <h1 className="text-sm font-semibold text-ink">FungiCast</h1>
-                <span className="rounded bg-surface-3 px-1.5 py-0.5 text-[10px] text-ink-dim">
+                <span className="rounded bg-surface-3 px-1.5 py-0.5 text-xs text-ink-dim">
                   porcino
                 </span>
                 {regionName !== undefined && (
-                  <span className="truncate text-[11px] text-ink-dim">{regionName}</span>
+                  <span className="truncate text-xs text-ink-dim">{regionName}</span>
                 )}
               </div>
-              <p className="mt-0.5 max-w-[46ch] text-[11px] leading-snug text-ink-dim">
+              <p className="mt-0.5 max-w-[46ch] text-xs leading-snug text-ink-dim">
                 Compatibilità delle condizioni ambientali con una possibile fruttificazione.
                 <strong className="font-medium text-ink"> Non indica la presenza di funghi.</strong>
               </p>
@@ -140,9 +159,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
           </header>
 
           {/* Classifica compatta: risponde a "dove conviene andare" senza aprire nulla. */}
-          <div className={`pointer-events-none absolute inset-x-0 z-10 overflow-x-auto px-3 pb-1 ${
-              regionChoices === undefined ? 'top-[104px]' : 'top-[156px]'
-            }`}>
+          <div className="overflow-x-auto pb-1">
             <ul className="pointer-events-auto flex gap-1.5">
               {ranked.map((zone) => {
                 const score = scores[zone.code]?.mpi ?? 0
@@ -153,7 +170,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
                       type="button"
                       onClick={() => { setSelectedCode(zone.code) }}
                       className={`flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg
-                                  border px-2 text-[11px] backdrop-blur-xl transition-colors
+                                  border px-2 text-xs backdrop-blur-xl transition-colors
                                   focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                                     active
                                       ? 'border-edge-strong bg-surface-3 text-ink'
@@ -178,21 +195,27 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               })}
             </ul>
           </div>
+          </div>
         </>
       )}
 
       {/* Legenda, a scomparsa: utile la prima volta, ingombrante dalla seconda. */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-2 p-3 pb-6">
+      {/*
+        * Da 1024 px in su la parte bassa diventa un pannello laterale a destra: a tutta larghezza
+        * su un monitor la scheda copriva quasi tutta la mappa e le righe arrivavano a 1400 px,
+        * illeggibili. Sotto resta a tutta larghezza, come un foglio che sale dal basso.
+        */}
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-2 p-3 pb-6 lg:left-auto lg:w-[32rem]">
         {showLegend && (
           <div className="pointer-events-auto rounded-xl border border-edge bg-surface-1/95 px-3 py-2 backdrop-blur-xl">
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
+              <span className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
                 Indice di compatibilità
               </span>
               <button
                 type="button"
                 onClick={() => { setShowLegend(false) }}
-                className="text-[11px] text-ink-dim hover:text-ink"
+                className="-mr-2 min-h-11 px-2 text-sm text-ink-dim hover:text-ink"
               >
                 chiudi
               </button>
@@ -201,22 +224,22 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               className="mt-1.5 h-2 w-full rounded-full"
               style={{ background: `linear-gradient(90deg, ${mpiGradientCss()})` }}
             />
-            <div className="mt-1 flex justify-between text-[10px] text-ink-faint">
+            <div className="mt-1 flex justify-between text-xs text-ink-faint">
               <span>sfavorevoli</span>
               <span>discrete</span>
               <span>molto favorevoli</span>
             </div>
-            <p className="mt-2 text-[11px] leading-snug text-ink-dim">
+            <p className="mt-2 text-xs leading-snug text-ink-dim">
               Il numero dentro ogni segnaposto è questo indice, da 0 a 100: non è un conteggio di
               funghi né di zone. L&apos;anello attorno al numero si riempie in proporzione.
             </p>
-            <p className="mt-2 text-[11px] leading-snug text-ink-dim">
+            <p className="mt-2 text-xs leading-snug text-ink-dim">
               Il contorno <span className="text-ink">tratteggiato</span> e il riempimento più
               scarico indicano una stima poco affidabile: pochi dati osservati, oppure previsione
               lontana nel tempo.
             </p>
             {/* Provenienza dei dati: dentro la legenda, dove c'è spazio per leggerla davvero. */}
-            <p className="mt-2 border-t border-edge pt-2 text-[10px] leading-snug text-ink-faint">
+            <p className="mt-2 border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
               Aggiornato il {formatDate(snapshot.referenceDate)} · modello{' '}
               {snapshot.algorithmVersion}
               <br />
