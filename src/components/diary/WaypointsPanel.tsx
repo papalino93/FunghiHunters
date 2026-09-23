@@ -235,8 +235,20 @@ export function WaypointsPanel({
 
   const remove = async (id: string): Promise<void> => {
     if (repo === null) return
-    await repo.remove(id)
-    await reload()
+    // Come per `save()` qui sopra: senza try/catch, un archivio bloccato da un'altra scheda
+    // proprio durante la cancellazione lascerebbe sparire la riga di conferma dall'interfaccia
+    // senza dire se il punto è stato davvero rimosso o no — proprio il momento in cui serve di
+    // più saperlo, quando si sta cercando di ritrovare un punto salvato.
+    try {
+      await repo.remove(id)
+      await reload()
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? `Punto non eliminato: ${err.message}`
+          : 'Punto non eliminato: archivio non disponibile su questo dispositivo.',
+      )
+    }
   }
 
   return (
