@@ -5,6 +5,8 @@ import Link from 'next/link'
 import type { Suggestion } from '@/lib/recommend/rank'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { PotentialBar } from '@/components/today/PotentialBar'
+import { Reliability } from '@/components/today/Reliability'
+import { FollowButton } from '@/components/today/FollowButton'
 import { formatDate } from '@/lib/ui/scale'
 
 /**
@@ -21,10 +23,16 @@ export function SuggestionCard({
   suggestion,
   today,
   region,
+  following = false,
+  onToggleFollow,
 }: {
   suggestion: Suggestion
   today: string
   region?: { readonly slug: string; readonly catalogue: boolean }
+  /** `true` se questa zona è fra quelle che l'utente segue — vedi "Le tue zone" in home. */
+  readonly following?: boolean
+  /** Assente in contesti dove seguire non ha senso (es. una lista sola-lettura). */
+  readonly onToggleFollow?: () => void
 }) {
   const { zone, mpi, distanceKm, bestDay } = suggestion
   const facts = zoneFacts(zone)
@@ -33,14 +41,24 @@ export function SuggestionCard({
   return (
     <article className="rounded-xl border border-edge bg-surface-1 p-3.5">
       <div className="flex items-baseline justify-between gap-2">
-        <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
-        <span className="shrink-0 text-xs text-ink-faint">
+        <div className="flex min-w-0 items-baseline gap-1.5">
+          <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
+          {following && (
+            <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">
+              seguita
+            </span>
+          )}
+        </div>
+        <span className="flex shrink-0 items-center gap-2 text-xs text-ink-faint">
           {distanceKm !== null && (
             <span title="Distanza in linea d'aria, non stradale">
               {distanceKm.toFixed(0)} km in linea d&apos;aria ·{' '}
             </span>
           )}
           {zone.elevationM} m
+          {onToggleFollow !== undefined && (
+            <FollowButton following={following} onToggle={onToggleFollow} compact />
+          )}
         </span>
       </div>
       <p className="mt-0.5 truncate text-xs text-ink-faint">{zone.forest.join(', ')}</p>
@@ -105,18 +123,6 @@ function mapHref(code: string, region?: { readonly slug: string; readonly catalo
   const zona = `zona=${encodeURIComponent(code)}`
   if (region === undefined || !region.catalogue) return `/mappa?${zona}`
   return `/mappa?regione=${encodeURIComponent(region.slug)}&${zona}`
-}
-
-/**
- * L'affidabilità dei dati in parole.
- * «79» non dice a nessuno se fidarsi; «stima solida» sì, e il numero resta nel dettaglio.
- */
-function Reliability({ dataQuality }: { dataQuality: number }) {
-  const label =
-    dataQuality >= 70 ? 'stima solida' : dataQuality >= 50 ? 'stima discreta' : 'stima incerta'
-  const colour =
-    dataQuality >= 70 ? 'text-accent' : dataQuality >= 50 ? 'text-ink-dim' : 'text-warn'
-  return <span className={colour}>{label}</span>
 }
 
 function Mark({ kind }: { kind: 'good' | 'bad' }) {

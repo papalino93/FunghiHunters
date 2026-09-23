@@ -19,12 +19,16 @@ import { FilterBar, type Filters } from '@/components/today/FilterBar'
 import { ExcludedZones } from '@/components/today/ExcludedZones'
 import { BeforeYouGo } from '@/components/today/BeforeYouGo'
 import { SourceHealth } from '@/components/today/SourceHealth'
+import { FollowedZonesSection } from '@/components/today/FollowedZonesSection'
+import { ModelLimitsNotice } from '@/components/today/ModelLimitsNotice'
 import { WelcomeHero } from '@/components/WelcomeHero'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { RegionPicker } from '@/components/RegionPicker'
 import { DEFAULT_REGION_SLUG, type RegionChoice } from '@/lib/region/preference'
 import { formatDate } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
+import { useFollowedZones } from '@/lib/zones/useFollowedZones'
+import { useItaliaIndexClient } from '@/lib/zones/useItaliaIndexClient'
 
 const POSITION_KEY = 'fungicast.position'
 
@@ -131,6 +135,18 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
     [snapshot.zones, today],
   )
 
+  const followed = useFollowedZones()
+  const followedCodes = followed.codes
+  // L'indice nazionale leggero serve solo per mostrare in "Le tue zone" una zona seguita che non
+  // appartiene alla regione aperta ora: richiederlo sempre sarebbe una richiesta di rete in più a
+  // ogni apertura della home anche per chi segue solo zone della propria regione.
+  const needsNationalIndex = useMemo(
+    () =>
+      (followed.zones ?? []).some((z) => !snapshot.zones.some((sz) => sz.code === z.zoneCode)),
+    [followed.zones, snapshot.zones],
+  )
+  const nationalIndex = useItaliaIndexClient(needsNationalIndex)
+
   if (snapshot.zones.length === 0) return <EmptySnapshot />
 
   const top = suggestions.slice(0, 5)
@@ -160,6 +176,17 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
       <div className="mt-3">
         <VerdictCard verdict={verdict} />
       </div>
+      <div className="mt-2">
+        <ModelLimitsNotice />
+      </div>
+
+      <div className="mt-5">
+        <FollowedZonesSection
+          state={followed}
+          snapshot={snapshot}
+          index={needsNationalIndex ? nationalIndex : null}
+        />
+      </div>
 
       {best === undefined ? (
         <NoResults onReset={() => { setFilters({ maxDistanceKm: null, forestTypes: [], minDataQuality: null }) }} />
@@ -171,7 +198,19 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
           <ol className="space-y-3">
             {top.map((suggestion) => (
               <li key={suggestion.zone.code}>
-                <SuggestionCard suggestion={suggestion} today={today} region={region} />
+                <SuggestionCard
+                  suggestion={suggestion}
+                  today={today}
+                  region={region}
+                  following={followedCodes.has(suggestion.zone.code)}
+                  onToggleFollow={() => {
+                    void followed.toggle({
+                      zoneCode: suggestion.zone.code,
+                      zoneName: suggestion.zone.name,
+                      regionSlug: region.slug,
+                    })
+                  }}
+                />
               </li>
             ))}
           </ol>
@@ -205,7 +244,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
           hasPosition={position !== null}
         />
         <ExcludedZones excluded={excluded} />
-        <BeforeYouGo topSuggestion={best ?? null} />
+        <BeforeYouGo topSuggestion={best ?? null} regionSlug={region.slug} regionName={region.name} />
         <SourceHealth snapshot={snapshot} />
       </div>
     </div>
