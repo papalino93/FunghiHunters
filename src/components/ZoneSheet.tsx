@@ -16,7 +16,6 @@ export interface ZoneSheetProps {
   readonly zone: SnapshotZone
   readonly todayDate: string
   readonly selectedDate: string
-  readonly onSelectDate: (date: string) => void
   readonly onClose: () => void
   readonly showStations: boolean
   readonly onToggleStations: () => void
@@ -40,7 +39,6 @@ export function ZoneSheet({
   zone,
   todayDate,
   selectedDate,
-  onSelectDate,
   onClose,
   showStations,
   onToggleStations,
@@ -156,7 +154,7 @@ export function ZoneSheet({
 
       <div className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3">
         {tab === 'sintesi' && (
-          <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} onSelectDate={onSelectDate} />
+          <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} />
         )}
         {tab === 'meteo' && <Weather zone={zone} selectedDate={selectedDate} />}
         {tab === 'dove' && <Where zone={zone} />}
@@ -179,12 +177,10 @@ function Summary({
   zone,
   todayDate,
   selectedDate,
-  onSelectDate,
 }: {
   zone: SnapshotZone
   todayDate: string
   selectedDate: string
-  onSelectDate: (date: string) => void
 }) {
   return (
     <div className="space-y-4">
@@ -209,12 +205,7 @@ function Summary({
             {formatDate(zone.series[zone.series.length - 1]?.date ?? todayDate)}
           </span>
         </div>
-        <Sparkline
-          points={zone.series}
-          todayDate={todayDate}
-          selectedDate={selectedDate}
-          onSelectDate={onSelectDate}
-        />
+        <Sparkline points={zone.series} todayDate={todayDate} selectedDate={selectedDate} />
       </div>
 
       <dl className="grid grid-cols-3 gap-2">

@@ -152,8 +152,8 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
                     <button
                       type="button"
                       onClick={() => { setSelectedCode(zone.code) }}
-                      className={`flex items-center gap-1.5 whitespace-nowrap rounded-lg border px-2 py-1
-                                  text-[11px] backdrop-blur-xl transition-colors
+                      className={`flex min-h-11 items-center gap-1.5 whitespace-nowrap rounded-lg
+                                  border px-2 text-[11px] backdrop-blur-xl transition-colors
                                   focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                                     active
                                       ? 'border-edge-strong bg-surface-3 text-ink'
@@ -240,7 +240,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               type="button"
               onClick={() => { setShowLegend((v) => !v) }}
               aria-label="Legenda"
-              className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-edge
+              className="grid h-11 w-11 shrink-0 place-items-center rounded-xl border border-edge
                          bg-surface-1/95 text-ink-dim backdrop-blur-xl transition-colors
                          hover:text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
             >
@@ -260,7 +260,6 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               zone={selectedZone}
               todayDate={todayDate}
               selectedDate={selectedDate}
-              onSelectDate={setSelectedDate}
               onClose={() => { setSelectedCode(null) }}
               showStations={showStations}
               onToggleStations={() => { setShowStations((v) => !v) }}
