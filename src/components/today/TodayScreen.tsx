@@ -69,6 +69,12 @@ export interface TodayScreenProps {
   readonly snapshot: Snapshot
   /** Senza, si assume la Toscana delle sette zone: e' cio' che questa schermata ha sempre mostrato. */
   readonly region?: TodayRegion
+  /**
+   * `false` quando la pagina che la contiene ha già il proprio `<h1>` (le regioni del catalogo):
+   * due titoli di primo livello nella stessa pagina confondono lettori di schermo e motori di
+   * ricerca su quale sia l'argomento.
+   */
+  readonly heading?: boolean
 }
 
 /**
@@ -79,7 +85,11 @@ export interface TodayScreenProps {
  * concedere un permesso. I filtri stanno sotto il primo risultato, non sopra: quasi sempre la
  * risposta giusta è la prima, e chi deve filtrare sa cercare il controllo.
  */
-export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScreenProps) {
+export function TodayScreen({
+  snapshot,
+  region = TUSCANY_CALIBRATION,
+  heading = true,
+}: TodayScreenProps) {
   const today = snapshot.referenceDate
   const hydrated = useIsHydrated()
 
@@ -147,7 +157,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
   )
   const nationalIndex = useItaliaIndexClient(needsNationalIndex)
 
-  if (snapshot.zones.length === 0) return <EmptySnapshot />
+  if (snapshot.zones.length === 0) return <EmptySnapshot heading={heading} />
 
   const top = suggestions.slice(0, 5)
   const best = top[0]
@@ -161,7 +171,7 @@ export function TodayScreen({ snapshot, region = TUSCANY_CALIBRATION }: TodayScr
         * sarebbe una tabella da mantenere per una riga che nessuno vede. Il nome per esteso lo
         * dice comunque il selettore qui sotto.
         */}
-      <h1 className="sr-only">Dove vado oggi, {region.name}</h1>
+      {heading && <h1 className="sr-only">Dove vado oggi, {region.name}</h1>}
       <WelcomeHero zoneCount={snapshot.zones.length} />
       <InstallPrompt />
 
@@ -312,10 +322,10 @@ function NoResults({ onReset }: { onReset: () => void }) {
   )
 }
 
-function EmptySnapshot() {
+function EmptySnapshot({ heading }: { heading: boolean }) {
   return (
     <div className="mx-auto max-w-md px-6 py-12 text-center">
-      <h1 className="text-lg font-semibold text-ink">FungiCast</h1>
+      {heading && <h1 className="text-lg font-semibold text-ink">FungiCast</h1>}
       <p className="mt-2 text-sm leading-relaxed text-ink-dim">
         I dati non sono ancora stati calcolati. Vengono ricostruiti una volta al giorno; finché non
         esistono non c&apos;è niente di onesto da mostrare.

@@ -1,3 +1,4 @@
+import type { Metadata } from 'next'
 import { cookies } from 'next/headers'
 
 import { DiaryScreen } from '@/components/diary/DiaryScreen'
@@ -5,7 +6,11 @@ import { REGION_COOKIE } from '@/lib/region/preference'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
 
-export const metadata = { title: 'Diario uscite · FungiCast' }
+/*
+ * Fuori dall'indice dei motori di ricerca: il diario vive nel browser di chi lo scrive, e la
+ * pagina vista da un crawler è solo un modulo vuoto. Esclusa anche da `sitemap.ts`.
+ */
+export const metadata: Metadata = { title: 'Diario uscite', robots: { index: false, follow: false } }
 
 /**
  * Il diario segue la regione di riferimento come la home.

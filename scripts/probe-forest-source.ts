@@ -20,6 +20,7 @@
 import { fromUrl } from 'geotiff'
 
 import { toLaea } from '@/lib/geo/laea'
+import { USER_AGENT } from '@/lib/sources/http'
 
 const ZENODO_RECORD = '13341104'
 const ZENODO_API = `https://zenodo.org/api/records/${ZENODO_RECORD}`
@@ -42,7 +43,7 @@ interface ZenodoRecord {
 
 async function main(): Promise<void> {
   console.log(`Leggo il record Zenodo ${ZENODO_RECORD}…`)
-  const response = await fetch(ZENODO_API, { headers: { 'user-agent': 'FungiCast-Toscana/0.1' } })
+  const response = await fetch(ZENODO_API, { headers: { 'user-agent': USER_AGENT } })
   if (!response.ok) {
     console.error(`Zenodo ha risposto ${response.status}: non posso continuare.`)
     process.exitCode = 1

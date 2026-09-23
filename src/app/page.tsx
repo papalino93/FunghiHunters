@@ -2,8 +2,12 @@ import { cookies } from 'next/headers'
 
 import { TodayScreen } from '@/components/today/TodayScreen'
 import { REGION_COOKIE } from '@/lib/region/preference'
+import { pageMetadata } from '@/lib/seo/metadata'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
+
+// Canonical e `og:url` anche per la home, che non ha un titolo proprio: si chiama FungiCast e basta.
+export const metadata = pageMetadata({ path: '/' })
 
 /**
  * La home è la schermata della decisione, non la mappa.

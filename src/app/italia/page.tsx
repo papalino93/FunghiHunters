@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { pageMetadata } from '@/lib/seo/metadata'
 import { loadItaliaIndex } from '@/lib/snapshot/load-italia'
 
 /**
@@ -10,12 +11,14 @@ import { loadItaliaIndex } from '@/lib/snapshot/load-italia'
  */
 export const revalidate = 3600
 
-export const metadata = {
+// Il " · FungiCast" che qui mancava lo aggiunge ora il template del layout.
+export const metadata = pageMetadata({
   title: 'Italia — scegli la regione',
   description:
     'Compatibilità delle condizioni con la fruttificazione del porcino, regione per regione. ' +
     'Non indica la presenza di funghi.',
-}
+  path: '/italia',
+})
 
 export default async function Page() {
   const index = await loadItaliaIndex()
@@ -39,8 +42,15 @@ export default async function Page() {
           <ul className="mt-4 grid grid-cols-2 gap-2">
             {index.regions.map((region) => (
               <li key={region.slug}>
+                {/*
+                  * `prefetch={false}`: venti link tutti visibili insieme facevano scaricare al
+                  * browser le venti regioni intere (~900 kB di payload RSC) appena aperta la
+                  * pagina, per aprirne poi una sola. Ogni regione è comunque statica e in cache:
+                  * caricata al tocco arriva in fretta lo stesso.
+                  */}
                 <Link
                   href={`/italia/${region.slug}`}
+                  prefetch={false}
                   className="flex min-h-14 flex-col justify-center rounded-xl border border-edge
                              bg-surface-1 px-3 py-2 transition-colors hover:border-accent
                              focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
