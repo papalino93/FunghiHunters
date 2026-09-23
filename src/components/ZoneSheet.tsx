@@ -65,7 +65,9 @@ export function ZoneSheet({
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
-            <p className="truncate text-xs text-ink-dim">
+            {/* Due righe, non una troncata: a 390 px il tipo di bosco — il dato che dice dove
+                cercare — spariva sempre dietro i puntini. */}
+            <p className="line-clamp-2 text-xs text-ink-dim">
               {zone.municipality !== null && zone.municipality !== undefined
                 ? `${zone.municipality} (${zone.province})`
                 : zone.reference} ·{' '}
@@ -679,7 +681,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint: stri
     <div className="rounded-lg bg-surface-2 px-2.5 py-2">
       <dt className="text-xs uppercase tracking-wide text-ink-faint">{label}</dt>
       <dd className="mt-0.5 truncate text-sm font-semibold text-ink">{value}</dd>
-      <p className="truncate text-xs text-ink-faint">{hint}</p>
+      <p className="text-xs leading-snug text-ink-faint">{hint}</p>
     </div>
   )
 }
