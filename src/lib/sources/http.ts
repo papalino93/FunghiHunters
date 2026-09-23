@@ -90,8 +90,37 @@ export class CallBudget {
   }
 }
 
-/** Esegue una GET con timeout e retry, restituendo il corpo come testo. */
-export async function fetchText(url: string, options: HttpOptions = {}): Promise<string> {
+/**
+ * Il corpo e' arrivato con uno status 2xx ma non e' JSON.
+ *
+ * Classe a parte, e ritentabile, per un caso misurato e non teorico: Open-Meteo sotto carico
+ * risponde a volte **200** con una pagina di testo/HTML ("timeoutReached") al posto del JSON. Lo
+ * status dice "tutto bene", il corpo dice il contrario, ed e' transitorio quanto un 503: la corsa
+ * GitHub Actions 35805664027 e' morta cosi', al primo tentativo, perche' il parsing stava fuori dal
+ * ciclo dei retry e un corpo illeggibile non veniva mai richiesto una seconda volta.
+ */
+export class NonJsonResponseError extends Error {
+  constructor(
+    readonly url: string,
+    readonly bodySnippet: string,
+  ) {
+    super(`Risposta non JSON da ${url}: ${bodySnippet.slice(0, 200)}`)
+    this.name = 'NonJsonResponseError'
+  }
+}
+
+/**
+ * Il ciclo di tentativi condiviso da `fetchText` e `fetchJson`.
+ *
+ * `read` trasforma il corpo *dentro* il ciclo: se lancia, il tentativo conta come fallito e si
+ * ritenta con lo stesso backoff di un errore di rete. E' l'unico modo perche' "200 ma corpo
+ * sbagliato" riceva lo stesso trattamento di "503": dall'esterno sono lo stesso guasto transitorio.
+ */
+async function requestWithRetry<T>(
+  url: string,
+  options: HttpOptions,
+  read: (text: string) => T,
+): Promise<T> {
   const timeoutMs = options.timeoutMs ?? DEFAULTS.timeoutMs
   const attempts = options.attempts ?? DEFAULTS.attempts
   const backoffMs = options.backoffMs ?? DEFAULTS.backoffMs
@@ -119,7 +148,7 @@ export async function fetchText(url: string, options: HttpOptions = {}): Promise
         if (!isRetryable(response.status) || attempt === attempts) throw error
         lastError = error
       } else {
-        return await response.text()
+        return read(await response.text())
       }
     } catch (error) {
       if (error instanceof HttpError && !isRetryable(error.status)) throw error
@@ -138,12 +167,23 @@ export async function fetchText(url: string, options: HttpOptions = {}): Promise
     : new Error(`Richiesta fallita dopo ${attempts} tentativi: ${url}`)
 }
 
-/** Come `fetchText`, ma con il parsing JSON e un errore leggibile se il corpo non e' JSON. */
+/** Esegue una GET con timeout e retry, restituendo il corpo come testo. */
+export async function fetchText(url: string, options: HttpOptions = {}): Promise<string> {
+  return requestWithRetry(url, options, (text) => text)
+}
+
+/**
+ * Come `fetchText`, ma con il parsing JSON e un errore leggibile se il corpo non e' JSON.
+ *
+ * Un corpo non JSON si ritenta come un errore transitorio (vedi `NonJsonResponseError`): solo
+ * dopo l'ultimo tentativo arriva a chi chiama.
+ */
 export async function fetchJson<T = unknown>(url: string, options: HttpOptions = {}): Promise<T> {
-  const text = await fetchText(url, options)
-  try {
-    return JSON.parse(text) as T
-  } catch {
-    throw new Error(`Risposta non JSON da ${url}: ${text.slice(0, 200)}`)
-  }
+  return requestWithRetry(url, options, (text) => {
+    try {
+      return JSON.parse(text) as T
+    } catch {
+      throw new NonJsonResponseError(url, text)
+    }
+  })
 }

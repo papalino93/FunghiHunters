@@ -19,13 +19,18 @@ sempre.
 1. Creare un progetto su [supabase.com](https://supabase.com) (il piano gratuito basta).
 2. Nell'**SQL Editor**, eseguire **in ordine** tutti i file di `db/migrations/`:
    `0001_init.sql`, `0002_sync.sql`, `0003_grants.sql`, `0004_diary_location.sql`,
-   `0005_grants_narrow.sql` e `0006_diary_context.sql`. Il terzo esiste perché su almeno un
+   `0005_grants_narrow.sql`, `0006_diary_context.sql`, `0007_followed_zones.sql` e
+   `0008_followed_zones_grants.sql`. Il terzo esiste perché su almeno un
    progetto reale i primi due non bastavano: vedi il caso `permission denied for schema public`
    più sotto se lo hai già saltato. Il sesto aggiunge due colonne al diario (durata della ricerca,
    numero di cercatori): **applicalo**. Senza, l'app se ne accorge al primo invio, smette di
    mandare quei due campi e sincronizza tutto il resto — ma quei dati restano fermi sul
    dispositivo finché la migrazione non c'è (vedi `isMissingColumnError` in
-   `src/lib/sync/supabase-backend.ts`).
+   `src/lib/sync/supabase-backend.ts`). Il settimo crea la tabella delle zone seguite; l'ottavo
+   le dà i permessi, che il settimo non concedeva: da `0005` in poi una tabella nuova nasce
+   irraggiungibile dal client finché non lo dichiara. **Se hai già eseguito `0007`, esegui anche
+   `0008`**: senza, la sincronizzazione delle zone seguite fallisce con `permission denied for
+   table user_followed_zones` anche da utente autenticato.
 
    > **Se hai già eseguito `0003_grants.sql`, esegui anche `0005_grants_narrow.sql`: non è
    > facoltativo.** Il terzo file concedeva scrittura su *tutte* le tabelle dello schema `public`
@@ -183,6 +188,7 @@ schermata Account, non come striscia in alto:
 | --- | --- | --- |
 | *"Lettura fallita: permission denied for schema public"* o *"Scrittura fallita: permission denied for schema public"* | `anon`/`authenticated` non hanno `USAGE` sullo schema `public`: succede quando il progetto non aveva i permessi di base che Supabase concede di norma a un progetto nuovo. Le policy RLS da sole non bastano — filtrano le righe *dopo* che l'accesso alla tabella è già concesso | eseguire `db/migrations/0003_grants.sql` nell'SQL Editor |
 | *"permission denied for table user_observations"* (senza "schema") | i permessi sullo schema ci sono, mancano quelli sulla tabella specifica | stesso file, `0003_grants.sql` |
+| *"permission denied for table user_followed_zones"* | `0007_followed_zones.sql` crea la tabella ma non concede permessi, e dopo `0005_grants_narrow.sql` una tabella nuova non li riceve più in automatico | eseguire `db/migrations/0008_followed_zones_grants.sql` |
 
 E i due casi che **non** danno errore, ma non sono quello che ci si aspetta:
 

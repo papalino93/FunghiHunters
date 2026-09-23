@@ -30,6 +30,7 @@ import type { ForestFile } from '@/../scripts/ingest-forest-italia'
 import type { DailySamples } from '@/lib/pipeline/zone-series'
 import type { StationSample } from '@/lib/spatial/interpolate'
 import { LICENSES } from '@/lib/sources/adapter'
+import { annotate } from '@/lib/pipeline/ci-report'
 import { fetchJson } from '@/lib/sources/http'
 import {
   isStationActive,
@@ -42,6 +43,7 @@ import { SNAPSHOT_SCHEMA_VERSION } from '@/lib/snapshot/types'
 import type {
   Snapshot,
   SnapshotNearbyMunicipality,
+  SnapshotSource,
   SnapshotZone,
 } from '@/lib/snapshot/types'
 
@@ -102,10 +104,42 @@ async function main(): Promise<void> {
 
   console.log(`Snapshot ${ALGORITHM_V1.version} - ${todayIso}`)
 
-  const [modelResponses, allStations] = await Promise.all([
+  /*
+   * Le due fonti si scaricano in parallelo ma falliscono ciascuna per conto suo. Con
+   * `Promise.all` un'anagrafica SIR che non risponde buttava via anche il modello gia' arrivato, e
+   * con lui l'intero snapshot del giorno: esattamente il degrado che il pannello delle fonti
+   * esiste per dichiarare. Le due fonti pero' non pesano uguale:
+   *
+   * - **senza Open-Meteo** non c'e' punteggio da calcolare — il modello e' l'unica serie che copre
+   *   anche i giorni di previsione. Si esce con errore *senza scrivere*, cosi' resta lo snapshot di
+   *   ieri invece di uno a zero zone, che l'app mostrerebbe come "nessun dato";
+   * - **senza SIR** il punteggio esce lo stesso dal solo modello, come per le zone nazionali, la
+   *   confidence cala da sola e la fonte finisce `down` nel pannello. Lo snapshot si scrive, poi
+   *   lo script esce con codice 1: il workflow committa comunque i dati e fa diventare rossa la
+   *   corsa (vedi `.github/workflows/daily-snapshot.yml`).
+   */
+  const [modelResult, stationsResult] = await Promise.allSettled([
     fetchModel(),
     fetchJson(stationsUrl(), { timeoutMs: 120_000 }).then(parseStations),
   ])
+  if (modelResult.status === 'rejected') {
+    throw new Error(
+      'Open-Meteo non ha risposto: senza modello non c\'e\' punteggio da calcolare, ' +
+        `lo snapshot precedente resta al suo posto. Causa: ${describeError(modelResult.reason)}`,
+    )
+  }
+  const modelResponses = modelResult.value
+  const sirStationsError =
+    stationsResult.status === 'rejected' ? describeError(stationsResult.reason) : null
+  const allStations = stationsResult.status === 'fulfilled' ? stationsResult.value : []
+  if (sirStationsError !== null) {
+    annotate(
+      'error',
+      'SIR non raggiungibile',
+      `anagrafica stazioni non scaricata (${sirStationsError}): lo snapshot toscano esce dal solo ` +
+        'modello meteo, con la fonte SIR dichiarata "down".',
+    )
+  }
 
   const candidates = allStations
     .filter((s) => s.elevationM !== null)
@@ -205,6 +239,28 @@ async function main(): Promise<void> {
     )
   }
 
+  const sirSource: SnapshotSource = {
+    // Una fonte che risponde a meta' non e' una fonte che funziona: va detto.
+    status: sirSeries === 0 ? 'down' : sirSeries < candidates.length ? 'degraded' : 'ok',
+    recordsFetched: sirSeries,
+    coverage: 'Toscana, rete di stazioni al suolo',
+    name: 'Regione Toscana - Servizio Idrologico Regionale',
+    license: LICENSES.sir.code,
+    url: LICENSES.sir.url,
+    attribution: LICENSES.sir.attribution,
+    lastUpdate: lastSirUpdate,
+  }
+  const openMeteoSource: SnapshotSource = {
+    status: modelResponses.length === ZONES.length ? 'ok' : 'degraded',
+    recordsFetched: modelResponses.length,
+    coverage: 'globale, modelli a 2-11 km',
+    name: 'Open-Meteo',
+    license: LICENSES.openMeteo.code,
+    url: LICENSES.openMeteo.url,
+    attribution: LICENSES.openMeteo.attribution,
+    lastUpdate: todayIso,
+  }
+
   const snapshot: Snapshot = {
     schemaVersion: SNAPSHOT_SCHEMA_VERSION,
     generatedAt: new Date().toISOString(),
@@ -212,27 +268,8 @@ async function main(): Promise<void> {
     referenceDate: todayIso,
     zones,
     sources: [
-      {
-        // Una fonte che risponde a meta' non e' una fonte che funziona: va detto.
-        status: sirSeries === 0 ? 'down' : sirSeries < candidates.length ? 'degraded' : 'ok',
-        recordsFetched: sirSeries,
-        coverage: 'Toscana, rete di stazioni al suolo',
-        name: 'Regione Toscana - Servizio Idrologico Regionale',
-        license: LICENSES.sir.code,
-        url: LICENSES.sir.url,
-        attribution: LICENSES.sir.attribution,
-        lastUpdate: lastSirUpdate,
-      },
-      {
-        status: modelResponses.length === ZONES.length ? 'ok' : 'degraded',
-        recordsFetched: modelResponses.length,
-        coverage: 'globale, modelli a 2-11 km',
-        name: 'Open-Meteo',
-        license: LICENSES.openMeteo.code,
-        url: LICENSES.openMeteo.url,
-        attribution: LICENSES.openMeteo.attribution,
-        lastUpdate: todayIso,
-      },
+      sirSource,
+      openMeteoSource,
       {
         // Non fa parte del giro giornaliero: risolto una volta da `ingest-admin-boundaries.ts`
         // e letto da un file. "ok" se il file esiste ed e' stato letto, "down" altrimenti — non
@@ -250,9 +287,37 @@ async function main(): Promise<void> {
     uncalibratedParams: uncalibratedParams(),
   }
 
+  if (zones.length === 0) {
+    // Stesso motivo del modello mancante: uno snapshot vuoto scritto sopra quello di ieri
+    // cancellerebbe la mappa invece di lasciarla un giorno indietro.
+    throw new Error('Nessuna zona calcolata: lo snapshot precedente resta al suo posto.')
+  }
+
   await mkdir(dirname(outPath), { recursive: true })
   await writeFile(outPath, JSON.stringify(snapshot, null, 1), 'utf8')
   console.log(`\nScritto ${outPath}`)
+
+  /*
+   * Dopo la scrittura, non prima: il dato che c'e' va salvato comunque. Una fonte giornaliera
+   * `down` fa uscire lo script con 1, e quindi la corsa rossa con l'email al proprietario; una
+   * `degraded` (qualche stazione che non risponde) resta un avviso, perche' capita e non toglie il
+   * dato di oggi. Solo le due fonti del giro giornaliero: l'ISTAT e' un file letto da disco,
+   * non una fonte che puo' cadere oggi.
+   */
+  for (const source of [sirSource, openMeteoSource]) {
+    if (source.status === 'ok') continue
+    annotate(
+      source.status === 'down' ? 'error' : 'warning',
+      `${source.name}: ${source.status}`,
+      `${source.recordsFetched ?? 0} record arrivati. Snapshot scritto lo stesso, la fonte e' ` +
+        'dichiarata nel pannello "Dati e fonti".',
+    )
+    if (source.status === 'down') process.exitCode = 1
+  }
+}
+
+function describeError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }
 
 
@@ -294,5 +359,6 @@ async function loadNearbyComuni(): Promise<Map<string, SnapshotNearbyMunicipalit
 
 main().catch((error: unknown) => {
   console.error('Snapshot fallito:', error)
+  annotate('error', 'Snapshot toscano non scritto', describeError(error))
   process.exitCode = 1
 })
