@@ -165,6 +165,38 @@ describe('tombstone: la cancellazione si propaga', () => {
     expect(await repo.listAll()).toHaveLength(0) // pulito in locale dopo la conferma
   })
 
+  it('un tombstone remoto che perde il confronto non cancella la voce vivente appena spinta', async () => {
+    // Il caso reale: telefono B cancella la voce e sincronizza (il server ora ha un tombstone).
+    // Telefono A, non ancora risincronizzato da prima della cancellazione, modifica la stessa voce
+    // *dopo* quella cancellazione e sincronizza. Il locale vince il confronto (più recente del
+    // tombstone) e viene spedito correttamente — ma il tombstone del server compare comunque nella
+    // risposta grezza di `pull()`, perché è più recente del cursore di A. Un ciclo di pulizia che
+    // purgasse ogni tombstone visto in `pull`, invece di solo quelli davvero applicati, cancellerebbe
+    // qui la voce vivente che il sync ha appena confermato: la voce sopravvive sul server ma sparisce
+    // per sempre dal dispositivo di A.
+    const repo = new InMemoryDiaryRepository()
+    const original = materialise(draft())
+    await repo.upsertRaw(at('2026-09-10T07:00:00.000Z', original)) // stato di A prima del giro
+    const backend = new FakeBackend()
+    // Tombstone di B, più recente del cursore di A ma più vecchio della modifica di A qui sotto.
+    backend.rows.set(original.id, {
+      ...original,
+      deletedAt: '2026-09-10T08:00:00.000Z',
+      updatedAt: '2026-09-10T08:00:00.000Z',
+    })
+    // A modifica la voce (offline, prima di sincronizzare) con un updatedAt più recente del
+    // tombstone di B: al confronto locale-vs-remoto vince il locale.
+    await repo.upsertRaw(at('2026-09-10T09:00:00.000Z', { ...original, notes: 'modificata da A dopo la cancellazione di B' }))
+
+    const outcome = await runSync(repo, backend, '2026-09-10T06:00:00.000Z')
+
+    expect(outcome.pushed).toBe(1)
+    expect(outcome.pulled).toBe(0) // il tombstone di B ha perso il confronto, non è stato applicato
+    expect(backend.rows.get(original.id)?.deletedAt).toBeNull() // il server ora ha la versione viva
+    const stored = (await repo.list())[0]
+    expect(stored?.notes).toBe('modificata da A dopo la cancellazione di B') // non purgata in locale
+  })
+
   it('una cancellazione remota arriva sul dispositivo e non resuscita la voce', async () => {
     const repo = new InMemoryDiaryRepository()
     const entry = await repo.add(draft())

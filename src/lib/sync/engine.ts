@@ -53,6 +53,12 @@ export async function runSync(
 
     const remote = await backend.pull(lastSyncedAt)
     let pulled = 0
+    // Solo i tombstone remoti davvero applicati in locale (`remoteWins`), non ogni tombstone che
+    // compare nella risposta grezza di `pull`: quest'ultima può contenere anche una voce che ha
+    // *perso* il confronto — es. cancellata su un dispositivo, poi modificata più di recente su
+    // questo — e purgarla comunque cancellerebbe dal disco la versione vivente appena spinta,
+    // vanificando la garanzia di questo file ("non si perde mai una modifica in silenzio").
+    const appliedRemoteTombstones: string[] = []
     for (const remoteEntry of remote) {
       const localEntry = localBefore.find((e) => e.id === remoteEntry.id)
       const remoteWins = localEntry === undefined || remoteEntry.updatedAt > localEntry.updatedAt
@@ -60,6 +66,7 @@ export async function runSync(
         await repo.upsertRaw(remoteEntry)
         pulled += 1
         candidates.delete(remoteEntry.id)
+        if (remoteEntry.deletedAt !== null) appliedRemoteTombstones.push(remoteEntry.id)
       }
     }
 
@@ -67,9 +74,14 @@ export async function runSync(
     if (toPush.length > 0) await backend.push(toPush)
 
     // I tombstone appena confermati in entrambe le direzioni non servono più in locale: la
-    // cancellazione è ormai nota a tutti i dispositivi passati da qui.
-    for (const entry of [...toPush, ...remote]) {
+    // cancellazione è ormai nota a tutti i dispositivi passati da qui. `toPush` e
+    // `appliedRemoteTombstones` sono per costruzione insiemi di id disgiunti (un id vinto dal
+    // remoto è uscito da `candidates`, quindi non può comparire in `toPush`).
+    for (const entry of toPush) {
       if (entry.deletedAt !== null) await repo.purge(entry.id)
+    }
+    for (const id of appliedRemoteTombstones) {
+      await repo.purge(id)
     }
 
     return {

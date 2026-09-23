@@ -247,10 +247,22 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
                   entry={entry}
                   zoneName={zoneNameFor(entry, snapshot)}
                   onDelete={async () => {
-                    await repo?.remove(entry.id)
-                    await waypointRepo?.removeAllFor(entry.id)
-                    await persistAndReload()
-                    setMessage('Uscita eliminata.')
+                    // A differenza di `onSave` (avvolto da `EntryForm.submit`, che ne cattura gli
+                    // errori), questo `onClick` non ha nessun chiamante che lo faccia per lui: senza
+                    // questo try/catch, un archivio bloccato a metà cancellazione lascerebbe la voce
+                    // marcata cancellata sul disco ma ancora visibile in lista, senza alcun avviso.
+                    try {
+                      await repo?.remove(entry.id)
+                      await waypointRepo?.removeAllFor(entry.id)
+                      await persistAndReload()
+                      setMessage('Uscita eliminata.')
+                    } catch (error) {
+                      setMessage(
+                        error instanceof Error
+                          ? `Uscita non eliminata: ${error.message}`
+                          : 'Uscita non eliminata: archivio non disponibile su questo dispositivo.',
+                      )
+                    }
                   }}
                 />
               </li>
