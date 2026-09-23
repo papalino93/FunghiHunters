@@ -92,7 +92,7 @@ export function TimeSlider({
         <button
           type="button"
           onClick={() => { onChange(todayDate) }}
-          className="min-h-9 rounded px-3 font-medium text-ink-dim transition-colors
+          className="-my-1 min-h-11 rounded px-3 font-medium text-ink-dim transition-colors
                      hover:bg-surface-2 hover:text-ink focus:outline-none
                      focus-visible:ring-2 focus-visible:ring-accent"
         >

@@ -204,8 +204,10 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
         * Da 1024 px in su la parte bassa diventa un pannello laterale a destra: a tutta larghezza
         * su un monitor la scheda copriva quasi tutta la mappa e le righe arrivavano a 1400 px,
         * illeggibili. Sotto resta a tutta larghezza, come un foglio che sale dal basso.
+        * `lg:right-14` lascia libera la colonna dei comandi di MapLibre, che il pannello, alto
+        * quasi quanto lo schermo, altrimenti copriva.
         */}
-      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-2 p-3 pb-6 lg:left-auto lg:w-[32rem]">
+      <div className="pointer-events-none absolute bottom-0 left-0 right-0 z-10 flex flex-col gap-2 p-3 pb-6 lg:left-auto lg:right-14 lg:w-[32rem]">
         {showLegend && (
           <div className="pointer-events-auto rounded-xl border border-edge bg-surface-1/95 px-3 py-2 backdrop-blur-xl">
             <div className="flex items-center justify-between">

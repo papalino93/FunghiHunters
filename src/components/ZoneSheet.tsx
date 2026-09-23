@@ -56,7 +56,7 @@ export function ZoneSheet({
 
   return (
     <section
-      className="pointer-events-auto flex max-h-[55dvh] flex-col lg:max-h-[calc(100dvh-13rem)] overflow-hidden rounded-t-2xl
+      className="pointer-events-auto flex max-h-[55dvh] flex-col lg:max-h-[calc(100dvh-20rem)] overflow-hidden rounded-t-2xl
                  border border-b-0 border-edge bg-surface-1/95 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]
                  backdrop-blur-xl"
       aria-label={`Dettaglio ${zone.name}`}
