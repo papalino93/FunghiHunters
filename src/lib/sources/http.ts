@@ -28,8 +28,11 @@ const DEFAULTS = {
 /**
  * Identifica la nostra applicazione verso le fonti pubbliche.
  * E' cortesia di base e rende riconoscibile il nostro traffico se qualcuno lo deve diagnosticare.
+ * Il sito pubblico e il repository sono i due recapiti: Nominatim, in particolare, chiede nelle
+ * sue regole d'uso un'applicazione identificabile e un modo di contattarne l'autore.
  */
-export const USER_AGENT = 'FungiCast-Toscana/0.1 (+https://github.com/papalino93/FunghiHunters)'
+export const USER_AGENT =
+  'FungiCast/1.0 (+https://funghihunters.vercel.app; +https://github.com/papalino93/FunghiHunters)'
 
 export class HttpError extends Error {
   constructor(

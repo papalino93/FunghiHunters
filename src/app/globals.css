@@ -182,3 +182,12 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Benvenuto della home già chiuso (o utente con una sessione salvata): nascosto prima del primo
+ * disegno, così la pagina non salta quando il componente, dopo l'idratazione, lo toglie.
+ * L'attributo lo mette lo script in linea del layout — vedi `src/lib/ui/welcome.ts`.
+ */
+html[data-welcome="nascosto"] [data-welcome-hero] {
+  display: none;
+}

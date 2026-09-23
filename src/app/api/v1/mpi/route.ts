@@ -26,6 +26,17 @@ import { loadSnapshot } from '@/lib/snapshot/load'
  */
 export const revalidate = 3600
 
+/*
+ * `revalidate` da solo non bastava: la rotta legge `request.url` (i parametri `zone` e `date`),
+ * quindi è dinamica, e ogni risposta usciva con `max-age=0` e un MISS in CDN — un ricalcolo per
+ * ogni chiamata a dati che cambiano una volta al giorno. L'intestazione esplicita fa tenere alla
+ * CDN di Vercel una copia per URL (parametri compresi) per un'ora, e per un giorno ancora le
+ * permette di servirla scaduta mentre la rinnova in background.
+ */
+const CACHE_HEADERS = {
+  'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+} as const
+
 export async function GET(request: Request): Promise<NextResponse> {
   const snapshot = await loadSnapshot()
   const url = new URL(request.url)
@@ -39,7 +50,7 @@ export async function GET(request: Request): Promise<NextResponse> {
   }
 
   if (date === null) {
-    return NextResponse.json({ ...snapshot, zones })
+    return NextResponse.json({ ...snapshot, zones }, { headers: CACHE_HEADERS })
   }
 
   // Con una data si restituisce la fotografia di quel giorno, non l'intera serie.
@@ -66,5 +77,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     date,
     zones: onDate,
     sources: snapshot.sources,
-  })
+  }, { headers: CACHE_HEADERS })
 }

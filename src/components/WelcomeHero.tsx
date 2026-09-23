@@ -5,8 +5,7 @@ import Link from 'next/link'
 
 import { useAuth } from '@/lib/auth/context'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
-
-const DISMISS_KEY = 'fungicast:welcome-dismissed'
+import { WELCOME_DISMISS_KEY as DISMISS_KEY } from '@/lib/ui/welcome'
 
 function readDismissed(): boolean {
   try {
@@ -39,14 +38,21 @@ export interface WelcomeHeroProps {
  * in `app/icon.tsx`). Un solo pulsante, e non è un bivio: chiude.
  *
  * L'accesso non sparisce, si sposta dove si guadagna: una riga sotto, e la schermata Account.
+ *
+ * **Reso già dal server**, non solo dopo l'idratazione: prima compariva un attimo dopo il primo
+ * disegno e spingeva giù l'elenco (il grosso del CLS della home). Chi non deve vederlo lo ha già
+ * nascosto via CSS lo script del layout, prima che la pagina si disegni — vedi `lib/ui/welcome.ts`.
+ * Qui sotto la decisione resta la stessa di sempre; cambia solo che, finché il browser non l'ha
+ * presa, il default è "c'è" invece di "non c'è".
  */
 export function WelcomeHero({ zoneCount }: WelcomeHeroProps) {
   const hydrated = useIsHydrated()
   const auth = useAuth()
   const [closed, setClosed] = useState(false)
-  const alreadyDismissed = useMemo(() => (hydrated ? readDismissed() : true), [hydrated])
+  // Sul server e durante l'idratazione `false`, come l'HTML appena mandato: niente differenze.
+  const alreadyDismissed = useMemo(() => (hydrated ? readDismissed() : false), [hydrated])
 
-  if (!hydrated || closed || alreadyDismissed || auth.status === 'signed-in') return null
+  if (closed || alreadyDismissed || auth.status === 'signed-in') return null
 
   const dismiss = (): void => {
     try {
@@ -59,6 +65,7 @@ export function WelcomeHero({ zoneCount }: WelcomeHeroProps) {
 
   return (
     <section
+      data-welcome-hero=""
       aria-labelledby="benvenuto-titolo"
       className="mb-4 overflow-hidden rounded-2xl border border-edge bg-surface-1"
     >

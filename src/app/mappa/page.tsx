@@ -3,9 +3,10 @@ import { cookies } from 'next/headers'
 
 import { AppShell } from '@/components/AppShell'
 import { REGION_COOKIE } from '@/lib/region/preference'
+import { pageMetadata } from '@/lib/seo/metadata'
 import { loadMapRegion } from '@/lib/snapshot/load-reference'
 
-export const metadata = { title: 'Mappa · FungiCast' }
+export const metadata = pageMetadata({ title: 'Mappa', path: '/mappa' })
 
 /**
  * La mappa di una regione.
