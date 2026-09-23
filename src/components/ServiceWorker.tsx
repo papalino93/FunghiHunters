@@ -41,10 +41,16 @@ export function ServiceWorker() {
  * Senza, cache offline e diario (IndexedDB) sono "best effort": il browser può cancellarli per
  * fare posto, e lo fa proprio sui telefoni pieni, senza chiedere. Una sola richiesta, senza
  * aspettarne l'esito: se viene negata non cambia niente rispetto a prima. Si salta se il permesso
- * c'è già, per non ripetere la domanda dove il browser la pone all'utente.
+ * c'è già.
+ *
+ * **Mai su Firefox.** Chrome ed Edge decidono in silenzio, Safari non chiede nulla; Firefox invece
+ * apre una finestra di permesso appena si carica la pagina, senza che l'utente abbia fatto niente.
+ * Una richiesta non sollecitata è esattamente il tipo di interruzione che questa app esclude per
+ * scelta, e vale meno del rischio che protegge.
  */
 function requestPersistentStorage(): void {
   try {
+    if (navigator.userAgent.includes('Firefox/')) return
     const storage = navigator.storage
     if (storage?.persist === undefined) return
     void (storage.persisted?.() ?? Promise.resolve(false))
