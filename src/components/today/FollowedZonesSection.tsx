@@ -4,7 +4,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 
 import type { FollowedZonesState } from '@/lib/zones/useFollowedZones'
-import { resolveFollowedZone, type IndexSource, type SnapshotSource } from '@/lib/zones/resolve'
+import { resolveFollowedZone, type IndexSource, type SnapshotSource, type ZoneReliability } from '@/lib/zones/resolve'
 import { zoneMapHref } from '@/lib/zones/types'
 import { PotentialBar } from '@/components/today/PotentialBar'
 import { FollowButton } from '@/components/today/FollowButton'
@@ -126,11 +126,9 @@ export function FollowedZonesSection({
  * riusa lo stesso componente `Reliability` delle altre schede; per `confidence` (l'unico numero
  * che l'indice nazionale porta) si mostra il numero, non le stesse parole tarate sull'altro dato.
  */
-function ZoneReliabilityLabel({
-  reliability,
-}: {
-  reliability: { readonly kind: 'quality'; readonly dataQuality: number } | { readonly kind: 'confidence'; readonly confidence: number }
-}) {
-  if (reliability.kind === 'quality') return <Reliability dataQuality={reliability.dataQuality} />
+function ZoneReliabilityLabel({ reliability }: { reliability: ZoneReliability }) {
+  if (reliability.kind === 'quality') {
+    return <Reliability dataQuality={reliability.dataQuality} hasStations={reliability.hasStations} />
+  }
   return <span>affidabilità {reliability.confidence.toFixed(0)}/100</span>
 }
