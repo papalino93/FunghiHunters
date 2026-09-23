@@ -102,7 +102,7 @@ function Shell({
         </h2>
         <p className="mb-2.5 mt-1.5 text-xs leading-snug text-ink-dim">
           È da qui che partono &laquo;Dove vado&raquo; e la mappa. Le altre regioni restano tutte
-          consultabili dalla scheda Italia: questa è la casa, non un confine.
+          consultabili dalla scheda Regioni: questa è la casa, non un confine.
         </p>
         <RegionPicker current={regionSlug} choices={regionChoices} />
       </section>

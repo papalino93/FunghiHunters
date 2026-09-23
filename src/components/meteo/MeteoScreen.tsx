@@ -166,6 +166,7 @@ export function MeteoScreen() {
 
         {(candidates.length > 0 || searching || searchError !== null) && (
           <ul
+            aria-live="polite"
             className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border border-edge
                        bg-surface-1 shadow-lg"
           >

@@ -116,7 +116,7 @@ export function GuideScreen() {
           &laquo;Dove vado&raquo;, la mappa e il diario. Senza sceglierne una vale la Toscana,
           l&apos;unica regione con stazioni di misura collegate.{' '}
           <strong className="text-ink">Non è un confine:</strong> tutte le altre regioni restano
-          consultabili dalla scheda Italia, e dalla mappa puoi spostarti fra una e l&apos;altra
+          consultabili dalla scheda Regioni, e dalla mappa puoi spostarti fra una e l&apos;altra
           senza cambiare quella di casa.
         </Voce>
         <Voce titolo="Dove vado">

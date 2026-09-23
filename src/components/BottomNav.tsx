@@ -39,17 +39,20 @@ const TABS: readonly Tab[] = [
   },
   {
     href: '/italia',
-    label: 'Italia',
+    /*
+     * "Regioni", non più "Italia": il nome precedente e l'icona a meridiani (cartografica, come
+     * quella di "Mappa") rendevano ambigua la differenza a un tocco veloce fra tre cose diverse —
+     * questo elenco di regioni, la mappa della regione corrente, e il selettore di regione "di
+     * casa" già presente in home/Account. Un'icona a elenco, non a globo, segna che qui si sceglie
+     * fra regioni, non si guarda un territorio.
+     */
+    label: 'Regioni',
     icon: (
-      <path
-        d="M10 1.8a1 1 0 0 1 1 1v14.4a1 1 0 0 1-2 0V2.8a1 1 0 0 1 1-1Z
-           M3.2 6.2a8.5 8.5 0 0 1 13.6 0M3.2 13.8a8.5 8.5 0 0 0 13.6 0
-           M10 1.8a12 12 0 0 1 0 16.4M10 1.8a12 12 0 0 0 0 16.4"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="1.3"
-        strokeLinecap="round"
-      />
+      <>
+        <rect x="3" y="4" width="14" height="2.6" rx="1" fill="currentColor" />
+        <rect x="3" y="8.7" width="14" height="2.6" rx="1" fill="currentColor" />
+        <rect x="3" y="13.4" width="14" height="2.6" rx="1" fill="currentColor" />
+      </>
     ),
   },
   {

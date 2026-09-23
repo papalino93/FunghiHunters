@@ -289,7 +289,7 @@ function penaltyParam(key: string, config: AlgorithmConfig): Param {
     case 'heatShock':
       return penalties.heatShock.threshold
     case 'thermalShock':
-      return penalties.thermalShock.weight
+      return penalties.thermalShock.threshold
     default:
       return penalties.frost.threshold
   }
