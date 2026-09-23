@@ -33,11 +33,17 @@ export function reliabilityLabel(
 
 export function Reliability({
   dataQuality,
-  hasStations = true,
+  hasStations,
 }: {
   dataQuality: number
-  /** `false` per una zona senza una sola stazione vicina: solo modello, mai "solida". */
-  hasStations?: boolean
+  /**
+   * `false` per una zona senza una sola stazione vicina: solo modello, mai "solida". Obbligatoria
+   * e senza un default: un valore implicito ("assumo che ce ne siano") è esattamente il tipo di
+   * scorciatoia che ha permesso al bug che questo componente corregge di passare inosservato — un
+   * futuro terzo chiamante che lo dimenticasse otterrebbe silenziosamente "stima solida" anche
+   * senza stazioni.
+   */
+  hasStations: boolean
 }) {
   const { label, colour } = reliabilityLabel(dataQuality, hasStations)
   return <span className={colour}>{label}</span>

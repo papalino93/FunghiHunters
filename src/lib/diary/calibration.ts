@@ -110,6 +110,13 @@ export interface ClassificationReport {
 }
 
 export interface SplitStat {
+  /**
+   * Identificatore stabile per una lista React (`key`), distinto da `label`: due zone diverse
+   * possono avere lo stesso nome (vedi `geographicSplit`), e usare `label` come chiave produrrebbe
+   * chiavi duplicate — React lo segnala e può scambiare i nodi DOM di due righe omonime durante la
+   * riconciliazione. Coincide con `label` ovunque l'etichetta sia già garantita unica.
+   */
+  readonly key: string
   readonly label: string
   readonly count: number
   readonly hasSignal: boolean
@@ -181,9 +188,14 @@ function isSuccess(entry: DiaryEntry): boolean {
   return rankOf(entry.abundance) > 0
 }
 
-function splitStat(label: string, entries: readonly (DiaryEntry & { mpiAtEntry: number })[]): SplitStat {
+function splitStat(
+  label: string,
+  entries: readonly (DiaryEntry & { mpiAtEntry: number })[],
+  key: string = label,
+): SplitStat {
   const correlation = spearman(entries.map((e) => e.mpiAtEntry), entries.map((e) => rankOf(e.abundance)))
   return {
+    key,
     label,
     count: entries.length,
     hasSignal: entries.length >= MIN_ENTRIES_FOR_SPLIT,
@@ -285,8 +297,8 @@ function geographicSplit(usable: readonly (DiaryEntry & { mpiAtEntry: number })[
     if (group === undefined) byZone.set(entry.zoneCode, { zoneName: entry.zoneName, entries: [entry] })
     else group.entries.push(entry)
   }
-  return [...byZone.values()]
-    .map(({ zoneName, entries }) => splitStat(zoneName, entries))
+  return [...byZone.entries()]
+    .map(([zoneCode, { zoneName, entries }]) => splitStat(zoneName, entries, zoneCode))
     .sort((a, b) => b.count - a.count)
 }
 

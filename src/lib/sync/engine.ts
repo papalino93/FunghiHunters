@@ -89,15 +89,32 @@ export async function runSync<T extends SyncableEntity>(
     const toPush = localBefore.filter((e) => candidates.has(e.id))
     if (toPush.length > 0) await backend.push(toPush)
 
-    // I tombstone appena confermati in entrambe le direzioni non servono più in locale: la
-    // cancellazione è ormai nota a tutti i dispositivi passati da qui. `toPush` e
-    // `appliedRemoteTombstones` sono per costruzione insiemi di id disgiunti (un id vinto dal
-    // remoto è uscito da `candidates`, quindi non può comparire in `toPush`).
-    for (const entry of toPush) {
-      if (entry.deletedAt !== null) await repo.purge(entry.id)
-    }
-    for (const id of appliedRemoteTombstones) {
-      await repo.purge(id)
+    /*
+     * I tombstone appena confermati in entrambe le direzioni non servono più in locale: la
+     * cancellazione è ormai nota a tutti i dispositivi passati da qui. `toPush` e
+     * `appliedRemoteTombstones` sono per costruzione insiemi di id disgiunti (un id vinto dal
+     * remoto è uscito da `candidates`, quindi non può comparire in `toPush`).
+     *
+     * Prima di purgare, si rilegge lo stato attuale del repository invece di fidarsi della
+     * decisione presa a inizio giro. Per il diario non cambia mai nulla — non esiste un'azione
+     * utente che riporti in vita lo stesso id dopo un tombstone. Ma un repository come quello
+     * delle zone seguite ha un `follow()` pensato apposta per essere idempotente sullo stesso id
+     * (`materialise` lo rimette sempre vivo): se l'utente segue di nuovo la stessa zona mentre
+     * questo giro è ancora in corso (`pull`/`push` sono `await`, e cedono il controllo), la
+     * riga tornata viva nel frattempo va lasciata stare, non cancellata sulla base di uno stato
+     * che qui non è più vero.
+     */
+    const idsToPurge = [
+      ...toPush.filter((e) => e.deletedAt !== null).map((e) => e.id),
+      ...appliedRemoteTombstones,
+    ]
+    if (idsToPurge.length > 0) {
+      const stillDeleted = new Set(
+        (await repo.listAll()).filter((e) => e.deletedAt !== null).map((e) => e.id),
+      )
+      for (const id of idsToPurge) {
+        if (stillDeleted.has(id)) await repo.purge(id)
+      }
     }
 
     return {

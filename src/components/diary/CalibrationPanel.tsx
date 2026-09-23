@@ -164,7 +164,7 @@ function CalibrationDetail({ report }: { report: CalibrationReport }) {
         <p className="font-medium text-ink-faint">Validazione geografica, per zona</p>
         <ul className="mt-0.5 space-y-0.5">
           {report.geographicSplit.map((s) => (
-            <li key={s.label}>
+            <li key={s.key}>
               {s.label}: {s.count} {s.count === 1 ? 'uscita' : 'uscite'}
               {s.hasSignal && s.rankCorrelation !== null && (
                 <> · correlazione {s.rankCorrelation.toFixed(2)}</>
@@ -181,7 +181,7 @@ function CalibrationDetail({ report }: { report: CalibrationReport }) {
         <p className="font-medium text-ink-faint">Per versione del modello</p>
         <ul className="mt-0.5 space-y-0.5">
           {report.byAlgorithmVersion.map((s) => (
-            <li key={s.label}>
+            <li key={s.key}>
               {s.label}: {s.count} {s.count === 1 ? 'uscita' : 'uscite'}
               {s.hasSignal && s.rankCorrelation !== null && (
                 <> · correlazione {s.rankCorrelation.toFixed(2)}</>
@@ -203,7 +203,7 @@ function SplitSection({ title, stats }: { title: string; stats: readonly [SplitS
       ) : (
         <p className="mt-0.5">
           {stats.map((s, i) => (
-            <span key={s.label}>
+            <span key={s.key}>
               {i > 0 && ' · '}
               {s.label}: {s.count}
               {s.hasSignal && s.rankCorrelation !== null ? ` (${s.rankCorrelation.toFixed(2)})` : ' (campione piccolo)'}
