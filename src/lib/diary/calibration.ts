@@ -270,16 +270,23 @@ function temporalSplit(
 /**
  * Una riga per zona, anche con una sola uscita: il conteggio da solo dice già se il campione è
  * concentrato in un posto — non serve aspettare `hasSignal` per mostrarlo.
+ *
+ * Raggruppa per `zoneCode`, non per `zoneName`: il codice è stabile e univoco, il nome è solo
+ * l'etichetta congelata al momento dell'uscita e può ripetersi. Con la copertura ora nazionale
+ * (20 regioni, oltre 1200 zone) toponimi identici in regioni diverse sono plausibili ("Poggio",
+ * "Pieve", "Il Monte" ricorrono in più province): raggruppare per nome fonderebbe in un'unica
+ * riga due zone fisicamente diverse, falsando sia la correlazione mostrata sia l'avviso di
+ * concentrazione geografica qui sotto.
  */
 function geographicSplit(usable: readonly (DiaryEntry & { mpiAtEntry: number })[]): SplitStat[] {
-  const byZone = new Map<string, (DiaryEntry & { mpiAtEntry: number })[]>()
+  const byZone = new Map<string, { readonly zoneName: string; entries: (DiaryEntry & { mpiAtEntry: number })[] }>()
   for (const entry of usable) {
-    const list = byZone.get(entry.zoneName) ?? []
-    list.push(entry)
-    byZone.set(entry.zoneName, list)
+    const group = byZone.get(entry.zoneCode)
+    if (group === undefined) byZone.set(entry.zoneCode, { zoneName: entry.zoneName, entries: [entry] })
+    else group.entries.push(entry)
   }
-  return [...byZone.entries()]
-    .map(([zoneName, list]) => splitStat(zoneName, list))
+  return [...byZone.values()]
+    .map(({ zoneName, entries }) => splitStat(zoneName, entries))
     .sort((a, b) => b.count - a.count)
 }
 

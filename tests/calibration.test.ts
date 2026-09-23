@@ -22,12 +22,13 @@ function entry(overrides: {
   mpi: number
   abundance: Abundance
   day: number
+  zoneCode?: string
   zoneName?: string
   algorithmVersionAtEntry?: string | null
 }): DiaryEntry {
   return materialise({
     date: `2026-09-${String(overrides.day).padStart(2, '0')}`,
-    zoneCode: 'test',
+    zoneCode: overrides.zoneCode ?? 'test',
     zoneName: overrides.zoneName ?? 'Garfagnana',
     abundance: overrides.abundance,
     mpiAtEntry: overrides.mpi,
@@ -132,9 +133,9 @@ describe('validazione geografica', () => {
   it('avvisa quando quasi tutte le uscite vengono dalla stessa zona', () => {
     const entries = [
       ...Array.from({ length: MIN_ENTRIES_FOR_SPLIT + 2 }, (_, i) =>
-        entry({ mpi: 50, abundance: 'some', day: i + 1, zoneName: 'Garfagnana' }),
+        entry({ mpi: 50, abundance: 'some', day: i + 1, zoneCode: 'garfagnana', zoneName: 'Garfagnana' }),
       ),
-      entry({ mpi: 50, abundance: 'some', day: 30, zoneName: 'Amiata' }),
+      entry({ mpi: 50, abundance: 'some', day: 30, zoneCode: 'amiata', zoneName: 'Amiata' }),
     ]
     const report = calibrate(entries)
     expect(report.geographicWarning).toMatch(/Garfagnana/)
@@ -142,8 +143,12 @@ describe('validazione geografica', () => {
 
   it('non avvisa quando le uscite sono distribuite su più zone', () => {
     const entries = [
-      ...Array.from({ length: 4 }, (_, i) => entry({ mpi: 50, abundance: 'some', day: i + 1, zoneName: 'Garfagnana' })),
-      ...Array.from({ length: 4 }, (_, i) => entry({ mpi: 50, abundance: 'some', day: i + 10, zoneName: 'Amiata' })),
+      ...Array.from({ length: 4 }, (_, i) =>
+        entry({ mpi: 50, abundance: 'some', day: i + 1, zoneCode: 'garfagnana', zoneName: 'Garfagnana' }),
+      ),
+      ...Array.from({ length: 4 }, (_, i) =>
+        entry({ mpi: 50, abundance: 'some', day: i + 10, zoneCode: 'amiata', zoneName: 'Amiata' }),
+      ),
     ]
     expect(calibrate(entries).geographicWarning).toBeNull()
   })
@@ -152,6 +157,33 @@ describe('validazione geografica', () => {
     const entries = [entry({ mpi: 50, abundance: 'some', day: 1, zoneName: 'Mugello' })]
     const split = calibrate(entries).geographicSplit
     expect(split.map((s) => s.label)).toContain('Mugello')
+  })
+
+  it('non fonde due zone diverse che condividono lo stesso nome', () => {
+    // Il difetto che questo test chiude: raggruppare per `zoneName` invece che per `zoneCode`
+    // fondeva in una sola riga due zone omonime di regioni diverse (plausibile su scala
+    // nazionale: "Poggio", "Pieve" ricorrono in più province), falsando sia il conteggio sia
+    // la correlazione mostrata per ciascuna.
+    const entries = [
+      entry({ mpi: 50, abundance: 'some', day: 1, zoneCode: 'toscana-poggio', zoneName: 'Poggio' }),
+      entry({ mpi: 80, abundance: 'many', day: 2, zoneCode: 'lombardia-poggio', zoneName: 'Poggio' }),
+    ]
+    const split = calibrate(entries).geographicSplit
+    const righePoggio = split.filter((s) => s.label === 'Poggio')
+    expect(righePoggio).toHaveLength(2)
+    expect(righePoggio.map((s) => s.count)).toEqual([1, 1])
+  })
+
+  it('avvisa comunque per zone omonime, ognuna sotto la propria etichetta ripetuta', () => {
+    // A parità di nome, restano zone diverse con codice diverso: 9 uscite dalla "toscana-poggio"
+    // e 1 dalla "lombardia-poggio" sono un campione concentrato su una zona sola, non su due.
+    const entries = [
+      ...Array.from({ length: MIN_ENTRIES_FOR_SPLIT + 2 }, (_, i) =>
+        entry({ mpi: 50, abundance: 'some', day: i + 1, zoneCode: 'toscana-poggio', zoneName: 'Poggio' }),
+      ),
+      entry({ mpi: 50, abundance: 'some', day: 30, zoneCode: 'lombardia-poggio', zoneName: 'Poggio' }),
+    ]
+    expect(calibrate(entries).geographicWarning).toMatch(/Poggio/)
   })
 })
 
