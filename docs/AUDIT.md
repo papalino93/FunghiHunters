@@ -6,7 +6,26 @@ ragione. **"Cronologia degli interventi"** (dopo il separatore) è un registro s
 la fotografia di una sessione passata, non aggiornata quando il codice cambia sotto di lei. Utile
 per capire perché una scelta è stata fatta, non affidabile come descrizione di oggi.
 
-## Stato attuale (aggiornato 22 settembre 2026, sessione "Zone che seguo" — le parti sotto datate 18 settembre restano valide salvo dove questo aggiornamento le corregge)
+## Stato attuale (aggiornato 22 settembre 2026 — sessioni "audit scalabilità" e "Zone che seguo"; le parti sotto datate 18 settembre restano valide salvo dove queste correzioni le contraddicono)
+
+**Copertura geografica**: non più solo Toscana. Dal 21/09/2026 l'app copre tutte le 20 regioni
+(1.202 zone, comuni sopra i 600 m) — vedi `docs/CATALOGO-FONTI.md` e `README.md`. Le sette zone
+toscane restano le uniche con stazioni SIR reali e la regione predefinita; il resto vive dal solo
+modello meteo, con confidence più bassa e nota esplicita in app. Il bosco (copertura e tipo di
+ospite) è entrato nel punteggio dal 22/09/2026, invece della sola etichetta manuale delle sette
+zone toscane.
+
+**Audit di scalabilità (22/09/2026)**: quattro correzioni, tutte descritte nel dettaglio nel
+report consegnato ad Andrea (https://claude.ai/artifact/MatHCfZAPmBcXBHu5VY4Ho):
+`README.md` allineato alla copertura reale (era ancora fermo alla v1 Toscana-sola); un controllo
+di coerenza (`findMismatched`/`checkConsistency` in `scripts/build-snapshot-italia.ts`) che fa
+fallire in modo visibile la corsa nazionale se si interrompe a metà lasciando regioni
+disallineate, invece di scrivere sopra in silenzio al giro dopo; le pagine elenco (home, diario,
+`/italia/[regione]`) non ricevono più `positiveFactors`/`neutralFactors`/`bestWindow`/
+`nearbyMunicipalities` di ogni zona (`src/lib/snapshot/list-view.ts`) — campi che solo la scheda
+di dettaglio legge, ~30% del payload sul Piemonte; `/api/mpi` è diventato `/api/v1/mpi` (il
+vecchio indirizzo resta un alias) e lo snapshot porta un `schemaVersion` esplicito, distinto da
+`algorithmVersion`.
 
 **Zone che seguo** (22 settembre 2026): funzione gratuita per salvare le zone del catalogo (calibrazione
 toscana o catalogo nazionale, mai coordinate GPS) che si vogliono ritrovare senza rifare la ricerca.
@@ -27,13 +46,15 @@ nessuna delle due fonti ha la zona si mostra "dati non disponibili", mai un nume
 Cancellazione account: `user_followed_zones` aggiunta alla lista delle tabelle ripulite in
 `/api/account/delete`.
 
-Corrette in questa sessione anche due cose trovate lungo il percorso, non richieste esplicitamente
-ma dentro lo scopo dell'audit UX/leggibilità chiesto: (1) `--text-muted` del tema chiaro
-(`#79839c`) falliva il contrasto WCAG AA su ogni sfondo in cui è usato — corretto a `#5c6478`,
-stesso bug del fix G2 mai riportato dal tema scuro a quello chiaro; (2) "Prima di
+Corrette nella sessione "Zone che seguo" anche due cose trovate lungo il percorso, non richieste
+esplicitamente ma dentro lo scopo dell'audit UX/leggibilità chiesto: (1) `--text-muted` del tema
+chiaro (`#79839c`) falliva il contrasto WCAG AA su ogni sfondo in cui è usato — corretto a
+`#5c6478`, stesso bug del fix G2 mai riportato dal tema scuro a quello chiaro; (2) "Prima di
 partire" mostrava sempre la normativa toscana (L.R. 16/1999, tesserino, limiti in kg) anche aprendo
 zone di altre regioni — ora quel blocco è condizionato alla regione davvero aperta, con un
 messaggio onesto ("nessuna norma verificata per questa regione") altrove invece di dati inventati.
+
+## Aggiornamento — roadmap outdoor (18 settembre 2026, superato come "stato attuale" dalle sezioni sopra)
 
 **Diario uscite**: niente foto (rimosse — vedi sotto il perché), posizione GPS reale distinta dal
 ripiego di zona (`positionSource`), alberi osservati, durata della ricerca e numero di cercatori

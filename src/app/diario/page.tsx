@@ -3,6 +3,7 @@ import { cookies } from 'next/headers'
 import { DiaryScreen } from '@/components/diary/DiaryScreen'
 import { REGION_COOKIE } from '@/lib/region/preference'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
+import { toListSnapshot } from '@/lib/snapshot/list-view'
 
 export const metadata = { title: 'Diario uscite · FungiCast' }
 
@@ -17,5 +18,5 @@ export const metadata = { title: 'Diario uscite · FungiCast' }
 export default async function DiarioPage() {
   const cookieStore = await cookies()
   const region = await loadReferenceRegion(cookieStore.get(REGION_COOKIE)?.value)
-  return <DiaryScreen snapshot={region.snapshot} />
+  return <DiaryScreen snapshot={toListSnapshot(region.snapshot)} />
 }

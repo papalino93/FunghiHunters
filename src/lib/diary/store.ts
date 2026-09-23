@@ -344,7 +344,16 @@ export async function importInto(
     throw new Error('File non riconosciuto: manca l’elenco delle uscite.')
   }
 
-  const existing = new Set((await repo.list()).map((e) => e.id))
+  /*
+   * `listAll()`, non `list()`: deve includere anche le voci cancellate (tombstone).
+   *
+   * Con solo le vive, un id già cancellato su questo dispositivo non risultava "esistente", e
+   * l'importazione lo trattava come nuovo — resuscitando in silenzio un'uscita cancellata di
+   * proposito (magari con coordinate GPS esatte di una fungaia), pronta a ripropagarsi su tutti
+   * i dispositivi al prossimo giro di sincronizzazione. Trattarlo come ogni altro id già noto,
+   * cioè saltarlo, è coerente con quello che questa funzione già fa per i duplicati vivi.
+   */
+  const existing = new Set((await repo.listAll()).map((e) => e.id))
   let imported = 0
   let skipped = 0
   const errors: string[] = []

@@ -70,8 +70,14 @@ export function LocationPrompt({
         <div className="flex items-center justify-between gap-3">
           <p className="text-xs text-ink-dim">
             Distanze calcolate dalla tua posizione.
+            {/*
+              * Senza le coordinate non c'è modo di sapere se il GPS ha agganciato il punto giusto,
+              * o se è rimasto quello di un punto di partenza scelto in un giro precedente: mostrarle
+              * è l'unico riscontro immediato, prima di fidarsi delle distanze calcolate su di esse.
+              */}
             <span className="mt-0.5 block text-[11px] text-ink-faint">
-              Resta sul dispositivo, non viene inviata da nessuna parte.
+              {position.latitude.toFixed(4)}, {position.longitude.toFixed(4)} · resta sul
+              dispositivo, non viene inviata da nessuna parte.
             </span>
           </p>
           <button

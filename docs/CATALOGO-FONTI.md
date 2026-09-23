@@ -40,9 +40,25 @@ confermato da allora.
 | SIR Toscana (Servizio Idrologico Regionale) | **attiva** | CC BY-SA | Toscana, rete stazioni | Puntuale (stazioni), giornaliero | Quasi tempo reale (GeoServer) + archivio storico | Dal 1961 (archivio `dati.php`), non ancora ingerito per intero — vedi `docs/DECISIONS.md` D2 |
 | Open-Meteo (forecast + archive ERA5) | **attiva** | CC BY 4.0 | Globale, qualunque punto | Cella di modello (~9-25 km secondo il modello), orario/giornaliero | Forecast 2×/giorno; ERA5 storico fisso | ERA5 1991-2020 |
 | **ISTAT — confini comunali** (nuova, questa sessione) | **attiva** | CC-BY | Toscana, 273 comuni | Poligonale, confine comunale reale | Statico, rigenerato a mano quando servono nuove zone (non nel cron giornaliero: i confini comunali non cambiano ogni giorno) | Vintage 1 gennaio 2026, via `guglielmo/geojson-italy` |
+| **Nominatim (OpenStreetMap)** — geocodifica inversa | **attiva** | ODbL 1.0 | Globale | Puntuale, a richiesta (nessuna copertura precalcolata) | In tempo reale, un tocco alla volta | — |
 
 Le prime due non sono state toccate. La terza è una fonte reale implementata in questa sessione,
 non simulata — vedi sotto.
+
+## Fonte nuova: Nominatim per la geocodifica inversa in "Meteo"
+
+Serve solo a tradurre "Usa la mia posizione" (schermata Meteo) in un nome leggibile invece delle
+sole coordinate — un dettaglio d'interfaccia, non un dato che entra nel modello. Open-Meteo (già in
+uso) non offre un endpoint inverso, solo ricerca per nome (`geocoding-api.open-meteo.com/v1/search`
+risponde `search`, non `reverse`, verificato con una richiesta reale). Nominatim è gratuito, senza
+chiave, licenza ODbL — la stessa famiglia di licenze aperte di OpenStreetMap già nota al progetto.
+
+**Uso conforme alla policy di Nominatim** (niente geocodifica di massa): una richiesta per tocco
+dell'utente su "Usa la mia posizione", mai in ciclo o per popolare un catalogo; `User-Agent`
+identificativo (`src/lib/sources/http.ts`, `USER_AGENT`); un solo tentativo (`attempts: 1`,
+`src/lib/sources/nominatim.ts`) — se non risponde in tempo, l'interfaccia resta con le coordinate
+già mostrate, senza bloccare la previsione né riprovare. Implementato in `src/app/api/meteo/route.ts`
+(`?reverse=1`) e `src/lib/sources/nominatim.ts`.
 
 ## Fonte nuova implementata: confini comunali ISTAT
 

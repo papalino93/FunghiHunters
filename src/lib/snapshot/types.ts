@@ -168,7 +168,21 @@ export interface SnapshotSource {
   readonly lastUpdate: string | null
 }
 
+/**
+ * Versione della *forma* del file, non del modello: cambia solo quando cambiano i campi dello
+ * snapshot (`SnapshotZone`, `SnapshotSource`, ...), indipendentemente da quante volte cambia
+ * `algorithmVersion`. Un consumatore esterno di `/api/v1/mpi` la legge per sapere se il contratto
+ * che si aspetta è ancora quello, senza dover indovinarlo dal numero di versione del modello, che
+ * cambia per ragioni che non hanno niente a che fare con la forma del JSON.
+ */
+export const SNAPSHOT_SCHEMA_VERSION = '1'
+
 export interface Snapshot {
+  /**
+   * Opzionale apposta: gli snapshot scritti prima di questo campo (22/09/2026) non ce l'hanno, e
+   * vanno letti lo stesso — stesso principio di `SnapshotZone.mpiRaw`.
+   */
+  readonly schemaVersion?: string
   readonly generatedAt: string
   readonly algorithmVersion: string
   readonly referenceDate: string

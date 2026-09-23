@@ -456,6 +456,33 @@ describe('esportazione e importazione', () => {
     expect(await repo.list()).toHaveLength(1)
   })
 
+  it('reimportare un backup non resuscita una voce che nel frattempo è stata cancellata', async () => {
+    // Cancellare un'uscita (magari con coordinate GPS esatte di una fungaia) deve restare
+    // cancellata anche se si reimporta un vecchio export che la conteneva ancora: altrimenti
+    // ricompare in silenzio, pronta a ripropagarsi su ogni altro dispositivo al prossimo sync.
+    const file = {
+      format: 'fungicast-diary' as const,
+      version: 1 as const,
+      exportedAt: '2026-09-16T10:00:00.000Z',
+      entries: [
+        { id: 'da-cancellare', date: '2026-09-16', zoneCode: 'amiata', zoneName: 'Monte Amiata', abundance: 'few' as const },
+      ],
+    }
+    const repo = new InMemoryDiaryRepository()
+    await importInto(repo, file)
+    expect(await repo.list()).toHaveLength(1)
+
+    await repo.remove('da-cancellare')
+    expect(await repo.list()).toHaveLength(0) // cancellata
+    expect(await repo.listAll()).toHaveLength(1) // ma il tombstone resta, per la sincronizzazione
+
+    const result = await importInto(repo, file) // reimporto lo stesso vecchio backup
+
+    expect(result.imported).toBe(0)
+    expect(result.skipped).toBe(1)
+    expect(await repo.list()).toHaveLength(0) // resta cancellata, non risorge
+  })
+
   it('una voce importata risulta modificata adesso, altrimenti non verrebbe mai sincronizzata', async () => {
     const repo = new InMemoryDiaryRepository()
     await importInto(repo, {

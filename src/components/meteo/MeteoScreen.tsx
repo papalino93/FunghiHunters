@@ -2,6 +2,7 @@
 
 import { Fragment, useEffect, useState } from 'react'
 
+import { today } from '@/lib/domain/time'
 import type { PlaceCandidate, PlaceForecast, PlaceHourlyWeather } from '@/lib/sources/open-meteo-place'
 import { formatDate, formatValue } from '@/lib/ui/scale'
 import { weatherCodeLabel } from '@/lib/ui/weatherCode'
@@ -98,16 +99,37 @@ export function MeteoScreen() {
     if (typeof navigator === 'undefined' || navigator.geolocation === undefined) return
     navigator.geolocation.getCurrentPosition(
       (result) => {
+        const { latitude, longitude } = result.coords
         selectPlace({
           id: 0,
           name: 'La mia posizione',
           admin1: null,
           admin2: null,
           country: null,
-          latitude: result.coords.latitude,
-          longitude: result.coords.longitude,
+          latitude,
+          longitude,
           elevationM: null,
         })
+
+        /*
+         * A parte, senza bloccare la previsione: il nome è un di più, le coordinate (già mostrate,
+         * vedi `PlaceWeather`) restano il riscontro che conta comunque se questa chiamata è lenta
+         * o non trova nulla. Aggiorna solo se nel frattempo l'utente non ha cercato altro.
+         */
+        fetch(`/api/meteo?lat=${latitude}&lon=${longitude}&reverse=1`)
+          .then(async (res) => (await res.json()) as { place?: { name: string; admin1: string | null } | null })
+          .then((body) => {
+            if (body.place === undefined || body.place === null) return
+            const resolved = body.place
+            setPlace((prev) =>
+              prev !== null && prev.id === 0 && prev.latitude === latitude && prev.longitude === longitude
+                ? { ...prev, name: resolved.name, admin1: resolved.admin1 }
+                : prev,
+            )
+          })
+          .catch(() => {
+            // Il nome resta "La mia posizione": le coordinate già mostrate bastano da riscontro.
+          })
       },
       () => {
         setForecastError('Posizione non disponibile: cerca un luogo per nome.')
@@ -215,6 +237,16 @@ function PlaceWeather({
           <span className="ml-1.5 text-xs font-normal text-ink-faint">{place.admin1}</span>
         )}
       </h2>
+      {/*
+        * "La mia posizione" (id sentinella 0, vedi `useMyLocation`) non ha un nome geocodificato:
+        * senza le coordinate, chi tocca il pulsante non ha modo di sapere se il GPS ha agganciato
+        * il punto giusto prima di guardare le previsioni. Stesso formato di `EntryForm.tsx`.
+        */}
+      {place.id === 0 && (
+        <p className="mt-0.5 text-xs text-ink-faint">
+          {place.latitude.toFixed(5)}, {place.longitude.toFixed(5)}
+        </p>
+      )}
 
       {loading && <p className="mt-2 text-xs text-ink-faint">Scarico il meteo…</p>}
       {!loading && error !== null && <p className="mt-2 text-xs text-warn">{error}</p>}
@@ -280,6 +312,10 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
   const days = forecast.daily
   if (days.length === 0) return null
 
+  // Non deducibile da `isForecast` (vero solo per i giorni futuri): serve il confronto esplicito
+  // per distinguere oggi dagli altri giorni passati, che altrimenti si equivalgono a colpo d'occhio.
+  const todayIso = today()
+
   return (
     <div>
       <p className="mb-1.5 text-xs font-semibold text-ink-dim">Giorno per giorno</p>
@@ -300,22 +336,31 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
           <tbody>
             {days.map((day) => {
               const expanded = expandedDate === day.date
+              const isToday = day.date === todayIso
               return (
                 <Fragment key={day.date}>
-                  <tr className="border-t border-edge">
+                  <tr className={`border-t border-edge ${isToday ? 'bg-accent/5' : ''}`}>
                     <td className="py-1.5 pr-2 text-ink">
                       <button
                         type="button"
                         onClick={() => setExpandedDate(expanded ? null : day.date)}
                         aria-expanded={expanded}
-                        className="-my-1.5 flex min-h-11 items-center gap-1 rounded text-left font-medium
-                                   text-ink transition-colors hover:text-accent focus:outline-none
-                                   focus-visible:ring-2 focus-visible:ring-accent"
+                        className={`-my-1.5 flex min-h-11 items-center gap-1 rounded text-left
+                                    transition-colors hover:text-accent focus:outline-none
+                                    focus-visible:ring-2 focus-visible:ring-accent ${
+                                      isToday ? 'font-semibold text-ink' : 'font-medium text-ink'
+                                    }`}
                       >
                         <span aria-hidden="true" className="text-ink-faint">
                           {expanded ? '▾' : '▸'}
                         </span>
                         {formatDate(day.date)}
+                        {isToday && (
+                          <span className="rounded-full bg-accent/15 px-1.5 py-0.5 text-[10px]
+                                            font-semibold text-accent">
+                            oggi
+                          </span>
+                        )}
                         {day.isForecast && (
                           <span className="text-[10px] text-ink-faint">previsto</span>
                         )}
@@ -341,7 +386,18 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                     <td className="py-1.5 text-ink-dim">{formatValue(day.et0Mm, 'mm', 1)}</td>
                   </tr>
                   {expanded && (
-                    <tr>
+                    <tr
+                      ref={(node) => {
+                        /*
+                         * Il giorno toccato può stare in fondo alla lista, con poco schermo
+                         * rimasto sotto: senza portare in vista la riga appena apparsa, il
+                         * dettaglio si apre fuori dallo schermo e sembra che non sia successo
+                         * niente — proprio il giorno "oggi" ne è il caso più comune, a metà
+                         * tabella dopo aver già scorso i giorni passati.
+                         */
+                        node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+                      }}
+                    >
                       <td colSpan={7} className="bg-surface-2 p-0">
                         <HourlyDetail hours={forecast.hourlyByDate[day.date] ?? []} />
                       </td>
