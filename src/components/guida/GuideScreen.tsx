@@ -211,6 +211,11 @@ export function GuideScreen() {
         <p className="text-ink-faint">
           Puoi esportare il diario in un file in qualunque momento (Diario → Esporta) e cancellare
           account e dati dal server dalla schermata Account. La cancellazione è definitiva.
+          L&apos;informativa completa è nella pagina{' '}
+          <Link href="/privacy" className="underline decoration-dotted underline-offset-2">
+            Privacy
+          </Link>
+          .
         </p>
       </Sezione>
 

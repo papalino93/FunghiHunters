@@ -131,6 +131,16 @@ function Shell({
           <path d="M6 3l5 5-5 5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </Link>
+
+      <p className="mt-3 text-center text-xs text-ink-faint">
+        <Link href="/chi-siamo" className="inline-block py-1.5 underline decoration-dotted underline-offset-2 hover:text-ink-dim">
+          Chi siamo
+        </Link>
+        {' · '}
+        <Link href="/privacy" className="inline-block py-1.5 underline decoration-dotted underline-offset-2 hover:text-ink-dim">
+          Privacy
+        </Link>
+      </p>
       <Link
         href="/metodo"
         className="mt-2 flex min-h-11 items-center justify-between gap-3 rounded-xl border

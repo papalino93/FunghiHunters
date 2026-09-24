@@ -158,6 +158,14 @@ export function MethodScreen({ nationalZones }: { nationalZones: number }) {
         <Link href="/regole" className="text-accent underline underline-offset-2">
           Le regole di raccolta, regione per regione
         </Link>
+        {' · '}
+        <Link href="/chi-siamo" className="text-accent underline underline-offset-2">
+          Chi siamo
+        </Link>
+        {' · '}
+        <Link href="/privacy" className="text-accent underline underline-offset-2">
+          Privacy
+        </Link>
       </p>
     </div>
   )
