@@ -56,9 +56,16 @@ describe('toListSnapshot', () => {
       zones: [original], sources: [], uncalibratedParams: [],
     })
     const z = out.zones[0]
-    expect(z?.series).toEqual(original.series)
+    // La serie tiene giorni e campi che l'elenco legge; temperature e vento del giorno no.
+    expect(z?.series.map((p) => [p.date, p.mpi, p.confidence, p.rainMm])).toEqual(
+      original.series.map((p) => [p.date, Math.round(p.mpi * 10) / 10, Math.round(p.confidence * 10) / 10, p.rainMm === null ? null : Math.round(p.rainMm * 10) / 10]),
+    )
+    expect(z?.series.every((p) => p.tMinC === null && p.windMs === null)).toBe(true)
     expect(z?.weather).toEqual(original.weather)
-    expect(z?.negativeFactors).toEqual(original.negativeFactors)
+    // Dei fattori negativi il verdetto legge chiave, etichetta e contributo: il resto sta nella mappa.
+    expect(z?.negativeFactors.map((f) => [f.key, f.label, f.contribution])).toEqual(
+      original.negativeFactors.map((f) => [f.key, f.label, Math.round(f.contribution * 10) / 10]),
+    )
     expect(z?.mpi).toBe(original.mpi)
     expect(z?.limitingFactor).toBe(original.limitingFactor)
     expect(z?.thermalOptimumC).toBe(original.thermalOptimumC)
