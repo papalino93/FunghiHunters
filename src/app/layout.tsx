@@ -4,6 +4,7 @@ import Script from 'next/script'
 
 import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
+import { JsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { AuthProvider } from '@/lib/auth/context'
@@ -100,6 +101,16 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
          * body, e non un `next/script` (che parte dopo). Vedi `lib/ui/welcome.ts`.
          */}
         <script dangerouslySetInnerHTML={{ __html: WELCOME_BOOT_SCRIPT }} />
+        <JsonLd
+          data={{
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: SITE_NAME,
+            url: SITE_URL,
+            inLanguage: 'it-IT',
+            description: DEFAULT_DESCRIPTION,
+          }}
+        />
         {/* Salto alla navigazione: obbligatorio per chi usa la tastiera su una pagina con mappa. */}
         <a
           href="#contenuto"

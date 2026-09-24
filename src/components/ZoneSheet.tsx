@@ -8,7 +8,14 @@ import { SourceStatusList } from '@/components/SourceStatusList'
 import { PotentialBar } from '@/components/today/PotentialBar'
 import { FollowButton } from '@/components/today/FollowButton'
 import { zoneFacts } from '@/lib/recommend/verdict'
-import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
+import {
+  formatDate,
+  formatNumber,
+  formatSigned,
+  formatValue,
+  formatWindKmh,
+  provenanceLabel,
+} from '@/lib/ui/scale'
 import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
 import { habitatCuesFor } from '@/lib/model/habitat'
 import { userCautionForSource } from '@/lib/config/algorithm'
@@ -134,7 +141,7 @@ export function ZoneSheet({
         {/* Provenienza del dato di questo giorno: misura, modello o previsione. */}
         <p className="mt-1.5 text-xs text-ink-faint">
           dato {provenanceLabel(point.provenance)}
-          {point.rainMm !== null && ` · pioggia ${point.rainMm.toFixed(1)} mm`}
+          {point.rainMm !== null && ` · pioggia ${formatNumber(point.rainMm, 1)} mm`}
           {point.tMinC !== null &&
             point.tMaxC !== null &&
             ` · ${point.tMinC.toFixed(0)}–${point.tMaxC.toFixed(0)} °C`}
@@ -273,7 +280,7 @@ function Summary({
         />
         <Stat
           label="Ottimo"
-          value={`${zone.thermalOptimumC.toFixed(1)} °C`}
+          value={`${formatNumber(zone.thermalOptimumC, 1)} °C`}
           hint="per quota e stagione"
         />
       </dl>
@@ -365,7 +372,7 @@ function Weather({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: str
           />
           <Row
             label="Vento (massimo giornaliero)"
-            value={formatValue(point.windMs, 'm/s')}
+            value={formatWindKmh(point.windMs)}
             hint="non una media: vedi la scheda Sintesi per il dettaglio"
           />
           <Row label="Dato" value={provenanceLabel(point.provenance)} hint="misura, modello o previsione" />
@@ -399,7 +406,7 @@ function Weather({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: str
           label="Media 20 giorni"
           value={formatValue(w.tMean20d, '°C')}
           emphasis
-          hint={`ottimo ${zone.thermalOptimumC.toFixed(1)} °C`}
+          hint={`ottimo ${formatNumber(zone.thermalOptimumC, 1)} °C`}
         />
         <Row label="Minima nella finestra" value={formatValue(w.tMinWindow, '°C')} />
         <Row label="Massima nella finestra" value={formatValue(w.tMaxWindow, '°C')} />
@@ -410,7 +417,7 @@ function Weather({ zone, selectedDate }: { zone: SnapshotZone; selectedDate: str
         <Row label="Umidità relativa dell'aria" value={formatValue(w.humidityMean7d, '%', 0)} hint="media 7 giorni" />
         <Row label="Umidità del suolo" value={formatValue(w.soilMoisture, 'm³/m³', 3)} />
         <Row label="Deficit di vapore (VPD)" value={formatValue(w.vpdMean7d, 'kPa', 2)} />
-        <Row label="Vento medio 7 giorni" value={formatValue(w.windMean7d, 'm/s')} />
+        <Row label="Vento medio 7 giorni" value={formatWindKmh(w.windMean7d)} />
       </Group>
     </div>
   )
@@ -479,7 +486,7 @@ function Where({ zone }: { zone: SnapshotZone }) {
               >
                 <span className="truncate text-sm text-ink">{m.municipality}</span>
                 <span className="tabular shrink-0 text-xs text-ink-faint">
-                  {m.provinceAcronym} · {m.distanceKm.toFixed(1)} km
+                  {m.provinceAcronym} · {formatNumber(m.distanceKm, 1)} km
                 </span>
               </li>
             ))}
@@ -547,8 +554,7 @@ function FactorList({
             <div className="flex items-baseline justify-between gap-2">
               <span className="text-sm font-medium text-ink">{withAccents(factor.label)}</span>
               <span className={`tabular shrink-0 text-sm font-semibold ${colour}`}>
-                {factor.contribution > 0 ? '+' : ''}
-                {factor.contribution.toFixed(1)}
+                {formatSigned(factor.contribution, 1)}
               </span>
             </div>
             <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">{withAccents(factor.value)}</p>
@@ -610,7 +616,7 @@ function DataProvenance({
         <Row label="Ultimo dato osservato" value={zone.lastObservedDate ?? '—'} />
         <Row
           label="Gradiente termico stimato"
-          value={zone.lapseRateCPerKm === null ? '—' : `${zone.lapseRateCPerKm.toFixed(2)} °C/km`}
+          value={zone.lapseRateCPerKm === null ? '—' : `${formatNumber(zone.lapseRateCPerKm, 2)} °C/km`}
           hint="dai dati del giorno, non assunto"
         />
       </Group>
@@ -636,7 +642,7 @@ function DataProvenance({
               <div className="flex items-baseline justify-between gap-2">
                 <span className="truncate text-sm text-ink">{station.name}</span>
                 <span className="tabular shrink-0 text-xs text-ink-dim">
-                  {station.distanceKm.toFixed(1)} km
+                  {formatNumber(station.distanceKm, 1)} km
                 </span>
               </div>
               <p className="mt-0.5 text-xs text-ink-faint">
@@ -644,7 +650,7 @@ function DataProvenance({
                 {' · '}
                 {station.elevationDiffM.toFixed(0)} m di dislivello
                 {' · distanza efficace '}
-                {station.effectiveKm.toFixed(1)} km
+                {formatNumber(station.effectiveKm, 1)} km
               </p>
             </li>
           ))}
@@ -707,7 +713,7 @@ function Stat({ label, value, hint }: { label: string; value: string; hint: stri
 
 function signed(value: number): string {
   if (Math.abs(value) < 0.5) return 'stabile'
-  return `${value > 0 ? '+' : ''}${value.toFixed(1)}`
+  return formatSigned(value, 1)
 }
 
 /**

@@ -1,3 +1,4 @@
+import { formatDate } from '@/lib/ui/scale'
 import type { SnapshotSource } from '@/lib/snapshot/types'
 
 /**
@@ -26,7 +27,7 @@ export function SourceStatusList({ sources }: { sources: readonly SnapshotSource
             <span className="text-ink-dim">{source.name}</span>
             <span className="block text-ink-faint">
               {statusLabel(source.status)} · {source.coverage} · licenza {source.license}
-              {source.lastUpdate !== null && <> · dato al {source.lastUpdate}</>}
+              {source.lastUpdate !== null && <> · dato al {formatDate(source.lastUpdate.slice(0, 10))}</>}
             </span>
           </span>
         </li>

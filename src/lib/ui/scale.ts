@@ -167,3 +167,24 @@ export function formatDate(date: string): string {
   ]
   return `${days[parsed.getUTCDay()] ?? ''} ${parsed.getUTCDate()} ${months[parsed.getUTCMonth()] ?? ''}`
 }
+
+/** Un numero con la virgola decimale italiana, senza unità: la base di `formatValue`. */
+export function formatNumber(value: number, decimals = 1): string {
+  // `+ 0` toglie lo zero negativo, che si stamperebbe «-0,0».
+  return (Number(value.toFixed(decimals)) + 0).toLocaleString('it-IT', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+    useGrouping: false,
+  })
+}
+
+/** Come `formatNumber`, con il segno «+» davanti ai positivi (contributi, tendenze). */
+export function formatSigned(value: number, decimals = 1): string {
+  const text = formatNumber(value, decimals)
+  return value > 0 && text !== formatNumber(0, decimals) ? `+${text}` : text
+}
+
+/** Vento da m/s (unità del modello) a km/h, l'unità con cui in Italia si ragiona del vento. */
+export function formatWindKmh(ms: number | null | undefined): string {
+  return formatValue(ms === null || ms === undefined ? ms : ms * 3.6, 'km/h', 0)
+}

@@ -1122,6 +1122,23 @@ export const ALGORITHM_V1: AlgorithmConfig = {
 }
 
 /** Tutti i parametri da calibrare, per mostrarli come tali nel pannello admin. */
+/** Quanti parametri hanno una fonte e quanti sono ancora da calibrare: per la pagina del metodo. */
+export function paramCounts(config: AlgorithmConfig = ALGORITHM_V1): { sourced: number; calibrate: number } {
+  let sourced = 0
+  let calibrate = 0
+  const walk = (node: unknown): void => {
+    if (node === null || typeof node !== 'object') return
+    if (isParam(node)) {
+      if (node.provenance === 'calibrate') calibrate += 1
+      else sourced += 1
+      return
+    }
+    for (const child of Object.values(node)) walk(child)
+  }
+  walk(config)
+  return { sourced, calibrate }
+}
+
 export function uncalibratedParams(config: AlgorithmConfig = ALGORITHM_V1): string[] {
   const out: string[] = []
   const walk = (node: unknown, path: string): void => {

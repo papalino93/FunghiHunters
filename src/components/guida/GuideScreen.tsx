@@ -29,7 +29,11 @@ export function GuideScreen() {
         <h1 className="text-xl font-semibold tracking-tight text-ink">Come funziona</h1>
         <p className="mt-1 text-sm leading-snug text-ink-dim">
           Cosa misura davvero questa app, cosa non può dirti, e come usarla senza scambiare una
-          stima per una garanzia.
+          stima per una garanzia. Il modello, le fonti e quanto è affidabile sono in{' '}
+          <Link href="/metodo" className="text-accent underline underline-offset-2">
+            Come calcoliamo l&apos;indice
+          </Link>
+          .
         </p>
       </header>
 
