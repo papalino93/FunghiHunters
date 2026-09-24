@@ -22,7 +22,6 @@ import { SourceHealth } from '@/components/today/SourceHealth'
 import { FollowedZonesSection } from '@/components/today/FollowedZonesSection'
 import { ModelLimitsNotice } from '@/components/today/ModelLimitsNotice'
 import { WelcomeHero } from '@/components/WelcomeHero'
-import { InstallPrompt } from '@/components/InstallPrompt'
 import { RegionPicker } from '@/components/RegionPicker'
 import { DEFAULT_REGION_SLUG, type RegionChoice } from '@/lib/region/preference'
 import { formatDate } from '@/lib/ui/scale'
@@ -176,7 +175,6 @@ export function TodayScreen({
         */}
       {heading && <h1 className="sr-only">Dove vado oggi, {region.name}</h1>}
       <WelcomeHero zoneCount={snapshot.zones.length} />
-      <InstallPrompt />
 
       {region.choices !== undefined && (
         <div className="mb-3 flex items-center gap-2">
