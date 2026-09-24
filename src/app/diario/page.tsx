@@ -1,8 +1,7 @@
 import type { Metadata } from 'next'
-import { cookies } from 'next/headers'
 
 import { DiaryScreen } from '@/components/diary/DiaryScreen'
-import { REGION_COOKIE } from '@/lib/region/preference'
+import { requestedRegion } from '@/lib/region/request'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
 
@@ -21,7 +20,6 @@ export const metadata: Metadata = { title: 'Diario uscite', robots: { index: fal
  * dalla Toscana. Per chi sta in Toscana non cambia nulla: è la regione predefinita.
  */
 export default async function DiarioPage() {
-  const cookieStore = await cookies()
-  const region = await loadReferenceRegion(cookieStore.get(REGION_COOKIE)?.value)
+  const region = await loadReferenceRegion(await requestedRegion())
   return <DiaryScreen snapshot={toListSnapshot(region.snapshot)} />
 }
