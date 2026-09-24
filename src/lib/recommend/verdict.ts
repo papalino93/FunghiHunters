@@ -405,14 +405,24 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
 
   // Stessa ragione della frase del verdetto: sotto l'ottimo il problema è il freddo, e chiamarlo
   // "manca il fresco" significa contraddire il numero scritto nella riga accanto.
+  //
+  // Il tono segue il punteggio: su una zona a 85/100 tre gradi sotto l'ottimo sono «un po'
+  // freddo», non «troppo freddo», e 35 mm con la pioggia forte di pochi giorni fa sono un terreno
+  // che si asciuga, non «manca acqua». Le parole forti restano per le zone che quel fattore tiene
+  // davvero basse.
+  const high = zone.mpi >= 70
   const tempProblem =
     tMean === null || temp === null || tempOk
       ? null
       : tMean > optimum
-        ? `Manca il fresco: ${temp}`
-        : `Troppo freddo: ${temp}`
+        ? `${high ? "Un po' caldo" : 'Manca il fresco'}: ${temp}`
+        : `${high ? "Un po' freddo" : 'Troppo freddo'}: ${temp}`
 
-  const waterProblem = waterOk ? null : `Manca acqua: solo ${water}`
+  const waterProblem = waterOk
+    ? null
+    : high
+      ? `Il terreno si sta asciugando: ${water}`
+      : `Manca acqua: solo ${water}`
 
   /*
    * Il bosco, quando è lui il limite.
@@ -438,7 +448,9 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
       : zone.forestFraction !== undefined && zone.forestFraction < ALGORITHM_V1.habitat.coverReference.value
         ? `Poco bosco: copre il ${Math.round(zone.forestFraction * 100)}% dell'area attorno al punto`
         : weakHosts.length > 0
-          ? `Bosco poco adatto al porcino: ${weakHosts.join(', ')}`
+          ? weakHosts.every((type) => (ALGORITHM_V1.habitat.host[type]?.value ?? 1) >= 0.85)
+            ? `Bosco misto, non sempre da porcino: ${weakHosts.join(', ')}`
+            : `Bosco poco adatto al porcino: ${weakHosts.join(', ')}`
           : zone.forest.length === 0
             ? 'Il bosco di questa zona è il limite principale'
             : null

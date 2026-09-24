@@ -453,3 +453,21 @@ describe('il bosco come limite, solo quando lo è davvero', () => {
     expect(facts.bad).toBe('Bosco poco adatto al porcino: lariceto')
   })
 })
+
+describe('il tono segue il punteggio', () => {
+  it('su una zona alta i difetti sono lievi, su una bassa no', () => {
+    const alta = zoneFacts(zone('a', { mpi: 88, water: 35, tMean: 11.5, optimum: 15, limit: 'Temperatura' }))
+    expect(alta.bad).toContain("Un po' freddo")
+    const asciutta = zoneFacts(zone('b', { mpi: 89, water: 35, tMean: 15, optimum: 15, limit: 'Acqua disponibile nel suolo' }))
+    expect(asciutta.bad).toContain('Il terreno si sta asciugando')
+    const bassa = zoneFacts(zone('c', { mpi: 20, water: 35, tMean: 15, optimum: 15, limit: 'Acqua disponibile nel suolo' }))
+    expect(bassa.bad).toContain('Manca acqua')
+  })
+
+  it('le classi miste non sono «poco adatte»', () => {
+    const facts = zoneFacts(
+      zone('m', { mpi: 60, water: 90, tMean: 13, optimum: 13, limit: 'Il bosco della zona', forestFraction: 0.8, forest: ['altre latifoglie'] }),
+    )
+    expect(facts.bad).toBe('Bosco misto, non sempre da porcino: altre latifoglie')
+  })
+})
