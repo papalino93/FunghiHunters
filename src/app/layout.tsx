@@ -4,6 +4,7 @@ import Script from 'next/script'
 
 import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
+import { InstallPrompt } from '@/components/InstallPrompt'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { AuthProvider } from '@/lib/auth/context'
 import {
@@ -114,6 +115,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <main id="contenuto" className="min-h-0 flex-1 overflow-y-auto">
             {children}
           </main>
+          <InstallPrompt />
           <BottomNav />
         </AuthProvider>
         <ServiceWorker />
