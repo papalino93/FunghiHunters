@@ -306,6 +306,22 @@ function outlookFor(
   const improves = best.mpi > top.mpi + 5 && bandNameFor(best.mpi) !== bandNameFor(top.mpi)
 
   if (best.date === date && !improves) {
+    /*
+     * «Il quadro non cambia» detto anche quando il punteggio sta per crollare: dopo una pioggia
+     * forte la finestra di fruttificazione si chiude in pochi giorni, e chi deve decidere se
+     * andare oggi o sabato ha bisogno proprio di questo. Un calo si annuncia se entro cinque giorni
+     * si scende di banda e di almeno 15 punti.
+     */
+    const decline = top.zone.series.find(
+      (p) =>
+        p.date > date &&
+        p.date <= addDaysIso(date, 5) &&
+        p.mpi <= top.mpi - 15 &&
+        bandNameFor(p.mpi) !== bandNameFor(top.mpi),
+    )
+    if (decline !== undefined) {
+      return `Da ${formatDate(decline.date)} cala a condizioni ${bandNameFor(decline.mpi)}, se non torna a piovere.`
+    }
     return 'Nei prossimi giorni il quadro non cambia.'
   }
   if (improves) {
@@ -436,4 +452,10 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
     good: waterOk ? `L'acqua c'è: ${water}` : tempOk && temp !== null ? `Temperatura giusta: ${temp}` : null,
     bad,
   }
+}
+
+function addDaysIso(date: string, days: number): string {
+  const d = new Date(`${date}T00:00:00Z`)
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
 }

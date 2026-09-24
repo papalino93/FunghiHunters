@@ -162,6 +162,20 @@ describe('il verdetto risponde in parole', () => {
     expect(v.reason).not.toContain('troppo caldo')
   })
 
+  it('annuncia il calo quando la finestra si chiude, invece di «il quadro non cambia»', () => {
+    const z = zone('mugello', {
+      mpi: 64,
+      withStations: true,
+      series: [
+        { date: TODAY, mpi: 64 },
+        { date: '2026-09-18', mpi: 60 },
+        { date: '2026-09-19', mpi: 40 },
+        { date: '2026-09-20', mpi: 30 },
+      ],
+    })
+    expect(verdictFor([z]).outlook).toBe('Da 2026-09-19 cala a condizioni discrete, se non torna a piovere.')
+  })
+
   it('con due zone quasi pari non dice che una è l unica', () => {
     const v = verdictFor([zone('pratomagno', { mpi: 19, water: 42 }), zone('garfagnana', { mpi: 18 })])
     expect(v.advice).not.toContain("l'unica")
