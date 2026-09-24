@@ -12,7 +12,7 @@ function day(date: string, rain: number | null): PlaceDailyWeather {
   return {
     date, precipitationMm: rain, temperatureMaxC: 20, temperatureMinC: 10, windMaxKmh: 10,
     windGustMaxKmh: 20, et0Mm: 2, humidityMeanPercent: 70, vpdMeanKpa: 0.5, soilMoistureMean: 0.25,
-    soilTemperatureMeanC: 14, isForecast: date > '2026-09-23',
+    soilTemperatureMeanC: 14, weatherCode: null, isForecast: date > '2026-09-23',
   }
 }
 
