@@ -230,6 +230,9 @@ export function explainScore(
   }
 }
 
+/** Punti di MPI sotto i quali nessun fattore viene chiamato «limite». */
+const MIN_LIMITING_GAP = 3
+
 /**
  * Il fattore che, se fosse ideale, farebbe salire di piu' il punteggio.
  * E' cio' che l'utente vuole sapere davvero: non "quanto vale l'acqua", ma "cosa mi manca".
@@ -255,7 +258,9 @@ function limitingFactorOf(
       : [{ key: 'Il bosco della zona', gap: neutralised.withoutHabitat - mpi }]),
   ] as const
   const worst = gaps.reduce((acc, g) => (g.gap > acc.gap ? g : acc), gaps[0])
-  return worst.gap > 1 ? worst.key : null
+  // Sotto i 3 punti non è un limite, è arrotondamento: a 98/100 il «fattore mancante» valeva un
+  // punto e mezzo, e la scheda lo presentava come il problema della zona.
+  return worst.gap > MIN_LIMITING_GAP ? worst.key : null
 }
 
 function penaltyLabel(key: string): string {
