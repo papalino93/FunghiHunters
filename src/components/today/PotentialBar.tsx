@@ -1,7 +1,7 @@
 'use client'
 
 import { BANDS, bandNameFor } from '@/lib/recommend/verdict'
-import { mpiColor } from '@/lib/ui/scale'
+import { mpiBandColor } from '@/lib/ui/scale'
 
 /**
  * La scala, invece del numero nudo.
@@ -37,14 +37,14 @@ export function PotentialBar({
             <div
               key={b.name}
               className="h-full flex-1 border-r border-surface-0 last:border-r-0"
-              style={{ backgroundColor: mpiColor(i * 20 + 10), opacity: 0.35 }}
+              style={{ backgroundColor: mpiBandColor(i * 20 + 10), opacity: 0.35 }}
             />
           ))}
         </div>
         {/* Riempimento fino al valore, alla piena saturazione. */}
         <div
           className="absolute inset-y-0 left-0 rounded-full"
-          style={{ width: `${clamped}%`, backgroundColor: mpiColor(clamped) }}
+          style={{ width: `${clamped}%`, backgroundColor: mpiBandColor(clamped) }}
         />
         {/* Il segno del valore: leggibile anche per chi non distingue i colori. */}
         <div

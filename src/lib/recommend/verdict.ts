@@ -11,6 +11,8 @@
  * Vincolo semantico invariato: si parla di condizioni, mai di presenza di funghi.
  */
 
+import { formatValue } from '@/lib/ui/scale'
+import { ALGORITHM_V1 } from '@/lib/config/algorithm'
 import type { SnapshotZone } from '@/lib/snapshot/types'
 import { mpiOn, type Suggestion } from '@/lib/recommend/rank'
 
@@ -198,6 +200,27 @@ function reasonFor(
   const everywhere =
     zones.length > 1 && regionalLimit === limit && zones.every((z) => mpiOn(z, date) < 20)
 
+  /*
+   * Un verdetto positivo si spiega con ciò che lo rende positivo, e il limite diventa un freno.
+   * Dalla 1.5.0 capita spesso: dopo una pioggia intensa il punteggio sale anche con 19 °C di
+   * media, e il titolo «Oggi sì.» seguito da «Fa ancora troppo caldo… Sono 6 gradi di troppo»
+   * si contraddiceva da solo.
+   */
+  if (tone === 'good' || tone === 'worth') {
+    const daysAgo = intenseRainDaysAgo(zone, date)
+    const cause =
+      daysAgo !== null && daysAgo >= 5 && daysAgo <= 20
+        ? `La pioggia forte di ${daysAgo} giorni fa cade nella finestra in cui il porcino di solito spunta.`
+        : `Pioggia e temperature degli ultimi giorni sono vicine a quelle in cui il porcino fruttifica.`
+    const brake =
+      limit?.startsWith('Temperatura') === true && tMean !== null && Math.abs(tMean - optimum) >= 2
+        ? ` Il freno è la temperatura: ${tMean.toFixed(0)} °C di media, contro i ${optimum.toFixed(0)} ideali.`
+        : limit?.startsWith('Acqua') === true
+          ? ` Il terreno intanto si asciuga: restano ${water.toFixed(0)} mm utili.`
+          : ''
+    return cause + brake
+  }
+
   if (limit?.startsWith('Temperatura') === true && tMean !== null) {
     /*
      * La temperatura può limitare da due lati, e prima se ne raccontava uno solo.
@@ -227,14 +250,22 @@ function reasonFor(
     )
   }
 
-  if (tone === 'good' || tone === 'worth') {
-    return (
-      `Nella zona migliore ci sono ${water.toFixed(0)} mm ancora disponibili nel suolo e ` +
-      `${tMean === null ? 'temperature' : `${tMean.toFixed(0)} °C`} di media a 20 giorni.`
-    )
-  }
-
   return `La zona migliore è ${bandNameFor(top.mpi)}, e nessuna delle altre fa meglio.`
+}
+
+/**
+ * Giorni dall'ultimo giorno di pioggia intensa (soglia del modello, `trigger.intenseEventMm`) fino
+ * al giorno scelto, dalla serie della zona. `null` se nella serie non ce n'è.
+ */
+function intenseRainDaysAgo(zone: SnapshotZone, date: string): number | null {
+  const threshold = ALGORITHM_V1.trigger.intenseEventMm.value
+  let latest: string | null = null
+  for (const point of zone.series) {
+    if (point.date > date) break
+    if (point.rainMm !== null && point.rainMm !== undefined && point.rainMm >= threshold) latest = point.date
+  }
+  if (latest === null) return null
+  return Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${latest}T00:00:00Z`)) / 86_400_000)
 }
 
 /**
@@ -354,7 +385,7 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
   const temp =
     tMean === null
       ? null
-      : `${tMean.toFixed(1)} °C di media a 20 giorni, ottimo ${optimum.toFixed(1)}`
+      : `${formatValue(tMean, '°C', 1)} di media a 20 giorni, ottimo ${formatValue(optimum, '°C', 0)}`
 
   // Stessa ragione della frase del verdetto: sotto l'ottimo il problema è il freddo, e chiamarlo
   // "manca il fresco" significa contraddire il numero scritto nella riga accanto.

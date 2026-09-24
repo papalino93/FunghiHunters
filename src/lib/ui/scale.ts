@@ -3,11 +3,16 @@
  *
  * Due scelte deliberate.
  *
- * **Il colore non e' verde-marrone.** La scala e' una viridis-like: dal blu profondo al giallo
- * passando per il verde-acqua. E' percettivamente uniforme, leggibile da chi ha un deficit
- * cromatico, e legge come una mappa tecnica invece che come un cartello di agriturismo. Funziona
- * anche al sole, perche' la luminanza cresce monotonamente col punteggio: se il colore si perde,
- * resta comunque chiaro quale cella e' piu' alta.
+ * **Da secco a fertile, e più inchiostro dove il punteggio è più alto.** Fino al 24/09/2026 la
+ * scala era una viridis dal blu notte al giallo: sulla mappa scura andava bene, ma nel tema chiaro
+ * comunicava al contrario — un 24 blu pieno sembrava "pesante", un 98 giallo su bianco (1,4:1)
+ * quasi spariva, e la parte buona della barra era la meno visibile. Ora le scale sono due, una per
+ * fondo: sul chiaro il valore alto è il più scuro, sullo scuro il più luminoso. In entrambe la
+ * luminosità segue il punteggio, quindi si legge anche senza distinguere i colori.
+ *
+ * `mpiColor` (valore continuo, in RGB) serve alla mappa, che è sempre scura. Per l'interfaccia,
+ * che cambia tema, `mpiBandColor` e `mpiBandInk` restituiscono variabili CSS definite in
+ * `globals.css` per chiaro e scuro, a cinque gradini come le bande del punteggio.
  *
  * **La confidence non e' un secondo numero.** Un numero accanto a un altro numero non lo guarda
  * nessuno. La confidence si legge dalla **compattezza del riempimento**: piena quando e' alta,
@@ -17,12 +22,12 @@
 
 /** Fermate della scala, dal punteggio piu' basso al piu' alto. */
 const STOPS: ReadonlyArray<{ at: number; rgb: readonly [number, number, number] }> = [
-  { at: 0, rgb: [38, 42, 66] },
-  { at: 20, rgb: [49, 80, 118] },
-  { at: 40, rgb: [43, 121, 131] },
-  { at: 60, rgb: [59, 160, 112] },
-  { at: 80, rgb: [141, 195, 76] },
-  { at: 100, rgb: [243, 216, 63] },
+  // Scala "notte di bosco", per la mappa scura: gli stessi valori di `--mpi-*` nel tema scuro.
+  { at: 0, rgb: [59, 61, 51] },
+  { at: 30, rgb: [110, 108, 69] },
+  { at: 50, rgb: [143, 164, 90] },
+  { at: 70, rgb: [125, 195, 119] },
+  { at: 100, rgb: [189, 232, 143] },
 ]
 
 function lerp(a: number, b: number, t: number): number {
@@ -55,9 +60,27 @@ export function mpiColor(mpi: number): string {
   return `rgb(${r}, ${g}, ${b})`
 }
 
-/** Le fermate come gradiente CSS, per le legende. */
+/** Le cinque bande come gradiente CSS a gradini, per le legende: segue il tema dell'interfaccia. */
 export function mpiGradientCss(): string {
-  return STOPS.map((stop) => `${mpiColor(stop.at)} ${stop.at}%`).join(', ')
+  return [0, 1, 2, 3, 4]
+    .map((i) => `var(--mpi-${i}) ${i * 20}% ${(i + 1) * 20}%`)
+    .join(', ')
+}
+
+/** Il gradino della scala (0-4) di un punteggio, con gli stessi confini delle etichette. */
+export function mpiBand(mpi: number): 0 | 1 | 2 | 3 | 4 {
+  const value = Math.min(100, Math.max(0, mpi))
+  return Math.min(4, Math.floor(value / 20)) as 0 | 1 | 2 | 3 | 4
+}
+
+/** Colore di fondo del gradino, come variabile CSS che cambia con il tema. */
+export function mpiBandColor(mpi: number): string {
+  return `var(--mpi-${mpiBand(mpi)})`
+}
+
+/** Colore del testo leggibile sopra `mpiBandColor`, per lo stesso tema. */
+export function mpiBandInk(mpi: number): string {
+  return `var(--mpi-ink-${mpiBand(mpi)})`
 }
 
 /**
@@ -97,7 +120,15 @@ export function formatValue(
   decimals = 1,
 ): string {
   if (value === null || value === undefined || !Number.isFinite(value)) return '—'
-  return `${value.toFixed(decimals)} ${unit}`.trim()
+  // Virgola decimale, come si scrive in italiano («0,5 mm», non «0.5 mm»). Arrotondato come
+  // prima da `toFixed`, per non cambiare nessun valore mostrato, solo il separatore.
+  // `+ 0` toglie lo zero negativo, che si stamperebbe «-0,0».
+  const text = (Number(value.toFixed(decimals)) + 0).toLocaleString('it-IT', {
+    minimumFractionDigits: decimals,
+    maximumFractionDigits: decimals,
+    useGrouping: false,
+  })
+  return `${text} ${unit}`.trim()
 }
 
 /** Etichetta breve della provenienza, per i badge. */
