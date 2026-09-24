@@ -10,7 +10,7 @@
 
 /** Il `content` del meta tag che dà Search Console («Tag HTML»), non il tag intero. */
 export const GOOGLE_SITE_VERIFICATION =
-  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? ''
+  process.env.NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION ?? 'ZwRfVgagH0Z99--Lb7LQUJlIfA_rO4vNtbZm0ySJ4Gw'
 
 /** Il `content` del meta tag `msvalidate.01` di Bing Webmaster Tools, facoltativo. */
 export const BING_SITE_VERIFICATION = process.env.NEXT_PUBLIC_BING_SITE_VERIFICATION ?? ''
