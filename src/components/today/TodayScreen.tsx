@@ -309,7 +309,12 @@ function DayPicker({
   if (dates.length === 0) return null
   return (
     <div
-      className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1"
+      // Sul telefono si scorre, e la sfumatura a destra dice che ci sono altri giorni; da tablet in
+      // su stanno tutti su una riga, a colonne uguali, invece di restare tagliati («gio 1 o…»).
+      className="-mx-4 flex gap-1.5 overflow-x-auto px-4 pb-1 pr-10
+                 [mask-image:linear-gradient(to_right,black_calc(100%-2.5rem),transparent)]
+                 sm:mx-0 sm:grid sm:auto-cols-fr sm:grid-flow-col sm:overflow-visible sm:px-0 sm:pr-0
+                 sm:[mask-image:none]"
       role="group"
       aria-label="Giorno da valutare"
     >
@@ -321,7 +326,7 @@ function DayPicker({
             type="button"
             onClick={() => { onSelect(date) }}
             aria-pressed={active}
-            className={`min-h-11 shrink-0 rounded-lg border px-3 text-xs font-medium transition-colors
+            className={`min-h-11 shrink-0 whitespace-nowrap rounded-lg border px-3 text-xs font-medium transition-colors sm:px-1
                         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent ${
                           active
                             ? 'border-accent bg-accent/15 text-ink'
