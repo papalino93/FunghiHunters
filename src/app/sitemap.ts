@@ -37,5 +37,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Meteo e guida non dipendono dal calcolo del giorno: niente data, che sarebbe inventata.
     { url: `${SITE_URL}/meteo`, changeFrequency: 'daily', priority: 0.5 },
     { url: `${SITE_URL}/guida`, changeFrequency: 'monthly', priority: 0.4 },
+    { url: `${SITE_URL}/metodo`, changeFrequency: 'monthly', priority: 0.5 },
   ]
 }

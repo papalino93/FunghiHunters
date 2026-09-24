@@ -130,20 +130,20 @@ function compose(
     parts.push(`Le condizioni restano ${mpiQualifier(peak.mpi)} e senza un picco marcato`)
   }
 
-  // 2. Quanto dura.
+  // 2. Quanto dura. Un inciso che vale per qualunque frase del punto 1: prima era «e durano
+  // circa 4 giorni», che dopo «è oggi, con condizioni favorevoli» non aveva più un soggetto.
   if (peak.mpi >= 15) {
-    if (windowDays >= 5) parts.push(`e si mantengono per circa ${windowDays} giorni`)
-    else if (windowDays >= 2) parts.push(`e durano circa ${windowDays} giorni`)
-    else parts.push('ma per un solo giorno')
+    if (windowDays >= 2) parts.push(`, per circa ${windowDays} giorni`)
+    else parts.push(', ma per un solo giorno')
   }
 
   // 3. Dove sta andando, se non e' gia' evidente dal picco.
   if (!risesLater) {
-    if (trend > 6) parts.push('con una tendenza in miglioramento')
-    else if (trend < -6) parts.push('con una tendenza in peggioramento')
+    if (trend > 6) parts.push(', poi in miglioramento')
+    else if (trend < -6) parts.push(', poi in peggioramento')
   }
 
-  let sentence = `${parts.join(' ')}.`
+  let sentence = `${parts.join('').replace(/^, /, '')}.`
 
   // 4. Cosa manca. E' la parte azionabile: non "quanto vale l'acqua" ma "cosa mi frena".
   if (limitingFactor !== null && peak.mpi < 70) {

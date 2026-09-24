@@ -819,3 +819,22 @@ describe('cautela delle fonti mostrata all\'utente', () => {
     expect(userCautionForSource(REFERENCES.salerni2023)).toBeUndefined()
   })
 })
+
+describe('autunno a bassa quota (parametro spento in produzione)', () => {
+  it('a 0 il regime autunnale sotto i 700 m resta nullo, come nella 1.5.0', () => {
+    expect(ALGORITHM_V1.phenology.lowElevationAutumnWeight.value).toBe(0)
+    expect(seasonBlend('2026-10-20', 400, ALGORITHM_V1).autumn).toBe(0)
+  })
+
+  it('acceso, dà una stagione vera a fine ottobre in basso senza togliere nulla all estate', () => {
+    const acceso = {
+      ...ALGORITHM_V1,
+      phenology: {
+        ...ALGORITHM_V1.phenology,
+        lowElevationAutumnWeight: { ...ALGORITHM_V1.phenology.lowElevationAutumnWeight, value: 0.8 },
+      },
+    }
+    expect(seasonBlend('2026-10-20', 400, acceso).seasonal).toBeGreaterThan(0.5)
+    expect(seasonBlend('2026-07-19', 400, acceso).summer).toBe(seasonBlend('2026-07-19', 400, ALGORITHM_V1).summer)
+  })
+})

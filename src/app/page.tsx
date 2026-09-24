@@ -7,7 +7,19 @@ import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
 
 // Canonical e `og:url` anche per la home, che non ha un titolo proprio: si chiama FungiCast e basta.
-export const metadata = pageMetadata({ path: '/' })
+const base = pageMetadata({
+  // Le parole con cui si cerca («porcini oggi», «dove cercare»), non solo il nome dell'app: con
+  // il solo «FungiCast» la home non rispondeva a nessuna ricerca di chi non la conosce già.
+  title: 'Porcini oggi: dove e quando cercarli',
+  description:
+    'Ogni giorno, zona per zona in tutta Italia: quanto pioggia, acqua nel terreno, temperatura e ' +
+    'bosco favoriscono il porcino. Con il metodo pubblico e le fonti. Non indica la presenza di funghi.',
+  path: '/',
+})
+
+// La home sta nello stesso segmento del layout, e lì il `title.template` non si applica: il nome
+// dell'app va aggiunto a mano, come fa il template per tutte le altre pagine.
+export const metadata = { ...base, title: { absolute: 'Porcini oggi: dove e quando cercarli · FungiCast' } }
 
 /**
  * La home è la schermata della decisione, non la mappa.

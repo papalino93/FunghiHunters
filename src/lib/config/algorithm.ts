@@ -468,6 +468,13 @@ export interface PhenologyConfig {
   readonly lowElevationM: Param
   /** Quota sopra cui domina il regime autunnale. */
   readonly highElevationM: Param
+  /**
+   * Peso minimo del regime autunnale sotto `lowElevationM`, senza togliere niente a quello estivo.
+   * A 0 (valore attuale) sotto i 700 m l'autunno non esiste: un porcino di fine ottobre a 400 m
+   * prende una stagione di circa 0,05. Esiste per il banco di prova (`docs/VALIDAZIONE.md`), che lo
+   * mette alla prova sulle presenze GBIF prima di qualunque cambio in produzione.
+   */
+  readonly lowElevationAutumnWeight: Param
   /** Valore minimo del fattore stagionale: fuori stagione il potenziale non e' mai esattamente zero. */
   readonly floor: Param
   /** Peso dell'anomalia climatica rispetto alla normale della cella. */
@@ -845,6 +852,11 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       'La faggeta fra 900 e 1400 m e\' l\'habitat classico del porcino autunnale: da 900 in su ' +
         'domina quel regime. Prima avevo messo 1100, senza alcun riferimento.',
     ),
+    lowElevationAutumnWeight: calibrate(
+      0,
+      'Spento: identico alla 1.5.0. Da decidere con il banco di prova sulle presenze GBIF ' +
+        '(porcini d\'autunno a bassa quota, es. B. aereus nei castagneti del Centro-Sud).',
+    ),
     floor: calibrate(
       0.05,
       'Fuori stagione il potenziale non e\' esattamente zero: un modello che azzera nasconde ' +
@@ -1110,6 +1122,23 @@ export const ALGORITHM_V1: AlgorithmConfig = {
 }
 
 /** Tutti i parametri da calibrare, per mostrarli come tali nel pannello admin. */
+/** Quanti parametri hanno una fonte e quanti sono ancora da calibrare: per la pagina del metodo. */
+export function paramCounts(config: AlgorithmConfig = ALGORITHM_V1): { sourced: number; calibrate: number } {
+  let sourced = 0
+  let calibrate = 0
+  const walk = (node: unknown): void => {
+    if (node === null || typeof node !== 'object') return
+    if (isParam(node)) {
+      if (node.provenance === 'calibrate') calibrate += 1
+      else sourced += 1
+      return
+    }
+    for (const child of Object.values(node)) walk(child)
+  }
+  walk(config)
+  return { sourced, calibrate }
+}
+
 export function uncalibratedParams(config: AlgorithmConfig = ALGORITHM_V1): string[] {
   const out: string[] = []
   const walk = (node: unknown, path: string): void => {

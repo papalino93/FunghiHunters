@@ -102,8 +102,10 @@ export function seasonBlend(
   const summerTerm =
     (1 - elevationWeight) *
     gaussian(circularDayDistance(doy, p.summerPeakDay.value), 0, p.summerSigmaDays.value)
+  // `lowElevationAutumnWeight` (0 in produzione) dà all'autunno un peso minimo anche in basso,
+  // senza ridurre quello estivo: vedi il parametro in `config/algorithm.ts`.
   const autumnTerm =
-    elevationWeight *
+    Math.max(elevationWeight, p.lowElevationAutumnWeight.value) *
     gaussian(circularDayDistance(doy, p.autumnPeakDay.value), 0, p.autumnSigmaDays.value)
 
   const total = summerTerm + autumnTerm

@@ -135,6 +135,18 @@ function scoreWith(config: AlgorithmConfig, input: VariantInput, elevationForSea
   return computeMpi({ features, cell: seasonCell }, config)
 }
 
+/** (g) Autunno anche a bassa quota, senza togliere l'estate: peso minimo dell'autunno. */
+export function configLowAutumn(weight: number): AlgorithmConfig {
+  return {
+    ...ALGORITHM_V1,
+    version: `backtest-1.5-autunno-basso-${weight}`,
+    phenology: {
+      ...ALGORITHM_V1.phenology,
+      lowElevationAutumnWeight: withValue(ALGORITHM_V1.phenology.lowElevationAutumnWeight, weight),
+    },
+  }
+}
+
 export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   {
     key: 'v14',
@@ -192,5 +204,17 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
     label: '(e) 1.5 + ottimo autunnale 15 °C',
     change: 'thermal.optAutumnC 13 -> 15',
     score: (input) => scoreWith(CONFIG_OPT15, input),
+  },
+  {
+    key: 'v15-autunno-basso-05',
+    label: '(g) 1.5 + autunno a bassa quota (0,5)',
+    change: 'phenology.lowElevationAutumnWeight = 0.5 (estate invariata)',
+    score: (input) => scoreWith(configLowAutumn(0.5), input),
+  },
+  {
+    key: 'v15-autunno-basso-08',
+    label: '(g2) 1.5 + autunno a bassa quota (0,8)',
+    change: 'phenology.lowElevationAutumnWeight = 0.8 (estate invariata)',
+    score: (input) => scoreWith(configLowAutumn(0.8), input),
   },
 ]

@@ -6,7 +6,13 @@ import { REGION_COOKIE } from '@/lib/region/preference'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { loadMapRegion } from '@/lib/snapshot/load-reference'
 
-export const metadata = pageMetadata({ title: 'Mappa', path: '/mappa' })
+export const metadata = pageMetadata({
+  title: 'Mappa dei porcini oggi',
+  description:
+    'Le zone di porcino sulla mappa, con il punteggio di oggi e dei prossimi giorni: pioggia, ' +
+    'temperatura, stagione e bosco, zona per zona.',
+  path: '/mappa',
+})
 
 /**
  * La mappa di una regione.
