@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 
-import { rememberLastZone } from '@/lib/zones/lastViewed'
+import { rememberLastZonePlace } from '@/lib/zones/lastViewed'
 
 import type { Suggestion } from '@/lib/recommend/rank'
 import { zoneFacts } from '@/lib/recommend/verdict'
@@ -60,7 +60,15 @@ export function SuggestionCard({
           <h3 className="truncate text-base font-semibold leading-tight text-ink">
             <Link
               href={mapHref(zone.code, region, date === today ? null : date)}
-              onClick={() => { rememberLastZone(zone.code) }}
+              onClick={() => {
+                rememberLastZonePlace({
+                  code: zone.code,
+                  name: zone.name,
+                  latitude: zone.latitude,
+                  longitude: zone.longitude,
+                  elevationM: zone.elevationM,
+                })
+              }}
               className="after:absolute after:inset-0 after:rounded-xl focus:outline-none"
             >
               {zone.name}
