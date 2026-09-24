@@ -147,6 +147,16 @@ export function configLowAutumn(weight: number): AlgorithmConfig {
   }
 }
 
+/** (h) Ottimo autunnale 15 °C insieme all'autunno a bassa quota. */
+export function configOpt15LowAutumn(weight: number): AlgorithmConfig {
+  const low = configLowAutumn(weight)
+  return {
+    ...low,
+    version: `backtest-1.5-opt15-autunno-basso-${weight}`,
+    thermal: { ...low.thermal, optAutumnC: withValue(low.thermal.optAutumnC, 15) },
+  }
+}
+
 export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   {
     key: 'v14',
@@ -216,5 +226,17 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
     label: '(g2) 1.5 + autunno a bassa quota (0,8)',
     change: 'phenology.lowElevationAutumnWeight = 0.8 (estate invariata)',
     score: (input) => scoreWith(configLowAutumn(0.8), input),
+  },
+  {
+    key: 'v15-opt15-autunno-basso-05',
+    label: '(h) ottimo 15 °C + autunno a bassa quota (0,5)',
+    change: 'thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.5',
+    score: (input) => scoreWith(configOpt15LowAutumn(0.5), input),
+  },
+  {
+    key: 'v15-opt15-autunno-basso-08',
+    label: '(h2) ottimo 15 °C + autunno a bassa quota (0,8)',
+    change: 'thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.8',
+    score: (input) => scoreWith(configOpt15LowAutumn(0.8), input),
   },
 ]
