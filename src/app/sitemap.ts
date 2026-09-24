@@ -40,6 +40,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/guida`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/metodo`, changeFrequency: 'monthly', priority: 0.5 },
     { url: `${SITE_URL}/regole`, changeFrequency: 'monthly', priority: 0.6 },
+    { url: `${SITE_URL}/quando-nascono-i-porcini`, changeFrequency: 'monthly', priority: 0.7 },
     { url: `${SITE_URL}/chi-siamo`, changeFrequency: 'yearly', priority: 0.3 },
     { url: `${SITE_URL}/privacy`, changeFrequency: 'yearly', priority: 0.2 },
     ...PICKING_RULES.map((r) => ({

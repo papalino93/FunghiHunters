@@ -159,6 +159,10 @@ export function MethodScreen({ nationalZones }: { nationalZones: number }) {
           Le regole di raccolta, regione per regione
         </Link>
         {' · '}
+        <Link href="/quando-nascono-i-porcini" className="text-accent underline underline-offset-2">
+          Quando nascono i porcini
+        </Link>
+        {' · '}
         <Link href="/chi-siamo" className="text-accent underline underline-offset-2">
           Chi siamo
         </Link>

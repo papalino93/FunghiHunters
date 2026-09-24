@@ -209,9 +209,11 @@ export function MapView({
       const selected = zone.code === selectedCode
       const element = document.createElement('button')
       element.type = 'button'
+      // Il nome accessibile comincia con il testo che si vede sulla goccia («64/100»): chi usa
+      // la voce per comandare il telefono dice quello che legge (WCAG 2.5.3).
       element.setAttribute(
         'aria-label',
-        `${zone.name}: indice di compatibilità ${score.mpi.toFixed(0)} su 100, ` +
+        `${score.mpi.toFixed(0)}/100, ${zone.name}: indice di compatibilità, ` +
           `affidabilità ${score.confidence.toFixed(0)} su 100`,
       )
       // Sul desktop il nome della zona serve al passaggio del mouse: sul telefono lo danno le
