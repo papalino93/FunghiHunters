@@ -16,7 +16,7 @@ import { createWaypointRepository, type WaypointRepository } from '@/lib/waypoin
 import { EntryForm } from '@/components/diary/EntryForm'
 import { CalibrationPanel } from '@/components/diary/CalibrationPanel'
 import { WaypointsPanel } from '@/components/diary/WaypointsPanel'
-import { formatDate, mpiColor, readableTextOn } from '@/lib/ui/scale'
+import { formatDate, mpiBandColor, mpiBandInk } from '@/lib/ui/scale'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { useAuth } from '@/lib/auth/context'
 import { useDiarySync } from '@/lib/sync/useDiarySync'
@@ -376,8 +376,8 @@ function EntryRow({
           <div
             className="grid h-11 w-11 shrink-0 place-items-center rounded-lg"
             style={{
-              backgroundColor: mpiColor(entry.mpiAtEntry),
-              color: readableTextOn(entry.mpiAtEntry),
+              backgroundColor: mpiBandColor(entry.mpiAtEntry),
+              color: mpiBandInk(entry.mpiAtEntry),
             }}
             title="Punteggio previsto quel giorno"
           >

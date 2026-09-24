@@ -146,6 +146,22 @@ describe('il verdetto risponde in parole', () => {
     expect(verdictFor([later]).advice).toBe('Il posto più indicato è carrega, meglio 2026-09-18.')
   })
 
+  it('un verdetto positivo spiega cosa lo rende positivo e non si contraddice', () => {
+    const z = zone('mugello', { mpi: 64, tMean: 19, optimum: 13, withStations: true })
+    const withRain = {
+      ...z,
+      series: [
+        { ...z.series[0]!, date: '2026-09-03', rainMm: 36 },
+        { ...z.series[0]!, date: TODAY, mpi: 64 },
+      ],
+    }
+    const v = verdictFor([withRain])
+    expect(v.headline).toBe('Oggi sì.')
+    expect(v.reason).toContain('pioggia forte di 14 giorni fa')
+    expect(v.reason).toContain('Il freno è la temperatura')
+    expect(v.reason).not.toContain('troppo caldo')
+  })
+
   it('con due zone quasi pari non dice che una è l unica', () => {
     const v = verdictFor([zone('pratomagno', { mpi: 19, water: 42 }), zone('garfagnana', { mpi: 18 })])
     expect(v.advice).not.toContain("l'unica")
@@ -278,7 +294,7 @@ describe('fatti della zona, in parole', () => {
     const facts = zoneFacts(zone('a', { water: 113, tMean: 4.5, optimum: 13.4 }))
     expect(facts.bad).toContain('Troppo freddo')
     expect(facts.bad).not.toContain('Manca il fresco')
-    expect(facts.bad).toContain('4.5')
+    expect(facts.bad).toContain('4,5')
   })
 
   it('quando acqua e temperatura sono entrambe scomode, nomina quella che il modello dice davvero limitante', () => {

@@ -31,6 +31,19 @@
   --warn: #f2b134;
   --danger: #e2685f;
 
+  /* Scala del punteggio, dal secco al fertile: vedi `lib/ui/scale.ts`. Sullo scuro il valore
+     alto è il più luminoso; il testo sopra ogni gradino è scelto per restare sopra 4,5:1. */
+  --mpi-0: #3b3d33;
+  --mpi-1: #6e6c45;
+  --mpi-2: #8fa45a;
+  --mpi-3: #7dc377;
+  --mpi-4: #bde88f;
+  --mpi-ink-0: #eceff4;
+  --mpi-ink-1: #eceff4;
+  --mpi-ink-2: #0f130f;
+  --mpi-ink-3: #0f130f;
+  --mpi-ink-4: #0f130f;
+
   --font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
   --font-mono: var(--font-mono-stack), ui-monospace, "SF Mono", Menlo, monospace;
 }
@@ -66,6 +79,18 @@
     --accent: #0d7456;
     --warn: #8a5a00;
     --danger: #b3362c;
+
+    /* Sul chiaro il valore alto è il più scuro (vedi `lib/ui/scale.ts`). */
+    --mpi-0: #ddd5c2;
+    --mpi-1: #c2b77f;
+    --mpi-2: #93aa5e;
+    --mpi-3: #4f8c4a;
+    --mpi-4: #2a5f37;
+    --mpi-ink-0: #1e261d;
+    --mpi-ink-1: #1e261d;
+    --mpi-ink-2: #1e261d;
+    --mpi-ink-3: #0f130f;
+    --mpi-ink-4: #ffffff;
   }
 }
 
@@ -84,6 +109,18 @@
   --accent: #0d7456;
   --warn: #8a5a00;
   --danger: #b3362c;
+
+  /* Sul chiaro il valore alto è il più scuro (vedi `lib/ui/scale.ts`). */
+  --mpi-0: #ddd5c2;
+  --mpi-1: #c2b77f;
+  --mpi-2: #93aa5e;
+  --mpi-3: #4f8c4a;
+  --mpi-4: #2a5f37;
+  --mpi-ink-0: #1e261d;
+  --mpi-ink-1: #1e261d;
+  --mpi-ink-2: #1e261d;
+  --mpi-ink-3: #0f130f;
+  --mpi-ink-4: #ffffff;
 }
 
 @theme inline {

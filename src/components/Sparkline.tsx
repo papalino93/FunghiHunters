@@ -1,6 +1,6 @@
 'use client'
 
-import { mpiColor } from '@/lib/ui/scale'
+import { mpiBandColor } from '@/lib/ui/scale'
 import type { SnapshotSeriesPoint } from '@/lib/snapshot/types'
 
 export interface SparklineProps {
@@ -97,7 +97,7 @@ export function Sparkline({
           cx={x(index)}
           cy={y(point.mpi)}
           r={index === selectedIndex ? 3.2 : 1.6}
-          fill={mpiColor(point.mpi)}
+          fill={mpiBandColor(point.mpi)}
           stroke={index === selectedIndex ? 'var(--text-primary)' : 'none'}
           strokeWidth="1"
           vectorEffect="non-scaling-stroke"

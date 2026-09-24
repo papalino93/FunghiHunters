@@ -3,7 +3,7 @@
 import { useState } from 'react'
 
 import type { CalibrationReport, SplitStat } from '@/lib/diary/calibration'
-import { mpiColor } from '@/lib/ui/scale'
+import { mpiBandColor } from '@/lib/ui/scale'
 
 /**
  * Il modello ci prende?
@@ -52,7 +52,7 @@ export function CalibrationPanel({ report }: { report: CalibrationReport }) {
                 <span
                   aria-hidden="true"
                   className="h-3 w-3 shrink-0 rounded-sm"
-                  style={{ backgroundColor: mpiColor((band.from + band.to) / 2) }}
+                  style={{ backgroundColor: mpiBandColor((band.from + band.to) / 2) }}
                 />
                 <span className="w-28 shrink-0 truncate text-xs text-ink-dim">
                   {band.label}
