@@ -1,8 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
+
+import { rememberLastZone } from '@/lib/zones/lastViewed'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import { today as localToday } from '@/lib/domain/time'
@@ -92,6 +94,10 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
   )
 
   const selectedZone = snapshot.zones.find((z) => z.code === selectedCode) ?? null
+  // La zona aperta diventa quella proposta dal diario (vedi `lib/zones/lastViewed.ts`).
+  useEffect(() => {
+    if (selectedZone !== null) rememberLastZone(selectedZone.code)
+  }, [selectedZone])
   const followed = useFollowedZones()
   const selectedProvenance =
     selectedZone?.series.find((p) => p.date === selectedDate)?.provenance ??

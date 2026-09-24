@@ -2,6 +2,8 @@
 
 import Link from 'next/link'
 
+import { rememberLastZone } from '@/lib/zones/lastViewed'
+
 import type { Suggestion } from '@/lib/recommend/rank'
 import { zoneFacts } from '@/lib/recommend/verdict'
 import { PotentialBar } from '@/components/today/PotentialBar'
@@ -45,10 +47,25 @@ export function SuggestionCard({
   const betterLater = bestDay !== null && bestDay.date !== date && bestDay.mpi > mpi + 3
 
   return (
-    <article className="rounded-xl border border-edge bg-surface-1 p-3.5">
+    /*
+     * Tutta la scheda porta alla mappa (il link del nome si allarga su tutta la superficie con
+     * `after:`), invece di un pulsante «Dettaglio e mappa» largo quanto la scheda e ripetuto su
+     * ognuna: con quello si vedevano una zona e mezza per schermata. La stella resta un controllo
+     * suo, sopra il link (`relative z-10`), perché seguire una zona non deve aprire la mappa.
+     */
+    <article className="relative rounded-xl border border-edge bg-surface-1 p-3.5 transition-colors
+                        hover:border-edge-strong focus-within:ring-2 focus-within:ring-accent">
       <div className="flex items-baseline justify-between gap-2">
         <div className="flex min-w-0 items-baseline gap-1.5">
-          <h3 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h3>
+          <h3 className="truncate text-base font-semibold leading-tight text-ink">
+            <Link
+              href={mapHref(zone.code, region, date === today ? null : date)}
+              onClick={() => { rememberLastZone(zone.code) }}
+              className="after:absolute after:inset-0 after:rounded-xl focus:outline-none"
+            >
+              {zone.name}
+            </Link>
+          </h3>
           {following && (
             <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-xs font-medium text-accent">
               seguita
@@ -63,7 +80,9 @@ export function SuggestionCard({
           )}
           {zone.elevationM} m
           {onToggleFollow !== undefined && (
-            <FollowButton following={following} onToggle={onToggleFollow} compact />
+            <span className="relative z-10">
+              <FollowButton following={following} onToggle={onToggleFollow} compact />
+            </span>
           )}
         </span>
       </div>
@@ -104,16 +123,10 @@ export function SuggestionCard({
           </>
         )}
         <Reliability dataQuality={zone.dataQuality} hasStations={zone.stations.length > 0} />
+        <span aria-hidden="true" className="ml-auto font-medium text-accent">
+          Mappa e dettaglio ›
+        </span>
       </p>
-
-      <Link
-        href={mapHref(zone.code, region, date === today ? null : date)}
-        className="mt-3 flex min-h-11 items-center justify-center rounded-lg border border-edge
-                   bg-surface-2 text-sm font-medium text-ink transition-colors hover:bg-surface-3
-                   focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-      >
-        Dettaglio e mappa
-      </Link>
     </article>
   )
 }

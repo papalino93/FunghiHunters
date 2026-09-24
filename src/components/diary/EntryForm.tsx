@@ -2,6 +2,9 @@
 
 import { useMemo, useState } from 'react'
 
+import { today as localToday } from '@/lib/domain/time'
+import { lastZoneOr } from '@/lib/zones/lastViewed'
+
 import type { Snapshot } from '@/lib/snapshot/types'
 import {
   ABUNDANCE_LABELS,
@@ -61,8 +64,14 @@ export function EntryForm({
   onSave: (draft: DiaryDraft) => Promise<void>
 }) {
   const auth = useAuth()
-  const [date, setDate] = useState(snapshot.referenceDate)
-  const [zoneCode, setZoneCode] = useState(snapshot.zones[0]?.code ?? '')
+  // Oggi vero, non la data dello snapshot (un'uscita di oggi con lo snapshot di ieri non deve
+  // risultare nel futuro); e la zona guardata per ultima,
+  // non la prima del file. Il modulo si monta solo dopo un tocco, quindi leggere lo storage qui
+  // non crea differenze fra server e browser.
+  const [date, setDate] = useState(() => localToday())
+  const [zoneCode, setZoneCode] = useState(() =>
+    lastZoneOr(snapshot.zones.map((z) => z.code), snapshot.zones[0]?.code ?? ''),
+  )
   const [abundance, setAbundance] = useState<Abundance | null>(null)
   const [elevation, setElevation] = useState('')
   const [duration, setDuration] = useState('')
@@ -174,7 +183,7 @@ export function EntryForm({
             id="entry-date"
             type="date"
             value={date}
-            max={snapshot.referenceDate}
+            max={localToday()}
             onChange={(e) => { setDate(e.target.value) }}
             className="min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
                        text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"

@@ -129,7 +129,7 @@ export function GuideScreen() {
           per quello serve un navigatore.
         </Voce>
         <Voce titolo="Mappa">
-          Da &laquo;Dettaglio e mappa&raquo; su una zona, o dalla barra in basso. Mostra le zone
+          Toccando una zona in &laquo;Dove vado&raquo;, o dalla barra in basso. Mostra le zone
           della regione che stai guardando — quella di casa se arrivi dalla barra, quella della
           zona se arrivi da una scheda — con il meteo dei giorni intorno alla data scelta, le
           stazioni usate per la stima e la spiegazione completa del punteggio.{' '}
