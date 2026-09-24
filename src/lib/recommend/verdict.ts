@@ -424,14 +424,24 @@ export function zoneFacts(zone: SnapshotZone): ZoneFacts {
    *
    * Due casi diversi, e vanno distinti: poco bosco non è la stessa cosa di bosco poco adatto.
    */
+  //
+  // «Poco adatto» si dice solo dei tipi che il modello pesa davvero meno (larice, pino…), mai di
+  // una faggeta: prima usciva «Bosco poco adatto al porcino: faggeta» su zone a 99/100, dove il
+  // «limite» era un punto perso per una frangia di altre latifoglie. Se il bosco è esteso e i tipi
+  // nominati sono tutti ospiti classici, non c'è niente di vero da dire sul bosco.
+  const weakHosts = zone.forest.filter(
+    (type) => (ALGORITHM_V1.habitat.host[type]?.value ?? 1) < 1,
+  )
   const forestProblem =
     zone.limitingFactor !== 'Il bosco della zona'
       ? null
-      : zone.forestFraction !== undefined && zone.forestFraction < 0.4
+      : zone.forestFraction !== undefined && zone.forestFraction < ALGORITHM_V1.habitat.coverReference.value
         ? `Poco bosco: copre il ${Math.round(zone.forestFraction * 100)}% dell'area attorno al punto`
-        : zone.forest.length > 0
-          ? `Bosco poco adatto al porcino: ${zone.forest.join(', ')}`
-          : 'Il bosco di questa zona è il limite principale'
+        : weakHosts.length > 0
+          ? `Bosco poco adatto al porcino: ${weakHosts.join(', ')}`
+          : zone.forest.length === 0
+            ? 'Il bosco di questa zona è il limite principale'
+            : null
 
   // Le due soglie sopra (±3°C, 45mm) dicono solo "questo fattore è scomodo", non quanto pesa sul
   // punteggio: la campana termica è asimmetrica (più tollerante sopra l'ottimo), quindi un caso

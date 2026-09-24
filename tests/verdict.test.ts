@@ -423,3 +423,33 @@ describe('coerenza fra verdetto e schede', () => {
     expect(v.reason).toContain('In tutta la Toscana')
   })
 })
+
+describe('il bosco come limite, solo quando lo è davvero', () => {
+  it('non chiama «poco adatta» una faggeta estesa', () => {
+    const facts = zoneFacts(
+      zone('moggio', {
+        water: 61,
+        tMean: 15,
+        optimum: 15,
+        limit: 'Il bosco della zona',
+        forestFraction: 0.84,
+        forest: ['faggeta'],
+      }),
+    )
+    expect(facts.bad).toBeNull()
+  })
+
+  it('nomina solo i tipi di bosco che il modello pesa meno', () => {
+    const facts = zoneFacts(
+      zone('misto', {
+        water: 90,
+        tMean: 13,
+        optimum: 13,
+        limit: 'Il bosco della zona',
+        forestFraction: 0.8,
+        forest: ['faggeta', 'lariceto'],
+      }),
+    )
+    expect(facts.bad).toBe('Bosco poco adatto al porcino: lariceto')
+  })
+})
