@@ -1,0 +1,66 @@
+name: Banco di prova del modello
+
+# Confronto caso-controllo fra l'MPI e le presenze di porcino in Italia (GBIF), con il meteo
+# storico di Open-Meteo: metodo e limiti in docs/VALIDAZIONE.md.
+#
+# Solo a mano, mai a calendario. Una corsa completa su 250 località-anno pesa circa 4.100 unità
+# del piano gratuito di Open-Meteo (limite 10.000 al giorno): è una verifica una tantum quando il
+# modello cambia, non un carico ricorrente. Lo script smette di chiedere al primo HTTP 429, e la
+# cache delle risposte (actions/cache) permette di riprendere il giorno dopo da dove si è fermato,
+# invece di rifare le stesse richieste.
+on:
+  workflow_dispatch:
+    inputs:
+      sample:
+        description: 'Località-anno da valutare'
+        default: '250'
+        required: false
+
+permissions:
+  contents: write
+
+concurrency:
+  group: backtest
+  cancel-in-progress: false
+
+jobs:
+  backtest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+
+      - name: Ripristina la cache delle risposte
+        uses: actions/cache@v4
+        with:
+          path: .backtest-cache
+          key: backtest-cache-${{ github.run_id }}
+          restore-keys: backtest-cache-
+
+      - name: Esegui il banco di prova
+        # L'input passa da una variabile d'ambiente, non interpolato nel comando: così un valore
+        # strano resta un argomento, non diventa shell.
+        env:
+          SAMPLE: ${{ inputs.sample }}
+        run: npx tsx scripts/backtest-gbif.ts --sample "$SAMPLE" --rows --out docs/validazione --cache .backtest-cache
+
+      - name: Commit dei risultati se sono cambiati
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/validazione
+          if git diff --staged --quiet; then
+            echo "Risultati invariati: niente da committare."
+          else
+            git commit -m "Banco di prova $(date -u +%Y-%m-%d)"
+            git pull --rebase origin main
+            git push
+          fi

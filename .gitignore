@@ -53,3 +53,6 @@ next-env.d.ts
 
 # Cartelle di lavoro temporanee degli agenti (git worktree): mai nel repository.
 .claude/worktrees/
+
+# Cache del banco di prova (risposte GBIF e Open-Meteo): si rigenera, non va nel repository.
+.backtest-cache/
