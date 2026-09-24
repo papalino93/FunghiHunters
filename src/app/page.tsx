@@ -1,7 +1,5 @@
-import { cookies } from 'next/headers'
-
 import { TodayScreen } from '@/components/today/TodayScreen'
-import { REGION_COOKIE } from '@/lib/region/preference'
+import { requestedRegion } from '@/lib/region/request'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { loadReferenceRegion } from '@/lib/snapshot/load-reference'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
@@ -30,12 +28,11 @@ export const metadata = { ...base, title: { absolute: 'Porcini oggi: dove e quan
  * Quale regione si apre lo decide la preferenza dell'utente (`lib/region/preference.ts`), letta
  * dal cookie. Leggere un cookie rende la pagina dinamica, quindi niente `revalidate`: il costo è
  * una lettura di file per visita, e il guadagno è che chi sta in Trentino non apre più la
- * Toscana. Senza cookie si ricade sulla Toscana e sulle sue sette zone di taratura, cioè
- * esattamente ciò che questa pagina ha sempre mostrato.
+ * Toscana. Senza cookie vale la regione dell'indirizzo IP (`lib/region/request.ts`), e senza
+ * nemmeno quella la Toscana con le sue sette zone di taratura.
  */
 export default async function Page() {
-  const cookieStore = await cookies()
-  const region = await loadReferenceRegion(cookieStore.get(REGION_COOKIE)?.value)
+  const region = await loadReferenceRegion(await requestedRegion())
 
   return (
     <TodayScreen

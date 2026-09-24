@@ -1,8 +1,7 @@
 import { Suspense } from 'react'
-import { cookies } from 'next/headers'
 
 import { AppShell } from '@/components/AppShell'
-import { REGION_COOKIE } from '@/lib/region/preference'
+import { requestedRegion } from '@/lib/region/request'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { loadMapRegion } from '@/lib/snapshot/load-reference'
 
@@ -28,8 +27,8 @@ export default async function MappaPage({
 }: {
   searchParams: Promise<{ readonly regione?: string }>
 }) {
-  const [{ regione }, cookieStore] = await Promise.all([searchParams, cookies()])
-  const region = await loadMapRegion(regione, cookieStore.get(REGION_COOKIE)?.value)
+  const [{ regione }, reference] = await Promise.all([searchParams, requestedRegion()])
+  const region = await loadMapRegion(regione, reference)
 
   // `useSearchParams` sospende durante il prerender: il confine lo rende esplicito invece di
   // far diventare dinamica l'intera pagina.
