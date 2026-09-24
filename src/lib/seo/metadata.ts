@@ -63,6 +63,12 @@ interface PageMetadataInput {
   readonly description?: string
   /** Percorso relativo (`/italia/piemonte`): `metadataBase` lo rende assoluto. */
   readonly path: string
+  /**
+   * Base delle immagini di anteprima propria della pagina (es. `/italia/piemonte`, che ha
+   * `opengraph-image` e `twitter-image` accanto). Senza, quelle generiche del sito: i metadati
+   * dichiarati qui vincono sui file, quindi un'immagine per pagina va nominata esplicitamente.
+   */
+  readonly imageBase?: string
 }
 
 /**
@@ -72,7 +78,10 @@ interface PageMetadataInput {
  * ereditato da ogni pagina che non lo ridefinisce, e direbbe a un motore di ricerca che `/meteo`
  * è un doppione della home.
  */
-export function pageMetadata({ title, description, path }: PageMetadataInput): Metadata {
+export function pageMetadata({ title, description, path, imageBase }: PageMetadataInput): Metadata {
+  const ogImage = imageBase === undefined ? OG_IMAGE : { ...OG_IMAGE, url: `${imageBase}/opengraph-image` }
+  const twitterImage =
+    imageBase === undefined ? TWITTER_IMAGE : { ...TWITTER_IMAGE, url: `${imageBase}/twitter-image` }
   const fullTitle = title === undefined ? SITE_NAME : `${title}${TITLE_SUFFIX}`
   const desc = description ?? DEFAULT_DESCRIPTION
   return {
@@ -84,13 +93,13 @@ export function pageMetadata({ title, description, path }: PageMetadataInput): M
       title: fullTitle,
       description: desc,
       url: path,
-      images: [OG_IMAGE],
+      images: [ogImage],
     },
     twitter: {
       card: 'summary_large_image',
       title: fullTitle,
       description: desc,
-      images: [TWITTER_IMAGE],
+      images: [twitterImage],
     },
   }
 }

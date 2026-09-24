@@ -51,6 +51,7 @@ export async function generateMetadata({ params }: PageProps<'/italia/[regione]'
       `${region.name}: ${zones} con la compatibilità delle condizioni di oggi e dei prossimi ` +
       'giorni con la fruttificazione del porcino. Non indica la presenza di funghi.',
     path: `/italia/${region.slug}`,
+    imageBase: `/italia/${region.slug}`,
   })
 }
 

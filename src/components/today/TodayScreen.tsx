@@ -14,6 +14,8 @@ import {
 import { buildVerdict } from '@/lib/recommend/verdict'
 import { VerdictCard } from '@/components/today/VerdictCard'
 import { SuggestionCard } from '@/components/today/SuggestionCard'
+import { WeekendCard } from '@/components/today/WeekendCard'
+import { weekendOutlook } from '@/lib/recommend/weekend'
 import { LocationPrompt } from '@/components/today/LocationPrompt'
 import { FilterBar, type Filters } from '@/components/today/FilterBar'
 import { ExcludedZones } from '@/components/today/ExcludedZones'
@@ -246,6 +248,18 @@ export function TodayScreen({
           </ol>
         </>
       )}
+
+      <WeekendCard
+        days={weekendOutlook(snapshot.zones, dates, today)}
+        modelOnly={snapshot.zones.every((z) => z.stations.length === 0)}
+        mapHref={(code, day) => {
+          const params = new URLSearchParams()
+          if (region.catalogue) params.set('regione', region.slug)
+          params.set('zona', code)
+          if (day !== today) params.set('giorno', day)
+          return `/mappa?${params.toString()}`
+        }}
+      />
 
       {/*
         * Le sette zone toscane sono macro-aree (la Garfagnana, il Casentino), non comuni: chi
