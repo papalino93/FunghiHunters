@@ -1,6 +1,6 @@
 {
  "schemaVersion": "1",
- "generatedAt": "2026-09-24T07:18:04.930Z",
+ "generatedAt": "2026-09-24T07:33:14.011Z",
  "algorithmVersion": "1.5.0-porcino",
  "referenceDate": "2026-09-24",
  "zones": [
@@ -962,7 +962,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 11.5,
-     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
@@ -1562,7 +1562,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 17,
-     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
@@ -2204,7 +2204,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 13.8,
-     "value": "ultima pioggia intensa 15 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 15 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
@@ -2864,7 +2864,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 13.2,
-     "value": "ultima pioggia intensa 15 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 15 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
@@ -3458,7 +3458,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 15.1,
-     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
@@ -4058,7 +4058,7 @@
      "key": "trigger",
      "label": "Innesco da pioggia intensa",
      "contribution": 2.8,
-     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso e' al giorno 12",
+     "value": "ultima pioggia intensa 14 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     }
