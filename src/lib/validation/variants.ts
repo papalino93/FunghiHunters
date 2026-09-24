@@ -39,13 +39,28 @@ export function backtestCell(elevationM: number): CellContext {
   return { elevationM, aspectDeg: null, slopeDeg: null, canopyDensity: null, forest: null }
 }
 
+/**
+ * La 1.5.0 congelata, base di tutte le varianti storiche. Le varianti erano scritte come «1.5 +
+ * una modifica» spalmando `ALGORITHM_V1`; dalla 1.6.0 `ALGORITHM_V1` contiene già due di quelle
+ * modifiche, e i risultati pubblicati in `docs/VALIDAZIONE.md` non sarebbero più riproducibili.
+ */
+export const CONFIG_V15: AlgorithmConfig = {
+  ...ALGORITHM_V1,
+  version: 'backtest-1.5.0',
+  thermal: { ...ALGORITHM_V1.thermal, optAutumnC: withValue(ALGORITHM_V1.thermal.optAutumnC, 13) },
+  phenology: {
+    ...ALGORITHM_V1.phenology,
+    lowElevationAutumnWeight: withValue(ALGORITHM_V1.phenology.lowElevationAutumnWeight, 0),
+  },
+}
+
 /** (a) Equivalente 1.4: senza il sollievo idrico dopo pioggia intensa introdotto nella 1.5. */
 export const CONFIG_V14: AlgorithmConfig = {
-  ...ALGORITHM_V1,
+  ...CONFIG_V15,
   version: 'backtest-1.4-equivalente',
   trigger: {
-    ...ALGORITHM_V1.trigger,
-    waterRelief: withValue(ALGORITHM_V1.trigger.waterRelief, 0),
+    ...CONFIG_V15.trigger,
+    waterRelief: withValue(CONFIG_V15.trigger.waterRelief, 0),
   },
 }
 
@@ -53,19 +68,19 @@ export const CONFIG_V14: AlgorithmConfig = {
 export const RELAXED_SIGMA_WARM_C = 12
 
 export const CONFIG_WARM_RELAXED: AlgorithmConfig = {
-  ...ALGORITHM_V1,
+  ...CONFIG_V15,
   version: 'backtest-1.5-sigmaWarm12',
   thermal: {
-    ...ALGORITHM_V1.thermal,
-    sigmaWarmC: withValue(ALGORITHM_V1.thermal.sigmaWarmC, RELAXED_SIGMA_WARM_C),
+    ...CONFIG_V15.thermal,
+    sigmaWarmC: withValue(CONFIG_V15.thermal.sigmaWarmC, RELAXED_SIGMA_WARM_C),
   },
 }
 
 /** (e) Ottimo autunnale a 15 gradi invece di 13. */
 export const CONFIG_OPT15: AlgorithmConfig = {
-  ...ALGORITHM_V1,
+  ...CONFIG_V15,
   version: 'backtest-1.5-optAutumn15',
-  thermal: { ...ALGORITHM_V1.thermal, optAutumnC: withValue(ALGORITHM_V1.thermal.optAutumnC, 15) },
+  thermal: { ...CONFIG_V15.thermal, optAutumnC: withValue(CONFIG_V15.thermal.optAutumnC, 15) },
 }
 
 /** Tetto del peso autunnale per la variante (c). */
@@ -138,11 +153,11 @@ function scoreWith(config: AlgorithmConfig, input: VariantInput, elevationForSea
 /** (g) Autunno anche a bassa quota, senza togliere l'estate: peso minimo dell'autunno. */
 export function configLowAutumn(weight: number): AlgorithmConfig {
   return {
-    ...ALGORITHM_V1,
+    ...CONFIG_V15,
     version: `backtest-1.5-autunno-basso-${weight}`,
     phenology: {
-      ...ALGORITHM_V1.phenology,
-      lowElevationAutumnWeight: withValue(ALGORITHM_V1.phenology.lowElevationAutumnWeight, weight),
+      ...CONFIG_V15.phenology,
+      lowElevationAutumnWeight: withValue(CONFIG_V15.phenology.lowElevationAutumnWeight, weight),
     },
   }
 }
@@ -167,15 +182,15 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   {
     key: 'v15',
     label: '(b) 1.5 attuale',
-    change: 'nessuna (ALGORITHM_V1, 1.5.0-porcino)',
-    score: (input) => scoreWith(ALGORITHM_V1, input),
+    change: 'la 1.5.0 congelata (CONFIG_V15)',
+    score: (input) => scoreWith(CONFIG_V15, input),
   },
   {
     key: 'v15-estate-quota',
     label: '(c) 1.5 + estate in quota',
     change: `peso autunnale per quota al massimo ${MAX_ELEVATION_WEIGHT} (quota stagionale <= 840 m)`,
     score: (input) =>
-      scoreWith(ALGORITHM_V1, input, seasonalElevation(input.elevationM, ALGORITHM_V1)),
+      scoreWith(CONFIG_V15, input, seasonalElevation(input.elevationM, ALGORITHM_V1)),
   },
   {
     key: 'v15-regimi-misti',
@@ -197,7 +212,7 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
       `sigmaWarmC 7.5 -> ${RELAXED_SIGMA_WARM_C} solo nei giorni con fattore acqua 1.5 >= ` +
       `${GOOD_WATER_THRESHOLD}`,
     score: (input) => {
-      const base = scoreWith(ALGORITHM_V1, input)
+      const base = scoreWith(CONFIG_V15, input)
       return base.components.water >= GOOD_WATER_THRESHOLD
         ? scoreWith(CONFIG_WARM_RELAXED, input)
         : base
@@ -238,5 +253,11 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
     label: '(h2) ottimo 15 °C + autunno a bassa quota (0,8)',
     change: 'thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.8',
     score: (input) => scoreWith(configOpt15LowAutumn(0.8), input),
+  },
+  {
+    key: 'produzione',
+    label: '(p) modello in produzione',
+    change: `ALGORITHM_V1 (${ALGORITHM_V1.version})`,
+    score: (input) => scoreWith(ALGORITHM_V1, input),
   },
 ]

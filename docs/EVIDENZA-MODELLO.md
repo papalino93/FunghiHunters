@@ -160,7 +160,12 @@ Nessuna portava il Mugello sopra 25/100 con i dati Open-Meteo, quindi il difetto
 bilancio puniva proprio il ritardo fra pioggia e fruttificazione che la fonte dell'innesco
 (Salerni 2023) misura.
 
-**Cosa non si è cambiato.** L'ottimo termico (13 °C) e la campana termica. La ricerca del
+**1.6.0, lo stesso giorno, dai dati e non da un'osservazione.** Il banco di prova sulle presenze
+GBIF (263 casi, 747 controlli; `docs/VALIDAZIONE.md`) ha portato l'ottimo autunnale da 13 a 15 °C e
+dato all'autunno un peso anche sotto i 700 m: AUC da 0,697 a 0,755. Con la 1.6.0 il Mugello
+segna 79 il 23/09 e 75 il 24/09.
+
+**Cosa non si era cambiato con la 1.5.0.** L'ottimo termico (allora 13 °C) e la campana termica. La ricerca del
 24/09/2026 dice che 18-19 °C di media a fine settembre sono compatibili con buttate abbondanti
 (Salerni 2023: massimo triennale ad agosto 2002 con 18,6 °C di media estiva) e che il lato caldo
 dovrebbe forse dipendere dall'acqua (Brejon & Hoffman 2026). Sono ipotesi da verificare sul banco

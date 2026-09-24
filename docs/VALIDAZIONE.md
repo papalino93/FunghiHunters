@@ -1,18 +1,33 @@
 # Validazione dell'MPI sulle presenze reali di porcino (backtest GBIF)
 
-**Stato al 24 settembre 2026: corsa PARZIALE, risultati NON conclusivi.** Il meteo storico è
-arrivato per 15 località-anno su 250 del campione: al sedicesimo download l'archivio Open-Meteo
-ha risposto HTTP 429, *«Daily API request limit exceeded. Please try again tomorrow»*. Lo script
-si è fermato come previsto, senza ritentare. La quota è per indirizzo IP e l'IP di uscita della
-sessione è condiviso con altro traffico: il limite giornaliero era già quasi esaurito prima che
-iniziassimo (abbiamo speso un peso di circa 279 su 10.000). Tutto quello che segue è quindi il
-metodo completo e **un'anteprima su 16 casi e 45 controlli**, da leggere come verifica che la
-catena funzioni, non come misura del modello. Come riprendere: in fondo.
+**Stato al 24 settembre 2026: corsa completa, e il modello è passato alla 1.6.0 su questi numeri.**
+Il meteo storico è arrivato per 249 località-anno su 250 (workflow `backtest.yml` su GitHub
+Actions, con cache delle risposte): **263 casi e 747 controlli** in 19 regioni. Il riepilogo
+generato, con tutte le tabelle, è in `docs/validazione/backtest-summary.md`; le sezioni 7 e 9 più
+sotto descrivono l'anteprima del primo giro parziale e restano per la storia del metodo.
 
-Modello valutato: `ALGORITHM_V1`, versione `1.5.0-porcino` (`src/lib/config/algorithm.ts`),
-senza alcuna modifica al codice di produzione.
+| Versione | AUC [IC 95%] | Δ vs 1.5 [IC 95%] | AUC appaiata | Brier (LOYO) |
+|---|---|---|---|---|
+| 1.4 equivalente | 0,685 | −0,011 [−0,019; −0,003] | 0,718 | 0,187 |
+| 1.5.0 | 0,697 [0,663; 0,731] | — | 0,719 | 0,184 |
+| 1.5 + ottimo autunnale 15 °C | 0,716 | +0,019 [0,014; 0,024] | 0,743 | 0,182 |
+| 1.5 + autunno a bassa quota 0,8 | 0,734 | +0,036 [0,012; 0,061] | 0,736 | 0,176 |
+| **1.6.0** (le due insieme) | **0,755 [0,720; 0,789]** | **+0,058 [0,034; 0,082]** | **0,770** | **0,172** |
+| calendario mensile (nullo) | 0,648 | | 0,677 | 0,181 |
 
----
+Cosa dicono, in breve:
+- la 1.5.0 (sollievo idrico dopo pioggia intensa, tarato sul Mugello) è migliore della 1.4
+  anche sul resto d'Italia, con un intervallo che esclude lo zero;
+- i due cambi della 1.6.0 migliorano ciascuno da soli e di più insieme; i guadagni maggiori sono
+  in ottobre (da 0,51 a 0,73), novembre (da 0,65 a 0,82) e sotto i 600 m (da 0,72 a 0,79), cioè
+  proprio i porcini d'autunno di bassa quota che la 1.5 dava quasi a zero;
+- la 1.6.0 batte nettamente il calendario (+0,11 di AUC), che la 1.5 superava di poco;
+- allargare il lato caldo della campana (varianti d) e aprire l'estate in quota (c) non servono.
+
+**Cautela.** I due parametri sono stati scelti guardando questi stessi dati, fra una decina di
+varianti: il guadagno reale è probabilmente un po' più basso di quello misurato qui. Per questo
+restano dichiarati «da calibrare» e non «da fonte», e il prossimo controllo va fatto su dati che
+non hanno guidato la scelta: le uscite del diario e la stagione 2027.
 
 ## 1. La domanda
 

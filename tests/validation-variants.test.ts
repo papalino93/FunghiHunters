@@ -21,8 +21,10 @@ import {
   archiveUrl,
 } from '@/lib/validation/archive'
 import {
+  configLowAutumn,
   CONFIG_OPT15,
   CONFIG_V14,
+  CONFIG_V15,
   CONFIG_WARM_RELAXED,
   MAX_ELEVATION_WEIGHT,
   WEATHER_VARIANTS,
@@ -59,21 +61,24 @@ const variant = (key: string) => {
 }
 
 describe('configurazioni delle varianti', () => {
-  it('cambiano un solo parametro rispetto alla 1.5', () => {
+  it('cambiano un solo parametro rispetto alla 1.5 congelata', () => {
+    expect(CONFIG_V15.thermal.optAutumnC.value).toBe(13)
+    expect(CONFIG_V15.phenology.lowElevationAutumnWeight.value).toBe(0)
     expect(CONFIG_V14.trigger.waterRelief.value).toBe(0)
-    expect(CONFIG_V14.trigger.weight).toBe(ALGORITHM_V1.trigger.weight)
-    expect(CONFIG_V14.water).toBe(ALGORITHM_V1.water)
+    expect(CONFIG_V14.trigger.weight).toBe(CONFIG_V15.trigger.weight)
+    expect(CONFIG_V14.water).toBe(CONFIG_V15.water)
     expect(CONFIG_OPT15.thermal.optAutumnC.value).toBe(15)
-    expect(CONFIG_OPT15.thermal.sigmaWarmC).toBe(ALGORITHM_V1.thermal.sigmaWarmC)
+    expect(CONFIG_OPT15.thermal.sigmaWarmC).toBe(CONFIG_V15.thermal.sigmaWarmC)
     expect(CONFIG_WARM_RELAXED.thermal.sigmaWarmC.value).toBe(12)
-    expect(CONFIG_WARM_RELAXED.thermal.optAutumnC).toBe(ALGORITHM_V1.thermal.optAutumnC)
+    expect(CONFIG_WARM_RELAXED.thermal.optAutumnC).toBe(CONFIG_V15.thermal.optAutumnC)
   })
 
   it('non toccano la configurazione di produzione', () => {
-    expect(ALGORITHM_V1.version).toBe('1.5.0-porcino')
+    expect(ALGORITHM_V1.version).toBe('1.6.0-porcino')
     expect(ALGORITHM_V1.trigger.waterRelief.value).toBe(0.8)
     expect(ALGORITHM_V1.thermal.sigmaWarmC.value).toBe(7.5)
-    expect(ALGORITHM_V1.thermal.optAutumnC.value).toBe(13)
+    expect(ALGORITHM_V1.thermal.optAutumnC.value).toBe(15)
+    expect(ALGORITHM_V1.phenology.lowElevationAutumnWeight.value).toBe(0.8)
   })
 })
 
@@ -84,7 +89,8 @@ describe('variante (c): estate in quota', () => {
     // (c2): anche il pavimento, 700 + 0.3 * 200 = 760 m.
     expect(seasonalElevation(300, ALGORITHM_V1, 0.7, 0.3)).toBeCloseTo(760, 10)
     expect(seasonalElevation(1500, ALGORITHM_V1, 0.7, 0.3)).toBe(840)
-    const autumnLow = seasonBlend('2021-09-30', seasonalElevation(300, ALGORITHM_V1, 0.7, 0.3), ALGORITHM_V1)
+    // Con l'autunno a bassa quota spento, come nella 1.5 su cui la (c2) e' stata pensata.
+    const autumnLow = seasonBlend('2021-09-30', seasonalElevation(300, ALGORITHM_V1, 0.7, 0.3), configLowAutumn(0))
     expect(autumnLow.autumn).toBeCloseTo(0.3, 10)
     const blend = seasonBlend('2021-07-19', seasonalElevation(1500), ALGORITHM_V1)
     // Al picco estivo (giorno 200) il termine estivo vale (1 - peso) * 1.

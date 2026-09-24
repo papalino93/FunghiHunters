@@ -16,6 +16,18 @@ export interface ModelRelease {
 
 export const MODEL_CHANGELOG: readonly ModelRelease[] = [
   {
+    version: '1.6.0-porcino',
+    date: '2026-09-24',
+    title: 'Tarato sui ritrovamenti reali: autunno anche in basso, ottimo a 15 °C',
+    what:
+      'La stagione autunnale conta anche sotto i 700 m (porcini d’ottobre e novembre nei castagneti ' +
+      'e querceti di bassa quota), e la temperatura ideale in autunno passa da 13 a 15 °C.',
+    why:
+      'Confrontato con 263 ritrovamenti reali in Italia (GBIF/iNaturalist) e 747 giorni senza, il ' +
+      'modello distingue meglio i giorni buoni: da 0,70 a 0,76 di AUC, con i miglioramenti più grandi ' +
+      'in ottobre, novembre e sotto i 600 m.',
+  },
+  {
     version: '1.5.0-porcino',
     date: '2026-09-24',
     title: 'La pioggia forte conta anche quando il terreno si asciuga',

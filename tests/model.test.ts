@@ -96,9 +96,10 @@ function idealScenario(): DailyWeather[] {
     // Circa 90 mm distribuiti nella finestra, che e' la zona 2-4 mm/giorno su 26 giorni
     // osservata in letteratura come quella dove la fruttificazione si concentra.
     rainByDaysAgo: { 20: 22, 19: 14, 14: 18, 13: 9, 8: 16, 7: 11 },
-    // Media a 20 giorni pari a 13 gradi: l'ottimo misurato.
-    tMax: 18,
-    tMin: 8,
+    // Media a 20 giorni pari all'ottimo autunnale: 15 gradi dalla 1.6.0 (era 13, vedi
+    // `thermal.optAutumnC`).
+    tMax: 20,
+    tMin: 10,
     et0: 1.8,
     soilMoisture: 0.33,
     soilTemperature: 14,
@@ -622,8 +623,9 @@ describe('governance dei parametri', () => {
   it('elenca i parametri da calibrare per mostrarli come tali', () => {
     const toCalibrate = uncalibratedParams()
     expect(toCalibrate.length).toBeGreaterThan(10)
-    // L ottimo termico e la finestra di precipitazione sono gli unici davvero fondati.
-    expect(toCalibrate).not.toContain('thermal.optAutumnC')
+    // La finestra termica e quella di precipitazione restano fondate su una fonte; l'ottimo
+    // autunnale dalla 1.6.0 e' tarato sul banco di prova GBIF, e va dichiarato come tale.
+    expect(toCalibrate).toContain('thermal.optAutumnC')
     expect(toCalibrate).not.toContain('thermal.airWindowDays')
     expect(toCalibrate).not.toContain('water.windowDays')
     // L ottimo estivo invece non ha fonte, e deve risultare come tale.
@@ -820,10 +822,17 @@ describe('cautela delle fonti mostrata all\'utente', () => {
   })
 })
 
-describe('autunno a bassa quota (parametro spento in produzione)', () => {
+describe('autunno a bassa quota (acceso dalla 1.6.0)', () => {
   it('a 0 il regime autunnale sotto i 700 m resta nullo, come nella 1.5.0', () => {
-    expect(ALGORITHM_V1.phenology.lowElevationAutumnWeight.value).toBe(0)
-    expect(seasonBlend('2026-10-20', 400, ALGORITHM_V1).autumn).toBe(0)
+    const spento = {
+      ...ALGORITHM_V1,
+      phenology: {
+        ...ALGORITHM_V1.phenology,
+        lowElevationAutumnWeight: { ...ALGORITHM_V1.phenology.lowElevationAutumnWeight, value: 0 },
+      },
+    }
+    expect(ALGORITHM_V1.phenology.lowElevationAutumnWeight.value).toBe(0.8)
+    expect(seasonBlend('2026-10-20', 400, spento).autumn).toBe(0)
   })
 
   it('acceso, dà una stagione vera a fine ottobre in basso senza togliere nulla all estate', () => {
@@ -835,6 +844,9 @@ describe('autunno a bassa quota (parametro spento in produzione)', () => {
       },
     }
     expect(seasonBlend('2026-10-20', 400, acceso).seasonal).toBeGreaterThan(0.5)
-    expect(seasonBlend('2026-07-19', 400, acceso).summer).toBe(seasonBlend('2026-07-19', 400, ALGORITHM_V1).summer)
+    expect(seasonBlend('2026-07-19', 400, acceso).summer).toBeCloseTo(
+      seasonBlend('2026-07-19', 400, { ...acceso, phenology: { ...acceso.phenology, lowElevationAutumnWeight: { ...acceso.phenology.lowElevationAutumnWeight, value: 0 } } }).summer,
+      10,
+    )
   })
 })

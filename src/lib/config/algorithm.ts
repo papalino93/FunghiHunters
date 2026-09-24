@@ -640,10 +640,14 @@ export interface AlgorithmConfig {
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
   /*
+   * 1.6.0 (24/09/2026): i primi due parametri tarati sul banco di prova delle presenze GBIF,
+   * non su un ragionamento: ottimo autunnale a 15 gradi e autunno anche a bassa quota. Vedi
+   * `thermal.optAutumnC` e `phenology.lowElevationAutumnWeight`.
+   *
    * 1.5.0 (24/09/2026): la pioggia intensa di due settimane prima non viene piu' annullata dal
    * terreno che nel frattempo si e' asciugato. Motivo e dato: `trigger.waterRelief`.
    */
-  version: '1.5.0-porcino',
+  version: '1.6.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -787,12 +791,19 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       'preprint',
       'Finestra selezionata per AIC. La temperatura e\' il predittore a breve termine principale.',
     ),
-    optAutumnC: sourced(
-      13,
-      REFERENCES.brejon2026,
-      'preprint',
-      'Ottimo della relazione quadratica, stabile entro 0.6 gradi fra tre modelli. Fruttificazione ' +
-        'concentrata fra 10 e 15 gradi di media a 20 giorni, quasi assente fra 5 e 10.',
+    /*
+     * 1.6.0: da 13 a 15 gradi, sul banco di prova. Il 13 viene da Brejon & Hoffman (2026), una
+     * faggeta tedesca, dove pero' la densita' di osservazioni e' massima attorno a 15 gradi e gli
+     * sporofori arrivano fino a 19 con umidita'; in Toscana il massimo triennale di produzione
+     * (Salerni 2023) e' caduto con 18,6 gradi di media estiva. Sul confronto caso-controllo con le
+     * presenze GBIF in Italia (263 casi, 747 controlli, `docs/VALIDAZIONE.md`) 15 gradi alza l'AUC
+     * di +0,019 [0,014; 0,024] da solo, in tutte le fasce di quota. Diventa un parametro tarato,
+     * non piu' una fonte: la fonte dice 13 per quel bosco, i nostri dati dicono 15 per l'Italia.
+     */
+    optAutumnC: calibrate(
+      15,
+      'Tarato sul banco di prova GBIF (1.6.0): 15 gradi di media a 20 giorni. Brejon & Hoffman ' +
+        '2026 misurano 13 in una faggeta tedesca, con la massima densita\' di osservazioni a 15.',
     ),
     optSummerC: calibrate(
       19,
@@ -852,10 +863,18 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       'La faggeta fra 900 e 1400 m e\' l\'habitat classico del porcino autunnale: da 900 in su ' +
         'domina quel regime. Prima avevo messo 1100, senza alcun riferimento.',
     ),
+    /*
+     * 1.6.0: da 0 a 0,8, sul banco di prova. A 0 sotto i 700 m l'autunno non esisteva, e i
+     * porcini d'ottobre e novembre a bassa quota (B. aereus nei castagneti e querceti del
+     * Centro-Sud, che GBIF registra soprattutto a ottobre) prendevano una stagione di circa 0,05.
+     * Con 0,8, insieme all'ottimo a 15 gradi, l'AUC sulle presenze GBIF passa da 0,697 a 0,755
+     * (+0,058 [0,034; 0,082]); ottobre da 0,51 a 0,73, novembre da 0,65 a 0,82, sotto i 600 m da
+     * 0,72 a 0,79. L'estate a bassa quota resta com'era.
+     */
     lowElevationAutumnWeight: calibrate(
-      0,
-      'Spento: identico alla 1.5.0. Da decidere con il banco di prova sulle presenze GBIF ' +
-        '(porcini d\'autunno a bassa quota, es. B. aereus nei castagneti del Centro-Sud).',
+      0.8,
+      'Tarato sul banco di prova GBIF (1.6.0): l\'autunno pesa almeno 0,8 anche sotto i 700 m, ' +
+        'senza togliere nulla all\'estate.',
     ),
     floor: calibrate(
       0.05,
