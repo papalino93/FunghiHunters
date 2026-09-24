@@ -143,6 +143,29 @@ modello (su 69 totali, vedi `uncalibratedParams()`) non hanno fonte e sono marca
 compaiono come tali sia qui che nell'interfaccia (scheda "Perché" di ogni zona), mai spacciati per
 misurati.
 
+## Osservazioni sul campo usate per tarare il modello
+
+Ogni osservazione che ha spostato un parametro sta qui, con data, luogo e cosa è cambiato. Sono
+dati veri ma pochi: servono a correggere errori evidenti, non a validare il modello. La
+validazione vera è il banco di prova su GBIF/iNaturalist (vedi `docs/VALIDAZIONE.md`) e le
+uscite del diario.
+
+| Data | Luogo | Osservazione | Modello prima | Modifica | Modello dopo |
+|---|---|---|---|---|---|
+| 23-24/09/2026 | Mugello (FI), ~900 m, faggeta/cerreta | Porcini abbondanti (segnalazione certa del proprietario del progetto; voci concordi in tutta la Toscana, senza luoghi precisi) | 1.4.0: 12/100, «sfavorevoli»; limite «acqua» (27 mm efficaci su 60 caduti, fabbisogno 100 mm su terreno secco) | 1.5.0: `trigger.waterRelief` = 0,8 — nella finestra 12 ± 4 giorni dopo una pioggia ≥ 20 mm (qui 36,5 mm il 10/09, stazioni SIR) il fattore acqua recupera l'80% della parte mancante | 1.5.0: 63-64/100 il 23-24/09, picco nella finestra, calo da sabato senza nuova pioggia |
+
+**Cosa è stato provato prima di cambiare la struttura.** Solo sui parametri del bilancio idrico:
+niente deficit iniziale, decadimento dimezzato, innesco a peso pieno e le loro combinazioni.
+Nessuna portava il Mugello sopra 25/100 con i dati Open-Meteo, quindi il difetto era di forma: il
+bilancio puniva proprio il ritardo fra pioggia e fruttificazione che la fonte dell'innesco
+(Salerni 2023) misura.
+
+**Cosa non si è cambiato.** L'ottimo termico (13 °C) e la campana termica. La ricerca del
+24/09/2026 dice che 18-19 °C di media a fine settembre sono compatibili con buttate abbondanti
+(Salerni 2023: massimo triennale ad agosto 2002 con 18,6 °C di media estiva) e che il lato caldo
+dovrebbe forse dipendere dall'acqua (Brejon & Hoffman 2026). Sono ipotesi da verificare sul banco
+di prova prima di toccare il modello.
+
 ## Dove questo compare in app
 
 Quando un parametro con evidenza `applicable-with-caution` o `not-applicable-without-calibration`
