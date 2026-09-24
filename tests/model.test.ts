@@ -81,6 +81,15 @@ function mpiOf(days: DailyWeather[], cell: CellContext = AUTUMN_CELL): number {
   return computeMpi({ features: buildFeatures(days, cell, ALGORITHM_V1), cell }).mpi
 }
 
+/**
+ * Il punteggio senza il tetto a 100. In condizioni ideali, nella finestra dopo una pioggia forte,
+ * piu' scenari toccano il tetto insieme (dalla 1.5.0 piu' spesso): e' qui che il modello deve
+ * continuare a distinguerli, ed e' questo valore che l'app usa per ordinare le zone a pari 100.
+ */
+function rawMpiOf(days: DailyWeather[], cell: CellContext = AUTUMN_CELL): number {
+  return computeMpi({ features: buildFeatures(days, cell, ALGORITHM_V1), cell }).rawMpi
+}
+
 /** Scenario di riferimento: buona pioggia distribuita, temperature ottimali, autunno in quota. */
 function idealScenario(): DailyWeather[] {
   return scenario({
@@ -430,8 +439,8 @@ describe('scenari meteorologici richiesti dalla specifica', () => {
 
   it('distingue una pioggia forte da una debole, senza saturare', () => {
     // Il baseline satura a 45 mm e assegnava lo stesso 67.4 a 147 mm e a 95 mm su 26 giorni.
-    const moderate = mpiOf(scenario({ rainByDaysAgo: { 12: 50 }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.3 }))
-    const heavy = mpiOf(scenario({ rainByDaysAgo: { 12: 120 }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.3 }))
+    const moderate = rawMpiOf(scenario({ rainByDaysAgo: { 12: 50 }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.3 }))
+    const heavy = rawMpiOf(scenario({ rainByDaysAgo: { 12: 120 }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.3 }))
     expect(heavy).toBeGreaterThan(moderate)
   })
 })
@@ -650,18 +659,33 @@ describe('innesco da pioggia intensa', () => {
     expect(gains.indexOf(Math.max(...gains))).toBe(2)
   })
 
-  it('NON sposta il massimo della curva, ed è un limite dichiarato', () => {
+  it('dalla 1.5.0 il massimo cade nella finestra di fruttificazione, non il giorno dopo la pioggia', () => {
     /*
-     * Il picco resta subito dopo la pioggia perché il bilancio idrico decade dal primo giorno,
-     * mentre la misura sull'Amiata lo colloca al dodicesimo. Per riprodurlo serve un suolo che
-     * si satura e resta carico qualche giorno, non un peso più alto su questo termine.
-     *
-     * Il test esiste per impedire che qualcuno "risolva" il problema gonfiando il peso: se un
+     * Riscritto consapevolmente, come chiedeva la versione precedente di questo test ("se un
      * giorno il massimo si sposterà davvero, dovrà essere perché è cambiata la forma del
-     * bilancio idrico, e questo test andrà riscritto consapevolmente.
+     * bilancio idrico"). Fino alla 1.4.0 il picco restava subito dopo la pioggia, perché il
+     * bilancio decade dal primo giorno; la misura sull'Amiata (Salerni 2023) lo colloca al
+     * dodicesimo, e nel Mugello il 23-24 settembre 2026 si trovavano porcini in abbondanza
+     * proprio 13-14 giorni dopo 36 mm, con il modello a 12/100.
+     *
+     * Non è stato gonfiato il peso dell'innesco: è cambiata la forma, con `trigger.waterRelief`
+     * che nella finestra restituisce al fattore acqua parte di ciò che il suolo superficiale ha
+     * perso. Il massimo deve stare nella finestra (8-16 giorni), non ai due giorni.
      */
-    const scores = [2, 6, 12, 20].map((d) => mpiOf(withEventDaysAgo(d)))
-    expect(scores.indexOf(Math.max(...scores))).toBe(0)
+    const days = [2, 6, 10, 12, 14, 20]
+    const scores = days.map((d) => mpiOf(withEventDaysAgo(d)))
+    const peakDay = days[scores.indexOf(Math.max(...scores))]
+    expect(peakDay).toBeGreaterThanOrEqual(8)
+    expect(peakDay).toBeLessThanOrEqual(16)
+    // E fuori finestra torna a contare il solo bilancio: a 20 giorni meno che al picco.
+    expect(scores[5]).toBeLessThan(Math.max(...scores))
+  })
+
+  it('il sollievo dopo pioggia intensa non rende uguali piogge diverse', () => {
+    const on = (mm: number): number =>
+      rawMpiOf(scenario({ rainByDaysAgo: { 12: mm }, tMax: 18, tMin: 8, et0: 1.8, soilMoisture: 0.3 }))
+    expect(on(120)).toBeGreaterThan(on(50))
+    expect(on(50)).toBeGreaterThan(on(25))
   })
 
   it('senza pioggia intensa in finestra il termine non agisce', () => {

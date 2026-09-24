@@ -2,8 +2,14 @@
 
 import { Fragment, useEffect, useRef, useState } from 'react'
 
-import { today } from '@/lib/domain/time'
-import type { PlaceCandidate, PlaceForecast, PlaceHourlyWeather } from '@/lib/sources/open-meteo-place'
+import { addDays, today } from '@/lib/domain/time'
+import { daysAgoLabel, foragerRainSummary } from '@/lib/meteo/forager'
+import {
+  TABLE_PAST_DAYS,
+  type PlaceCandidate,
+  type PlaceForecast,
+  type PlaceHourlyWeather,
+} from '@/lib/sources/open-meteo-place'
 import { formatDate, formatValue } from '@/lib/ui/scale'
 import { weatherCodeLabel } from '@/lib/ui/weatherCode'
 
@@ -280,6 +286,7 @@ function PlaceWeather({
       {!loading && forecast !== null && (
         <div className="mt-3 space-y-4">
           <CurrentCard forecast={forecast} />
+          <RainCard forecast={forecast} />
           <DailyTable forecast={forecast} />
           <p className="border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
             Previsione modellata (Open-Meteo, risoluzione ~9-25 km): a livello locale — in una
@@ -310,9 +317,45 @@ function CurrentCard({ forecast }: { forecast: PlaceForecast }) {
       <dl className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
         <Stat label="Umidità" value={formatValue(c.humidityPercent, '%', 0)} />
         <Stat label="Pioggia" value={formatValue(c.precipitationMm, 'mm', 1)} />
-        <Stat label="Vento" value={formatValue(c.windSpeedMs, 'm/s', 1)} />
-        <Stat label="Raffica" value={formatValue(c.windGustMs, 'm/s', 1)} />
+        <Stat label="Vento" value={formatValue(c.windSpeedKmh, 'km/h', 0)} />
+        <Stat label="Raffica" value={formatValue(c.windGustKmh, 'km/h', 0)} />
       </dl>
+    </div>
+  )
+}
+
+/**
+ * La pioggia letta come la legge chi cerca: da quanto non piove sul serio, quanto è caduto, quanto
+ * ne arriva. Le regole sono quelle del modello (`lib/meteo/forager.ts`), non una soglia nuova.
+ */
+function RainCard({ forecast }: { forecast: PlaceForecast }) {
+  const summary = foragerRainSummary(forecast.daily, today())
+  if (summary.pastDays === 0) return null
+  const last = summary.lastEvent
+
+  return (
+    <div className="rounded-lg border border-edge p-3">
+      <p className="text-xs font-semibold text-ink-dim">Pioggia, per chi cerca</p>
+      <p className="mt-1 text-sm leading-snug text-ink">
+        {last === null ? (
+          <>Nessuna pioggia vera negli ultimi {summary.pastDays} giorni.</>
+        ) : (
+          <>
+            Ultima pioggia vera: <strong className="font-semibold">{daysAgoLabel(last.daysAgo)}</strong>,{' '}
+            {formatValue(last.totalMm, 'mm', 0)}
+            {last.durationDays > 1 ? ` in ${last.durationDays} giorni` : ''}.
+          </>
+        )}
+      </p>
+      <dl className="mt-2 grid grid-cols-3 gap-2 text-xs">
+        <Stat label="Ultimi 7 giorni" value={formatValue(summary.past7Mm, 'mm', 0)} />
+        <Stat label={`Ultimi ${summary.pastDays} giorni`} value={formatValue(summary.pastMm, 'mm', 0)} />
+        <Stat label="Prossimi 7 giorni" value={formatValue(summary.next7Mm, 'mm', 0)} />
+      </dl>
+      <p className="mt-2 text-xs leading-snug text-ink-faint">
+        «Pioggia vera»: almeno 5 mm in un episodio, la stessa soglia che usa il punteggio delle
+        zone. Valori modellati, non misurati da un pluviometro.
+      </p>
     </div>
   )
 }
@@ -335,12 +378,13 @@ function Stat({ label, value }: { label: string; value: string }) {
  */
 function DailyTable({ forecast }: { forecast: PlaceForecast }) {
   const [expandedDate, setExpandedDate] = useState<string | null>(null)
-  const days = forecast.daily
-  if (days.length === 0) return null
-
   // Non deducibile da `isForecast` (vero solo per i giorni futuri): serve il confronto esplicito
   // per distinguere oggi dagli altri giorni passati, che altrimenti si equivalgono a colpo d'occhio.
   const todayIso = today()
+  // Il mese passato serve al riepilogo della pioggia, non alla tabella: qui solo gli ultimi giorni.
+  const firstDay = addDays(todayIso, -TABLE_PAST_DAYS)
+  const days = forecast.daily.filter((d) => d.date >= firstDay)
+  if (days.length === 0) return null
 
   return (
     <div>
@@ -397,9 +441,9 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                       {formatValue(day.temperatureMinC, '', 0)} / {formatValue(day.temperatureMaxC, '°C', 0)}
                     </td>
                     <td className="py-1.5 pr-2 text-ink-dim">
-                      {formatValue(day.windMaxMs, 'm/s', 1)}
-                      {day.windGustMaxMs !== null && (
-                        <span className="text-ink-faint"> ({formatValue(day.windGustMaxMs, 'm/s', 0)} raffica)</span>
+                      {formatValue(day.windMaxKmh, 'km/h', 0)}
+                      {day.windGustMaxKmh !== null && (
+                        <span className="text-ink-faint"> ({formatValue(day.windGustMaxKmh, 'km/h', 0)} raffica)</span>
                       )}
                     </td>
                     <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.humidityMeanPercent, '%', 0)}</td>
@@ -469,9 +513,9 @@ function HourlyDetail({ hours }: { hours: readonly PlaceHourlyWeather[] }) {
               <td className="py-1 pr-2 text-ink-dim">{formatValue(h.temperatureC, '°C', 0)}</td>
               <td className="py-1 pr-2 text-ink-dim">{formatValue(h.precipitationMm, 'mm', 1)}</td>
               <td className="py-1 pr-2 text-ink-dim">
-                {formatValue(h.windSpeedMs, 'm/s', 1)}
-                {h.windGustMs !== null && (
-                  <span className="text-ink-faint"> ({formatValue(h.windGustMs, 'm/s', 0)})</span>
+                {formatValue(h.windSpeedKmh, 'km/h', 0)}
+                {h.windGustKmh !== null && (
+                  <span className="text-ink-faint"> ({formatValue(h.windGustKmh, 'km/h', 0)})</span>
                 )}
               </td>
               <td className="py-1 pr-2 text-ink-dim">{formatValue(h.humidityPercent, '%', 0)}</td>

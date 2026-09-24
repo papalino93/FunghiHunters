@@ -88,7 +88,7 @@ function Shell({
       <header className="mb-4">
         <h1 className="text-xl font-semibold tracking-tight text-ink">Account</h1>
         <p className="mt-1 text-sm leading-snug text-ink-dim">
-          Accedi solo se vuoi ritrovare il diario e le zone che segui su un altro telefono. I punti salvati sulla mappa restano sempre e solo su questo.
+          Accedi solo se vuoi ritrovare il diario e le zone che segui su un altro telefono. I punti fissi del diario restano sempre e solo su questo.
         </p>
       </header>
       {/*

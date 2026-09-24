@@ -30,6 +30,15 @@ export function ServiceWorker() {
     // Dopo il caricamento, per non contendere banda con il primo render.
     if (document.readyState === 'complete') register()
     else window.addEventListener('load', register, { once: true })
+
+    // Quando si lascia la pagina (o l'app va in secondo piano) i chunk caricati nel frattempo —
+    // la mappa arriva solo dopo l'idratazione — sono ormai tutti scaricati: è il momento giusto
+    // per dirli al worker. Vedi il gestore `message` in `public/sw.js`.
+    const onHidden = (): void => {
+      if (document.visibilityState === 'hidden') reportLoadedAssets()
+    }
+    document.addEventListener('visibilitychange', onHidden)
+    return () => { document.removeEventListener('visibilitychange', onHidden) }
   }, [])
 
   return null
@@ -58,5 +67,30 @@ function requestPersistentStorage(): void {
       .catch(() => undefined)
   } catch {
     // Browser senza Storage API o contesto che la vieta: nessuna conseguenza.
+  }
+}
+
+/** Manda al worker gli asset nostri già caricati da questa pagina, perché li tenga per l'offline. */
+function reportLoadedAssets(): void {
+  try {
+    const controller = navigator.serviceWorker?.controller
+    if (controller === null || controller === undefined) return
+    const paths = performance
+      .getEntriesByType('resource')
+      .map((entry) => {
+        try {
+          const url = new URL(entry.name)
+          return url.origin === location.origin ? url.pathname : null
+        } catch {
+          return null
+        }
+      })
+      .filter(
+        (path): path is string =>
+          path !== null && (path.startsWith('/_next/static/') || path.startsWith('/maplibre/')),
+      )
+    if (paths.length > 0) controller.postMessage({ type: 'cache-assets', paths: [...new Set(paths)] })
+  } catch {
+    // Senza Resource Timing o senza worker: nessuna conseguenza, solo meno cose offline.
   }
 }

@@ -48,3 +48,21 @@ export function formatAge(ageHours: number): string {
   if (ageHours < 48) return `${Math.floor(ageHours)} ore fa`
   return `${Math.floor(ageHours / 24)} giorni fa`
 }
+
+/**
+ * Il giorno da chiamare «oggi» per uno snapshot: la data vera (fuso di Roma), se la serie la
+ * contiene, altrimenti la data di riferimento dello snapshot.
+ *
+ * Uno snapshot di ieri (il calcolo nazionale non gira tutte le notti, o ha fallito) contiene già
+ * la previsione per oggi. Usare la sua `referenceDate` come «oggi» etichettava ieri come oggi,
+ * mostrava il giorno vero due volte nel selettore e faceva dire al verdetto «Quel giorno…» su
+ * quello che per l'utente era oggi. L'età del dato la dichiara comunque «Dati e fonti».
+ */
+export function effectiveToday(
+  snapshot: { readonly referenceDate: string; readonly zones: ReadonlyArray<{ readonly series: ReadonlyArray<{ readonly date: string }> }> },
+  realToday: string,
+): string {
+  if (realToday <= snapshot.referenceDate) return snapshot.referenceDate
+  const series = snapshot.zones[0]?.series ?? []
+  return series.some((p) => p.date === realToday) ? realToday : snapshot.referenceDate
+}

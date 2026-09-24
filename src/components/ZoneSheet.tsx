@@ -12,6 +12,7 @@ import { formatDate, formatValue, provenanceLabel } from '@/lib/ui/scale'
 import { describeOutingWind, describeWaterWind, type WindAssessment } from '@/lib/model/wind'
 import { habitatCuesFor } from '@/lib/model/habitat'
 import { userCautionForSource } from '@/lib/config/algorithm'
+import { withAccents } from '@/lib/ui/accents'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
@@ -56,12 +57,20 @@ export function ZoneSheet({
 
   return (
     <section
+      // Esc chiude la scheda da qualunque controllo al suo interno, come ci si aspetta da un
+      // pannello sopra la mappa.
+      onKeyDown={(event) => {
+        if (event.key === 'Escape') {
+          event.stopPropagation()
+          onClose()
+        }
+      }}
       className="pointer-events-auto flex max-h-[55dvh] flex-col lg:max-h-[calc(100dvh-20rem)] overflow-hidden rounded-t-2xl
                  border border-b-0 border-edge bg-surface-1/95 shadow-[0_-8px_40px_rgba(0,0,0,0.5)]
                  backdrop-blur-xl"
       aria-label={`Dettaglio ${zone.name}`}
     >
-      <header className="border-b border-edge px-4 pb-3 pt-3">
+      <header className="shrink-0 border-b border-edge px-4 pb-3 pt-3">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
@@ -143,7 +152,7 @@ export function ZoneSheet({
       <div
         role="tablist"
         aria-label="Sezioni"
-        className="flex items-center gap-0.5 overflow-x-auto border-b border-edge px-1.5 py-0.5"
+        className="flex shrink-0 items-center gap-0.5 overflow-x-auto border-b border-edge px-1.5 py-0.5"
       >
         {TABS.map((entry, index) => (
           <button
@@ -153,10 +162,16 @@ export function ZoneSheet({
             type="button"
             onClick={() => { setTab(entry.id) }}
             onKeyDown={(event) => {
-              if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
+              // Frecce, Home e Fine: il modello di tastiera dei tab WAI-ARIA.
+              const target =
+                event.key === 'ArrowRight' ? (index + 1) % TABS.length
+                : event.key === 'ArrowLeft' ? (index - 1 + TABS.length) % TABS.length
+                : event.key === 'Home' ? 0
+                : event.key === 'End' ? TABS.length - 1
+                : null
+              if (target === null) return
               event.preventDefault()
-              const delta = event.key === 'ArrowRight' ? 1 : -1
-              const next = TABS[(index + delta + TABS.length) % TABS.length]
+              const next = TABS[target]
               if (next === undefined) return
               setTab(next.id)
               document.getElementById(`zona-tab-${next.id}`)?.focus()
@@ -223,7 +238,7 @@ function Summary({
     <div className="space-y-4">
       {zone.bestWindow !== null && (
         <div className="min-w-0 space-y-1.5">
-          {splitSentences(zone.bestWindow.narrative).map((sentence, index) => (
+          {splitSentences(withAccents(zone.bestWindow.narrative)).map((sentence, index) => (
             <p
               key={index}
               className="min-w-0 break-words text-sm leading-relaxed text-ink"
@@ -246,7 +261,11 @@ function Summary({
       </div>
 
       <dl className="grid grid-cols-3 gap-2">
-        <Stat label="Tendenza" value={`${signed(zone.development)} pt`} hint="prossimi 4 giorni" />
+        <Stat
+          label="Tendenza"
+          value={Math.abs(zone.development) < 0.5 ? 'stabile' : `${signed(zone.development)} pt`}
+          hint="prossimi 4 giorni"
+        />
         <Stat
           label="Limite"
           value={zone.limitingFactor === null ? '—' : shorten(zone.limitingFactor)}
@@ -526,19 +545,19 @@ function FactorList({
           return (
           <li key={factor.key} className="rounded-lg bg-surface-2 px-3 py-2">
             <div className="flex items-baseline justify-between gap-2">
-              <span className="text-sm font-medium text-ink">{factor.label}</span>
+              <span className="text-sm font-medium text-ink">{withAccents(factor.label)}</span>
               <span className={`tabular shrink-0 text-sm font-semibold ${colour}`}>
                 {factor.contribution > 0 ? '+' : ''}
                 {factor.contribution.toFixed(1)}
               </span>
             </div>
-            <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">{factor.value}</p>
+            <p className="mt-0.5 text-xs leading-relaxed text-ink-dim">{withAccents(factor.value)}</p>
             {factor.provenance === 'calibrate' ? (
               <p className="mt-1 text-xs uppercase tracking-wide text-warn">da calibrare</p>
             ) : (
               <>
                 <p className="mt-1 line-clamp-2 text-xs leading-snug text-ink-faint">
-                  fonte: {factor.source}
+                  fonte: {withAccents(factor.source ?? '')}
                 </p>
                 {caution !== undefined && (
                   <p className="mt-1 text-xs leading-snug text-warn">⚠ {caution}</p>
@@ -633,7 +652,7 @@ function DataProvenance({
       </div>
 
       <p className="rounded-lg bg-surface-2 px-3 py-2 text-xs leading-relaxed text-ink-dim">
-        {zone.stationNotes}
+        {withAccents(zone.stationNotes)}
       </p>
     </div>
   )

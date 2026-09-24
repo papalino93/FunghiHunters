@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  effectiveToday,
   formatAge,
   isSnapshotStale,
   snapshotAgeHours,
@@ -43,5 +44,21 @@ describe('freshness dello snapshot', () => {
 
   it('un orologio indietro non produce eta\' negative', () => {
     expect(snapshotAgeHours(snapshot, written - HOUR)).toBe(0)
+  })
+})
+
+describe('effectiveToday', () => {
+  const snap = (ref: string, dates: string[]) => ({ referenceDate: ref, zones: [{ series: dates.map((date) => ({ date })) }] })
+
+  it('con uno snapshot di ieri, oggi è la data vera se la serie la contiene', () => {
+    expect(effectiveToday(snap('2026-09-23', ['2026-09-23', '2026-09-24']), '2026-09-24')).toBe('2026-09-24')
+  })
+
+  it('se la serie non arriva a oggi resta la data dello snapshot', () => {
+    expect(effectiveToday(snap('2026-09-20', ['2026-09-20', '2026-09-21']), '2026-09-24')).toBe('2026-09-20')
+  })
+
+  it('uno snapshot di oggi resta com è', () => {
+    expect(effectiveToday(snap('2026-09-24', ['2026-09-24']), '2026-09-24')).toBe('2026-09-24')
   })
 })

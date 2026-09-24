@@ -115,6 +115,10 @@ export function explainScore(
         (features.water.initialDeficitMm > 1
           ? `; il terreno partiva secco, quindi il fabbisogno sale a ` +
             `${(config.water.referenceMm.value + features.water.initialDeficitMm).toFixed(0)} mm`
+          : '') +
+        (c.water > c.waterBalance + 0.005
+          ? `; conta di più la pioggia intensa di ${c.trigger.daysSinceEvent ?? '?'} giorni fa, ` +
+            `nei giorni in cui ci si aspetta la fruttificazione`
           : ''),
       ...provenanceOf(config.water.windowDays),
     },

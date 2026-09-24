@@ -135,7 +135,7 @@ describe('il verdetto risponde in parole', () => {
         { date: '2026-09-18', mpi: 98 },
       ],
     })
-    expect(verdictFor([flat]).advice).toBe('carrega.')
+    expect(verdictFor([flat]).advice).toBe('Il posto più indicato è carrega.')
     const later = zone('carrega', {
       mpi: 60,
       series: [
@@ -143,7 +143,7 @@ describe('il verdetto risponde in parole', () => {
         { date: '2026-09-18', mpi: 80 },
       ],
     })
-    expect(verdictFor([later]).advice).toBe('carrega, meglio 2026-09-18.')
+    expect(verdictFor([later]).advice).toBe('Il posto più indicato è carrega, meglio 2026-09-18.')
   })
 
   it('con due zone quasi pari non dice che una è l unica', () => {

@@ -113,8 +113,8 @@ describe('normalizzazione della risposta', () => {
       time: `${yesterday}T00:00`,
       temperatureC: 8,
       precipitationMm: 0.5,
-      windSpeedMs: 2,
-      windGustMs: 5,
+      windSpeedKmh: 2,
+      windGustKmh: 5,
       weatherCode: 61,
     })
     expect(result.hourlyByDate[tomorrow]).toBeUndefined()

@@ -303,8 +303,10 @@ function adviceFor(
       return `Se ci vai, ${where}: ${strengthOf(top)}.`
     case 'worth':
     case 'good':
+      // Una frase intera, non il solo nome: «Carrega Ligure.» da solo in fondo al riquadro
+      // sembrava un testo troncato.
       return (
-        `${where}${
+        `Il posto più indicato è ${where}${
           /*
            * Confronto con il giorno scelto e con la stessa soglia della scheda zona
            * (`SuggestionCard`). Prima si confrontava con `series[0]`, il primo giorno di storia

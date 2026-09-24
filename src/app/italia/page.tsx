@@ -59,11 +59,11 @@ export default async function Page() {
                   <span className="text-xs text-ink-faint">
                     {region.zoneCount} {region.zoneCount === 1 ? 'zona' : 'zone'}
                     {/*
-                      * Detto qui, prima di entrare: la Toscana ha anche le sette aree tarate
-                      * sulle stazioni (quelle di "Dove vado"), le altre sono tutte anteprima.
-                      * Senza, "Toscana 24 zone" contraddiceva le "7 aree" del benvenuto.
+                      * Detto qui, prima di entrare: queste zone sono tutte di solo modello, anche
+                      * in Toscana, dove le aree tarate sulle stazioni sono quelle di "Dove vado"
+                      * e non questa pagina. Senza, "Toscana 24 zone" contraddiceva il benvenuto.
                       */}
-                    {region.slug === 'toscana' ? ' · più 7 aree tarate su stazioni' : ' · anteprima'}
+                    {region.slug === 'toscana' ? ' · anteprima (le aree tarate sono in «Dove vado»)' : ' · anteprima'}
                   </span>
                 </Link>
               </li>
