@@ -11,7 +11,7 @@ describe('statistiche di visita', () => {
     expect(sanitizeAnalyticsUrl('non-un-url')).toBe('non-un-url')
   })
 
-  it('senza codici di verifica non aggiunge meta tag', () => {
-    expect(verificationMetadata()).toEqual({})
+  it('dichiara il codice di Search Console, e Bing solo se c è', () => {
+    expect(verificationMetadata()).toEqual({ google: 'ZwRfVgagH0Z99--Lb7LQUJlIfA_rO4vNtbZm0ySJ4Gw' })
   })
 })
