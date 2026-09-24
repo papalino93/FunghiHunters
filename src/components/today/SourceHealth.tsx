@@ -4,6 +4,7 @@ import { formatAge, isSnapshotStale, snapshotAgeHours } from '@/lib/snapshot/fre
 import { algorithmVersionMismatch, type Snapshot } from '@/lib/snapshot/types'
 import { SourceStatusList } from '@/components/SourceStatusList'
 import { formatDate } from '@/lib/ui/scale'
+import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 
 /**
  * Stato delle fonti.
@@ -14,8 +15,14 @@ import { formatDate } from '@/lib/ui/scale'
  */
 export function SourceHealth({ snapshot }: { snapshot: Snapshot }) {
   // Soglia e motivo in `src/lib/snapshot/freshness.ts` (`STALE_AFTER_HOURS`).
-  const ageHours = ageHoursNow(snapshot)
-  const stale = isSnapshotStale(ageHours)
+  //
+  // L'età si calcola solo nel browser, dopo l'idratazione. Sul server l'ora è quella del render
+  // (per le pagine regione, fino a un'ora prima con l'ISR; per una pagina salvata offline, anche
+  // un giorno prima): testo e colore diversi fra server e client rompevano l'idratazione. Il
+  // server scrive sempre la riga neutra, il browser la sostituisce con l'avviso se serve.
+  const hydrated = useIsHydrated()
+  const ageHours = hydrated ? ageHoursNow(snapshot) : 0
+  const stale = hydrated && isSnapshotStale(ageHours)
   const versionMismatch = algorithmVersionMismatch(snapshot)
 
   return (

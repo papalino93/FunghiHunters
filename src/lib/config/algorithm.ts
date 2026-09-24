@@ -198,7 +198,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'non un valore numerico. Per ora sostiene l\'impianto del modello — il meteo come predittore ' +
       'a breve termine — non un singolo parametro.',
     status: 'applicable-with-caution',
-    userCaution: 'Studio sulle abetine toscane: vale soprattutto dove c\'è abete.',
+    userCaution: 'Studio sui funghi in generale, non sul porcino, nelle abetine toscane: un\'indicazione.',
   },
   salerni2004: {
     speciesStudied: 'Boletus edulis s.l.',
@@ -231,7 +231,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'faggeta). Usata solo come corroborazione indipendente del ritardo di 12 giorni misurato da ' +
       'Salerni 2023 sull\'Amiata, non come fonte primaria di nessun parametro.',
     status: 'applicable-with-caution',
-    userCaution: 'Studio sui querceti della Toscana meridionale: in altri boschi è un\'indicazione, non una misura.',
+    userCaution: 'Studio sui funghi in generale, non sul porcino, nei querceti toscani: un\'indicazione.',
   },
   habitatItalia: {
     speciesStudied: 'Boletus edulis (porcino estivo e autunnale, distinzione tradizionale)',
@@ -289,7 +289,7 @@ export const EVIDENCE: Readonly<Record<keyof typeof REFERENCES, EvidenceAssessme
       'pineta, non porcino in faggeta/querceto). Usata solo per corroborare l\'ordine di grandezza ' +
       'della finestra idrica di 26 giorni, non come fonte primaria di nessun parametro.',
     status: 'applicable-with-caution',
-    userCaution: 'Studio su pinete spagnole: per i boschi italiani è un\'indicazione, non una misura.',
+    userCaution: 'Studio sui funghi micorrizici in generale, non sul porcino, in pinete spagnole: un\'indicazione.',
   },
   sirCrossValidation2026: {
     speciesStudied: 'Non applicabile — non riguarda il fungo, riguarda l\'interpolazione meteo',

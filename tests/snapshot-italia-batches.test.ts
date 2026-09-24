@@ -7,7 +7,7 @@
 
 import { describe, expect, it } from 'vitest'
 
-import { describePartialRun, planRegions } from '@/../scripts/build-snapshot-italia'
+import { describePartialRun, keptIndexEntry, planRegions } from '@/../scripts/build-snapshot-italia'
 import type { SnapshotZone } from '@/lib/snapshot/types'
 
 // `planRegions` legge solo il codice: il resto della zona non c'entra con la decisione.
@@ -98,5 +98,28 @@ describe('describePartialRun', () => {
     expect(report?.message).toContain("Valle d'Aosta/Vallée d'Aoste: nessuna zona calcolata")
     expect(report?.message).toContain('lotto 3/3 (Lombardia): Risposta non JSON')
     expect(report?.message).not.toContain('Piemonte')
+  })
+})
+
+describe('keptIndexEntry', () => {
+  const kept = {
+    code: 'PI1', name: 'Zona', province: 'TO', latitude: 45, longitude: 7, elevationM: 900,
+    mpi: 40, mpiRaw: 40, label: 'condizioni discrete', confidence: 70, limitingFactor: null,
+    development: 0,
+    series: [
+      { date: '2026-09-22', mpi: 40, confidence: 70 },
+      { date: '2026-09-23', mpi: 62, confidence: 64 },
+    ],
+  } as unknown as SnapshotZone
+
+  it('riporta la voce al punto di oggi della serie di ieri, non al punteggio di ieri', () => {
+    const entry = keptIndexEntry(kept, 'Piemonte', '2026-09-23')
+    expect(entry.mpi).toBe(62)
+    expect(entry.confidence).toBe(64)
+    expect(entry.label).not.toBe('condizioni discrete')
+  })
+
+  it('senza oggi nella serie resta il valore del file', () => {
+    expect(keptIndexEntry(kept, 'Piemonte', '2026-10-30').mpi).toBe(40)
   })
 })

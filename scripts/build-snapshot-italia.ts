@@ -33,6 +33,7 @@ import {
   toModelSeries,
   type OpenMeteoResponse,
 } from '@/lib/pipeline/open-meteo-series'
+import { mpiLabel } from '@/lib/model/mpi'
 import { buildZoneSnapshot } from '@/lib/pipeline/zone-snapshot'
 import type { DailySamples } from '@/lib/pipeline/zone-series'
 import { LICENSES } from '@/lib/sources/adapter'
@@ -245,6 +246,28 @@ function toIndexEntry(zone: SnapshotZone, region: string): ItaliaIndexEntry {
   }
 }
 
+/**
+ * La voce d'indice di una zona tenuta dalla corsa precedente, riportata al giorno di oggi.
+ *
+ * L'indice dichiara `referenceDate` di oggi, e "Le tue zone" lo usa per dire "aggiornato il...":
+ * copiando `mpi` e `label` della zona cosi' com'erano, il punteggio di ieri veniva presentato come
+ * quello di oggi. Il file di ieri contiene pero' anche la previsione per oggi nella sua serie: si
+ * usa quella. Se oggi manca dalla serie (file piu' vecchio dell'orizzonte), resta il valore del
+ * file, e il resoconto della corsa segnala comunque la regione come non aggiornata.
+ */
+export function keptIndexEntry(zone: SnapshotZone, region: string, todayIso: string): ItaliaIndexEntry {
+  const entry = toIndexEntry(zone, region)
+  const point = zone.series.find((p) => p.date === todayIso)
+  if (point === undefined) return entry
+  return {
+    ...entry,
+    mpi: point.mpi,
+    mpiRaw: point.mpi,
+    label: mpiLabel(point.mpi),
+    confidence: point.confidence,
+  }
+}
+
 /** Il file di regione della corsa precedente, se c'e' ed e' leggibile. */
 async function loadPreviousRegion(slug: string): Promise<Snapshot | null> {
   try {
@@ -419,7 +442,7 @@ async function main(): Promise<void> {
        */
       const kept = previous.get(plan.slug)?.zones ?? []
       indexRegions.push({ name: plan.region, slug: plan.slug, zoneCount: kept.length })
-      indexZones.push(...kept.map((zone) => toIndexEntry(zone, plan.region)))
+      indexZones.push(...kept.map((zone) => keptIndexEntry(zone, plan.region, todayIso)))
       continue
     }
 
@@ -471,6 +494,12 @@ async function main(): Promise<void> {
 
   const partial = describePartialRun(plans, failedBatches)
   if (partial !== null) annotate('warning', partial.title, partial.message)
+  // Zone calcolate ma nessuna regione scritta (tutte tenute da ieri): la corsa non ha prodotto
+  // un solo dato di oggi, e verde con un avviso sembrerebbe una corsa andata bene.
+  if (written.length === 0) {
+    annotate('error', 'Nessuna regione aggiornata', 'Tutte le regioni sono rimaste ai file della corsa precedente.')
+    process.exitCode = 1
+  }
 
   await checkConsistency(generatedAt, written)
 }

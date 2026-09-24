@@ -34,7 +34,28 @@ const STATIC_CACHE = `${VERSION}-static`
 const CURRENT_CACHES = [VERSION, STATIC_CACHE]
 
 const OFFLINE_URL = '/offline.html'
-const SHELL = ['/', '/mappa', '/diario', OFFLINE_URL, '/manifest.webmanifest', '/icon.svg']
+// I due moduli di MapLibre non hanno hash nel nome e non compaiono nell'HTML (li carica il
+// componente della mappa dopo l'idratazione): senza nominarli qui, offline la mappa non partiva
+// nemmeno quando la sua pagina era in cache.
+const SHELL = [
+  '/',
+  '/mappa',
+  '/diario',
+  OFFLINE_URL,
+  '/manifest.webmanifest',
+  '/icon.svg',
+  '/maplibre/maplibre-gl-worker.mjs',
+  '/maplibre/maplibre-gl-shared.mjs',
+]
+/*
+ * Senza queste due l'installazione fallisce apposta, e resta attivo il worker precedente con le
+ * sue cache. Prima l'installazione non falliva mai: con la rete a singhiozzo il worker nuovo si
+ * attivava lo stesso e cancellava la cache funzionante della build prima, lasciando in bosco solo
+ * la pagina minima "sei offline". Il browser ritenta da solo alla navigazione successiva.
+ */
+const ESSENTIAL = ['/', OFFLINE_URL]
+/** Quante pagine già salvate dalla build precedente si riportano nella nuova, al massimo. */
+const MAX_CARRIED_OVER = 30
 const SHELL_PATHS = new Set(SHELL)
 
 /** Quanto si concede alla rete su una navigazione, se c'è una copia da mostrare al suo posto. */
@@ -103,8 +124,16 @@ function isRscRequest(request, url) {
  */
 async function precacheShell() {
   const cache = await caches.open(VERSION)
+  /*
+   * Oltre alla shell, le pagine che l'utente aveva già salvato con la build precedente (una
+   * regione, il meteo, la guida): ogni deploy cambia il nome della cache, e senza riportarle qui
+   * sparivano tutte due volte al giorno — con ogni commit dei dati giornalieri. Si riscaricano,
+   * non si copiano: l'HTML vecchio punta a chunk che nella build nuova non esistono più.
+   */
+  const carried = (await previousPaths()).filter((path) => !SHELL_PATHS.has(path))
+  const paths = [...SHELL, ...carried.slice(0, MAX_CARRIED_OVER)]
   const pages = await Promise.allSettled(
-    SHELL.map(async (path) => {
+    paths.map(async (path) => {
       // `reload` per non salvare come copia offline un HTML vecchio rimasto nella cache HTTP.
       const response = await fetch(new Request(path, { cache: 'reload' }))
       // Una risposta rediretta non può essere servita a una navigazione (il browser la rifiuta),
@@ -130,7 +159,54 @@ async function precacheShell() {
   }
   const staticCache = await caches.open(STATIC_CACHE)
   await Promise.allSettled([...assets].map((path) => staticCache.add(path)))
+
+  const failed = ESSENTIAL.filter((_, i) => pages[paths.indexOf(ESSENTIAL[i])]?.status !== 'fulfilled')
+  if (failed.length > 0) {
+    // La cache appena riempita a metà non serve a nessuno: si toglie, e resta quella di prima.
+    await caches.delete(VERSION)
+    await caches.delete(STATIC_CACHE)
+    throw new Error(`Installazione rimandata, non salvate: ${failed.join(', ')}`)
+  }
 }
+
+/** Gli indirizzi salvati nelle cache di pagine delle build precedenti (non negli asset). */
+async function previousPaths() {
+  const out = []
+  for (const name of await caches.keys()) {
+    if (CURRENT_CACHES.includes(name) || !name.startsWith('fungicast-') || name.endsWith('-static')) {
+      continue
+    }
+    const cache = await caches.open(name)
+    for (const request of await cache.keys()) {
+      const url = new URL(request.url)
+      if (url.origin !== self.location.origin || url.pathname.startsWith('/api/')) continue
+      out.push(url.pathname + url.search)
+    }
+  }
+  return [...new Set(out)]
+}
+
+/*
+ * I chunk caricati dopo l'idratazione (la mappa, con `ssr: false`, non compare nell'HTML): la
+ * pagina li elenca da `performance` e li manda qui, così una mappa aperta online una volta in
+ * questa build si riapre anche offline. Solo asset nostri, solo percorsi che non cambiano mai
+ * contenuto a parità di indirizzo.
+ */
+self.addEventListener('message', (event) => {
+  const data = event.data
+  if (data === null || typeof data !== 'object' || data.type !== 'cache-assets') return
+  if (!Array.isArray(data.paths)) return
+  const paths = data.paths.filter(
+    (p) => typeof p === 'string' && (p.startsWith('/_next/static/') || p.startsWith('/maplibre/')),
+  )
+  event.waitUntil(
+    caches.open(STATIC_CACHE).then(async (cache) => {
+      for (const path of paths.slice(0, 100)) {
+        if ((await cache.match(path)) === undefined) await cache.add(path).catch(() => undefined)
+      }
+    }),
+  )
+})
 
 /*
  * Navigazione: la rete corre contro un timer, ma solo se c'è una copia da mostrare.
@@ -141,38 +217,60 @@ async function precacheShell() {
  * sotto `/meteo` senza nessun avviso. Ora si vede la pagina offline, che dice cosa sta succedendo.
  */
 function handleNavigation(event) {
-  const request = event.request
-  const fromNetwork = fetch(request).then((response) => {
-    // La copia si prende qui, prima che il browser inizi a leggere il corpo della risposta.
-    const saved =
-      isCacheable(response) && !response.redirected
-        ? savePage(request, response.clone())
-        : Promise.resolve()
-    return { response, saved }
-  })
-  // Il salvataggio in background deve sopravvivere anche quando la risposta servita è la copia:
-  // è proprio il caso della rete lenta, in cui l'HTML fresco arriva dopo il timeout.
-  event.waitUntil(fromNetwork.then(({ saved }) => saved).catch(() => undefined))
-  const network = fromNetwork.then(({ response }) => response)
-  event.respondWith(navigationResponse(request, network))
+  /*
+   * Il salvataggio dipende da quale risposta è stata servita, quindi si decide dentro
+   * `navigationResponse`; `waitUntil` va però chiamato adesso, durante l'evento, con una promessa
+   * che si risolve quando i salvataggi avviati (se ce ne sono) sono finiti.
+   */
+  const pending = []
+  let done = () => undefined
+  event.waitUntil(new Promise((resolve) => { done = resolve }))
+  event.respondWith(
+    navigationResponse(event.request, (promise) => { pending.push(promise) }).finally(() => {
+      void Promise.allSettled(pending).then(() => done())
+    }),
+  )
 }
 
-async function navigationResponse(request, network) {
+async function navigationResponse(request, keepAlive) {
   const cache = await caches.open(VERSION)
+  const network = fetch(request)
   // `ignoreVary`: le pagine di Next variano per gli header RSC, che una navigazione non ha mai;
   // per un documento lo stesso indirizzo è la stessa pagina.
   const cached = await cache.match(request, { ignoreVary: true })
+
+  /*
+   * Si salva solo la risposta di rete *servita*. Una risposta arrivata dopo il timeout poteva
+   * essere di una build nuova: salvata al posto della copia, alla riapertura offline successiva si
+   * serviva un HTML i cui chunk non erano mai stati scaricati, e la pagina restava inerte.
+   */
+  const serveFromNetwork = (response) => {
+    if (isCacheable(response) && !response.redirected) {
+      keepAlive(savePage(request, response.clone()))
+    }
+    return response
+  }
+
   if (cached === undefined) {
     try {
-      return await network
+      return serveFromNetwork(await network)
     } catch {
-      return offlinePage(cache)
+      // Stessa pagina con parametri diversi (`/mappa?zona=…&giorno=…` da una scheda della home):
+      // l'app legge i parametri nel browser, quindi la copia di `/mappa` vale anche per quelli.
+      const sibling = await cache.match(request, { ignoreVary: true, ignoreSearch: true })
+      return sibling ?? offlinePage(cache)
     }
   }
-  return Promise.race([
-    network.catch(() => cached),
-    new Promise((resolve) => setTimeout(() => resolve(cached), NAVIGATION_TIMEOUT_MS)),
+
+  const TIMEOUT = Symbol('timeout')
+  const winner = await Promise.race([
+    network.catch(() => null),
+    new Promise((resolve) => setTimeout(() => resolve(TIMEOUT), NAVIGATION_TIMEOUT_MS)),
   ])
+  if (winner === TIMEOUT || winner === null) return cached
+  // Un errore del server (funzione fredda, timeout di Vercel) non è meglio della copia salvata.
+  if (winner.status >= 500) return cached
+  return serveFromNetwork(winner)
 }
 
 async function offlinePage(cache) {
@@ -214,7 +312,10 @@ async function networkFirst(event) {
   const request = event.request
   try {
     const response = await fetch(request)
-    if (isCacheable(response)) event.waitUntil(savePage(request, response.clone()))
+    // Le API no: risposte a una ricerca (il meteo di un luogo, a un'ora precisa) che offline
+    // sarebbero vecchie senza dirlo, e che espellevano dal tetto delle voci pagine utili.
+    const isApi = new URL(request.url).pathname.startsWith('/api/')
+    if (!isApi && isCacheable(response)) event.waitUntil(savePage(request, response.clone()))
     return response
   } catch {
     const cached = await caches.match(request)
