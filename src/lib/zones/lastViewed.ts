@@ -27,3 +27,48 @@ export function lastZoneOr(available: readonly string[], fallback: string): stri
     return fallback
   }
 }
+
+/** Nome e coordinate dell'ultima zona aperta, per offrirne il meteo senza doverla cercare. */
+export interface LastZonePlace {
+  readonly code: string
+  readonly name: string
+  readonly latitude: number
+  readonly longitude: number
+  readonly elevationM: number | null
+}
+
+const PLACE_KEY = 'fungicast:last-zone-place'
+
+export function rememberLastZonePlace(place: LastZonePlace): void {
+  rememberLastZone(place.code)
+  try {
+    localStorage.setItem(PLACE_KEY, JSON.stringify(place))
+  } catch {
+    // Come sopra: senza storage il meteo si apre vuoto, com'era prima.
+  }
+}
+
+export function readLastZonePlace(): LastZonePlace | null {
+  try {
+    const raw = localStorage.getItem(PLACE_KEY)
+    if (raw === null) return null
+    const parsed = JSON.parse(raw) as Partial<LastZonePlace>
+    if (
+      typeof parsed.code !== 'string' ||
+      typeof parsed.name !== 'string' ||
+      typeof parsed.latitude !== 'number' ||
+      typeof parsed.longitude !== 'number'
+    ) {
+      return null
+    }
+    return {
+      code: parsed.code,
+      name: parsed.name,
+      latitude: parsed.latitude,
+      longitude: parsed.longitude,
+      elevationM: typeof parsed.elevationM === 'number' ? parsed.elevationM : null,
+    }
+  } catch {
+    return null
+  }
+}

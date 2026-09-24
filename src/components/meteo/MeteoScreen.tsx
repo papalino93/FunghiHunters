@@ -1,7 +1,9 @@
 'use client'
 
-import { Fragment, useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
+import { useIsHydrated } from '@/lib/ui/useIsHydrated'
+import { readLastZonePlace } from '@/lib/zones/lastViewed'
 import { addDays, today } from '@/lib/domain/time'
 import { daysAgoLabel, foragerRainSummary } from '@/lib/meteo/forager'
 import {
@@ -29,6 +31,8 @@ export function MeteoScreen() {
   const [searchError, setSearchError] = useState<string | null>(null)
 
   const [place, setPlace] = useState<PlaceCandidate | null>(null)
+  const hydrated = useIsHydrated()
+  const lastZone = useMemo(() => (hydrated ? readLastZonePlace() : null), [hydrated])
   const [forecast, setForecast] = useState<PlaceForecast | null>(null)
   const [loadingForecast, setLoadingForecast] = useState(false)
   const [forecastError, setForecastError] = useState<string | null>(null)
@@ -228,15 +232,44 @@ export function MeteoScreen() {
         )}
       </div>
 
-      <button
-        type="button"
-        onClick={useMyLocation}
-        className="min-h-11 self-start rounded-lg border border-edge bg-surface-2 px-3 text-xs
-                   font-medium text-ink-dim transition-colors hover:text-ink focus:outline-none
-                   focus-visible:ring-2 focus-visible:ring-accent"
-      >
-        Usa la mia posizione
-      </button>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={useMyLocation}
+          className="min-h-11 rounded-lg border border-edge bg-surface-2 px-3 text-sm
+                     font-medium text-ink-dim transition-colors hover:text-ink focus:outline-none
+                     focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          Usa la mia posizione
+        </button>
+        {/*
+          * Il meteo dell'ultima zona aperta in «Dove vado» o sulla mappa, a un tocco: prima la
+          * pagina si apriva vuota, con il solo campo di ricerca, anche a chi aveva appena guardato
+          * il Pratomagno e voleva sapere che tempo fa lì.
+          */}
+        {lastZone !== null && (
+          <button
+            type="button"
+            onClick={() => {
+              selectPlace({
+                id: -1,
+                name: lastZone.name,
+                admin1: 'zona di FungiCast',
+                admin2: null,
+                country: null,
+                latitude: lastZone.latitude,
+                longitude: lastZone.longitude,
+                elevationM: lastZone.elevationM,
+              })
+            }}
+            className="min-h-11 rounded-lg border border-accent/40 bg-accent/10 px-3 text-sm
+                       font-medium text-ink transition-colors hover:bg-accent/20 focus:outline-none
+                       focus-visible:ring-2 focus-visible:ring-accent"
+          >
+            Meteo di {lastZone.name}
+          </button>
+        )}
+      </div>
 
       {place !== null && (
         <PlaceWeather
