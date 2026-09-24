@@ -89,6 +89,7 @@ jobs:
       # falliti typecheck o test (numeri da un motore rotto non vanno in mappa) o quando la corsa
       # e' stata annullata a meta'.
       - name: Commit se qualcosa e' cambiato
+        id: commit
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -108,7 +109,19 @@ jobs:
             # Il rebase riapplica questo commit sopra la storia nel frattempo avanzata.
             git pull --rebase origin main
             git push
+            echo "pushed=true" >> "$GITHUB_OUTPUT"
           fi
+
+      # Dati nuovi pubblicati: si avvisano i motori che aderiscono a IndexNow (Bing e altri).
+      # L'attesa lascia a Vercel il tempo di mettere online il deploy con i dati nuovi. Mai
+      # bloccante: un avviso mancato si recupera il giorno dopo.
+      - name: Avvisa IndexNow
+        if: steps.commit.outputs.pushed == 'true'
+        continue-on-error: true
+        timeout-minutes: 5
+        run: |
+          sleep 150
+          npx tsx scripts/indexnow.ts
 
       # Per ultimo, dopo il commit: i dati che si sono potuti calcolare sono gia' salvati, e solo
       # ora la corsa diventa rossa — cosi' GitHub manda l'email di fallimento al proprietario
