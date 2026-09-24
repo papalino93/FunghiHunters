@@ -160,6 +160,13 @@ export function BeforeYouGo({
             >
               Tutte le regole di utilizzo e le domande frequenti
             </Link>
+            {' · '}
+            <Link
+              href="/quando-nascono-i-porcini"
+              className="underline decoration-dotted underline-offset-2 hover:text-ink-dim"
+            >
+              Quando nascono i porcini
+            </Link>
           </p>
         </div>
       )}
