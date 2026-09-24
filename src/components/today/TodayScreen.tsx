@@ -206,7 +206,7 @@ export function TodayScreen({
         <VerdictCard verdict={verdict} />
       </div>
       <div className="mt-2">
-        <ModelLimitsNotice />
+        <ModelLimitsNotice generatedAt={snapshot.generatedAt} measured={!verdict.modelOnly} />
       </div>
 
       <div className="mt-5">
