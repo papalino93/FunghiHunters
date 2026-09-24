@@ -1,0 +1,837 @@
+{
+  "generatedAt": "2026-09-24T07:47:50.376Z",
+  "seed": 20260924,
+  "bootstrap": 2000,
+  "gbif": {
+    "records": 907,
+    "accepted": 490,
+    "deduped": 437,
+    "locationYears": 413,
+    "rejected": {
+      "obscured": 292,
+      "uncertainty-large": 63,
+      "uncertainty-missing": 62
+    }
+  },
+  "sample": {
+    "locationYears": 250,
+    "cases": 264
+  },
+  "weather": {
+    "fetched": 0,
+    "fromCache": 15,
+    "failed": 0,
+    "weightSpent": 0,
+    "stopReason": null,
+    "available": 15
+  },
+  "rows": {
+    "total": 61,
+    "cases": 16,
+    "controls": 45,
+    "missingDays": 0
+  },
+  "brierBaseline": 0.19384120786153256,
+  "summaries": [
+    {
+      "key": "v14",
+      "label": "(a) 1.4 equivalente",
+      "change": "trigger.waterRelief = 0",
+      "auc": 0.8375,
+      "ci": {
+        "low": 0.7407291666666667,
+        "high": 0.9259259259259259
+      },
+      "vsV15": {
+        "delta": 0.008333333333333304,
+        "low": -0.0318518518518518,
+        "high": 0.05555555555555547,
+        "pBelow0": 0.347
+      },
+      "vsCalendar": {
+        "delta": 0.2875,
+        "low": 0.12370370370370376,
+        "high": 0.4416870915032678,
+        "pBelow0": 0
+      },
+      "vsKernel": {
+        "delta": 0.23055555555555562,
+        "low": 0.0971990740740741,
+        "high": 0.3647058823529411,
+        "pBelow0": 0
+      },
+      "matched": 0.8541666666666666,
+      "matchedCi": {
+        "low": 0.7450980392156863,
+        "high": 0.9555555555555556
+      },
+      "matchedVsV15": {
+        "delta": 0.04166666666666663,
+        "low": -0.0392769607843137,
+        "high": 0.125,
+        "pBelow0": 0.222
+      },
+      "matchedVsCalendar": {
+        "delta": 0.30208333333333326,
+        "low": 0.12222222222222223,
+        "high": 0.47919730392156845,
+        "pBelow0": 0.0005
+      },
+      "brier": 0.18979777588147706,
+      "brierSkill": 0.020859506730601107,
+      "byElevation": {
+        "<600 m": 0.8412698412698413,
+        "600-1200 m": 0.8435374149659864,
+        ">1200 m": 0.8333333333333334
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.9090909090909091,
+        "7": 0.6363636363636364,
+        "8": 1,
+        "9": 0.75,
+        "10": 0.625,
+        "11": 0.75
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8393162393162393,
+        "solo incertezza nota": 0.8183760683760684,
+        "senza Trentino-Alto Adige": 0.8380952380952381
+      },
+      "caseBands": [
+        12,
+        2,
+        1,
+        0,
+        1
+      ],
+      "caseMedian": 11.5
+    },
+    {
+      "key": "v15",
+      "label": "(b) 1.5 attuale",
+      "change": "nessuna (ALGORITHM_V1, 1.5.0-porcino)",
+      "auc": 0.8291666666666667,
+      "ci": {
+        "low": 0.729624183006536,
+        "high": 0.9066666666666666
+      },
+      "vsV15": {
+        "delta": 0,
+        "low": 0,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "vsCalendar": {
+        "delta": 0.2791666666666667,
+        "low": 0.10589930555555555,
+        "high": 0.44692129629629623,
+        "pBelow0": 0.0005
+      },
+      "vsKernel": {
+        "delta": 0.22222222222222232,
+        "low": 0.07222222222222219,
+        "high": 0.36298611111111095,
+        "pBelow0": 0.002
+      },
+      "matched": 0.8125,
+      "matchedCi": {
+        "low": 0.6666666666666666,
+        "high": 0.9333333333333333
+      },
+      "matchedVsV15": {
+        "delta": 0,
+        "low": 0,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "matchedVsCalendar": {
+        "delta": 0.26041666666666663,
+        "low": 0.05555555555555558,
+        "high": 0.45374999999999976,
+        "pBelow0": 0.007
+      },
+      "brier": 0.18280579791871415,
+      "brierSkill": 0.05693015465886586,
+      "byElevation": {
+        "<600 m": 0.7817460317460317,
+        "600-1200 m": 0.8605442176870748,
+        ">1200 m": 0.9166666666666666
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.9090909090909091,
+        "7": 0.7272727272727273,
+        "8": 0.8888888888888888,
+        "9": 0.875,
+        "10": 0.625,
+        "11": 0.8333333333333334
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8358974358974359,
+        "solo incertezza nota": 0.8269230769230769,
+        "senza Trentino-Alto Adige": 0.8285714285714286
+      },
+      "caseBands": [
+        11,
+        2,
+        0,
+        1,
+        2
+      ],
+      "caseMedian": 14.75
+    },
+    {
+      "key": "v15-estate-quota",
+      "label": "(c) 1.5 + estate in quota",
+      "change": "peso autunnale per quota al massimo 0.7 (quota stagionale <= 840 m)",
+      "auc": 0.7833333333333333,
+      "ci": {
+        "low": 0.6859259259259259,
+        "high": 0.8590335648148147
+      },
+      "vsV15": {
+        "delta": -0.04583333333333339,
+        "low": -0.11557516339869274,
+        "high": 0.009027777777777857,
+        "pBelow0": 0.944
+      },
+      "vsCalendar": {
+        "delta": 0.23333333333333328,
+        "low": 0.0503703703703704,
+        "high": 0.4091993464052285,
+        "pBelow0": 0.0075
+      },
+      "vsKernel": {
+        "delta": 0.17638888888888893,
+        "low": 0.0013750000000001253,
+        "high": 0.3450636394908839,
+        "pBelow0": 0.025
+      },
+      "matched": 0.75,
+      "matchedCi": {
+        "low": 0.621944444444445,
+        "high": 0.8666666666666667
+      },
+      "matchedVsV15": {
+        "delta": -0.0625,
+        "low": -0.13333333333333341,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "matchedVsCalendar": {
+        "delta": 0.19791666666666663,
+        "low": 0,
+        "high": 0.4000490196078429,
+        "pBelow0": 0.031
+      },
+      "brier": 0.17570163066993438,
+      "brierSkill": 0.0935795716076836,
+      "byElevation": {
+        "<600 m": 0.7817460317460317,
+        "600-1200 m": 0.8299319727891157,
+        ">1200 m": 0.8333333333333334
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.7272727272727273,
+        "7": 0.8181818181818182,
+        "8": 0.8888888888888888,
+        "9": 0.875,
+        "10": 0.625,
+        "11": 0.8333333333333334
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.7965811965811965,
+        "solo incertezza nota": 0.8044871794871795,
+        "senza Trentino-Alto Adige": 0.7888888888888889
+      },
+      "caseBands": [
+        11,
+        2,
+        1,
+        1,
+        1
+      ],
+      "caseMedian": 16
+    },
+    {
+      "key": "v15-regimi-misti",
+      "label": "(c2) 1.5 + entrambi i regimi a ogni quota",
+      "change": "peso autunnale per quota fra 0.3 e 0.7 (quota stagionale 760-840 m)",
+      "auc": 0.7645833333333333,
+      "ci": {
+        "low": 0.6365890522875817,
+        "high": 0.86
+      },
+      "vsV15": {
+        "delta": -0.06458333333333344,
+        "low": -0.1862877859477124,
+        "high": 0.03408823529411764,
+        "pBelow0": 0.9005
+      },
+      "vsCalendar": {
+        "delta": 0.21458333333333324,
+        "low": 0.028148148148148144,
+        "high": 0.3548169934640522,
+        "pBelow0": 0.01
+      },
+      "vsKernel": {
+        "delta": 0.15763888888888888,
+        "low": -0.026395833333333337,
+        "high": 0.32811376633986916,
+        "pBelow0": 0.0475
+      },
+      "matched": 0.6666666666666666,
+      "matchedCi": {
+        "low": 0.5263157894736842,
+        "high": 0.8222222222222222
+      },
+      "matchedVsV15": {
+        "delta": -0.14583333333333337,
+        "low": -0.29166666666666663,
+        "high": 0.022222222222222143,
+        "pBelow0": 0.9675
+      },
+      "matchedVsCalendar": {
+        "delta": 0.11458333333333326,
+        "low": -0.05208333333333337,
+        "high": 0.2604166666666667,
+        "pBelow0": 0.1035
+      },
+      "brier": 0.17410494061408235,
+      "brierSkill": 0.10181667492264335,
+      "byElevation": {
+        "<600 m": 0.6428571428571429,
+        "600-1200 m": 0.8401360544217688,
+        ">1200 m": 0.8333333333333334
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.6363636363636364,
+        "7": 0.8181818181818182,
+        "8": 1,
+        "9": 0.9375,
+        "10": 0.5625,
+        "11": 0.3333333333333333
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8085470085470086,
+        "solo incertezza nota": 0.8076923076923077,
+        "senza Trentino-Alto Adige": 0.7722222222222223
+      },
+      "caseBands": [
+        9,
+        4,
+        1,
+        1,
+        1
+      ],
+      "caseMedian": 17.4
+    },
+    {
+      "key": "v15-caldo-se-umido",
+      "label": "(d) 1.5 + caldo tollerato se c'e' acqua",
+      "change": "sigmaWarmC 7.5 -> 12 solo nei giorni con fattore acqua 1.5 >= 0.5",
+      "auc": 0.8305555555555556,
+      "ci": {
+        "low": 0.7307148692810457,
+        "high": 0.9083657407407406
+      },
+      "vsV15": {
+        "delta": 0.001388888888888884,
+        "low": -0.011111111111111183,
+        "high": 0.02361342592592594,
+        "pBelow0": 0.4125
+      },
+      "vsCalendar": {
+        "delta": 0.28055555555555556,
+        "low": 0.1074074074074074,
+        "high": 0.4503371710526314,
+        "pBelow0": 0.001
+      },
+      "vsKernel": {
+        "delta": 0.2236111111111112,
+        "low": 0.07222222222222219,
+        "high": 0.3731052631578948,
+        "pBelow0": 0.002
+      },
+      "matched": 0.8333333333333334,
+      "matchedCi": {
+        "low": 0.6874693627450981,
+        "high": 0.9555555555555556
+      },
+      "matchedVsV15": {
+        "delta": 0.02083333333333337,
+        "low": 0,
+        "high": 0.06666666666666665,
+        "pBelow0": 0.351
+      },
+      "matchedVsCalendar": {
+        "delta": 0.28125,
+        "low": 0.07777777777777772,
+        "high": 0.47916666666666663,
+        "pBelow0": 0.0035
+      },
+      "brier": 0.18186676610152364,
+      "brierSkill": 0.06177449001743052,
+      "byElevation": {
+        "<600 m": 0.7777777777777778,
+        "600-1200 m": 0.8775510204081632,
+        ">1200 m": 0.9166666666666666
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.9090909090909091,
+        "7": 0.7272727272727273,
+        "8": 0.8888888888888888,
+        "9": 0.875,
+        "10": 0.625,
+        "11": 0.8333333333333334
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8393162393162393,
+        "solo incertezza nota": 0.8333333333333334,
+        "senza Trentino-Alto Adige": 0.8301587301587302
+      },
+      "caseBands": [
+        11,
+        2,
+        0,
+        0,
+        3
+      ],
+      "caseMedian": 14.9
+    },
+    {
+      "key": "v15-caldo-sempre",
+      "label": "(d2) 1.5 + caldo tollerato sempre",
+      "change": "sigmaWarmC 7.5 -> 12 in tutti i giorni (controllo della (d))",
+      "auc": 0.8243055555555555,
+      "ci": {
+        "low": 0.7241503267973857,
+        "high": 0.9066666666666666
+      },
+      "vsV15": {
+        "delta": -0.004861111111111205,
+        "low": -0.017546439628482912,
+        "high": 0.01333333333333342,
+        "pBelow0": 0.6835
+      },
+      "vsCalendar": {
+        "delta": 0.27430555555555547,
+        "low": 0.10147916666666669,
+        "high": 0.44327546296296266,
+        "pBelow0": 0.001
+      },
+      "vsKernel": {
+        "delta": 0.21736111111111112,
+        "low": 0.06662962962962979,
+        "high": 0.3652939814814814,
+        "pBelow0": 0.002
+      },
+      "matched": 0.8333333333333334,
+      "matchedCi": {
+        "low": 0.6874693627450981,
+        "high": 0.9555555555555556
+      },
+      "matchedVsV15": {
+        "delta": 0.02083333333333337,
+        "low": 0,
+        "high": 0.06666666666666665,
+        "pBelow0": 0.351
+      },
+      "matchedVsCalendar": {
+        "delta": 0.28125,
+        "low": 0.07777777777777772,
+        "high": 0.47916666666666663,
+        "pBelow0": 0.0035
+      },
+      "brier": 0.18148522637628484,
+      "brierSkill": 0.0637428007262213,
+      "byElevation": {
+        "<600 m": 0.7777777777777778,
+        "600-1200 m": 0.8707482993197279,
+        ">1200 m": 0.9166666666666666
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.9090909090909091,
+        "7": 0.7272727272727273,
+        "8": 0.8888888888888888,
+        "9": 0.8125,
+        "10": 0.625,
+        "11": 0.8333333333333334
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8341880341880342,
+        "solo incertezza nota": 0.8279914529914529,
+        "senza Trentino-Alto Adige": 0.8261904761904761
+      },
+      "caseBands": [
+        10,
+        3,
+        0,
+        0,
+        3
+      ],
+      "caseMedian": 14.9
+    },
+    {
+      "key": "v15-ottimo15",
+      "label": "(e) 1.5 + ottimo autunnale 15 °C",
+      "change": "thermal.optAutumnC 13 -> 15",
+      "auc": 0.8284722222222223,
+      "ci": {
+        "low": 0.7294017792302105,
+        "high": 0.9066666666666666
+      },
+      "vsV15": {
+        "delta": -0.000694444444444442,
+        "low": -0.015277777777777835,
+        "high": 0.02083333333333326,
+        "pBelow0": 0.5115
+      },
+      "vsCalendar": {
+        "delta": 0.27847222222222223,
+        "low": 0.10665625000000004,
+        "high": 0.4466805555555554,
+        "pBelow0": 0.001
+      },
+      "vsKernel": {
+        "delta": 0.22152777777777788,
+        "low": 0.06802083333333338,
+        "high": 0.37223039215686277,
+        "pBelow0": 0.002
+      },
+      "matched": 0.8333333333333334,
+      "matchedCi": {
+        "low": 0.6874693627450981,
+        "high": 0.9555555555555556
+      },
+      "matchedVsV15": {
+        "delta": 0.02083333333333337,
+        "low": 0,
+        "high": 0.06666666666666665,
+        "pBelow0": 0.351
+      },
+      "matchedVsCalendar": {
+        "delta": 0.28125,
+        "low": 0.07777777777777772,
+        "high": 0.47916666666666663,
+        "pBelow0": 0.0035
+      },
+      "brier": 0.17594023539678344,
+      "brierSkill": 0.09234864280012323,
+      "byElevation": {
+        "<600 m": 0.7817460317460317,
+        "600-1200 m": 0.8707482993197279,
+        ">1200 m": 0.9166666666666666
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.9090909090909091,
+        "7": 0.7272727272727273,
+        "8": 1,
+        "9": 0.8125,
+        "10": 0.625,
+        "11": 0.8333333333333334
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.8384615384615385,
+        "solo incertezza nota": 0.8322649572649573,
+        "senza Trentino-Alto Adige": 0.8325396825396826
+      },
+      "caseBands": [
+        11,
+        2,
+        0,
+        0,
+        3
+      ],
+      "caseMedian": 12.95
+    },
+    {
+      "key": "calendario-mese",
+      "label": "(f) nullo: calendario mensile",
+      "change": "frazione dei casi degli altri anni nello stesso mese",
+      "auc": 0.55,
+      "ci": {
+        "low": 0.3590181327160494,
+        "high": 0.7467037037037035
+      },
+      "vsV15": {
+        "delta": -0.2791666666666667,
+        "low": -0.4469212962962963,
+        "high": -0.10589930555555564,
+        "pBelow0": 0.9995
+      },
+      "vsCalendar": {
+        "delta": 0,
+        "low": 0,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "vsKernel": {
+        "delta": -0.05694444444444435,
+        "low": -0.1652037037037037,
+        "high": 0.051851851851851816,
+        "pBelow0": 0.8105
+      },
+      "matched": 0.5520833333333334,
+      "matchedCi": {
+        "low": 0.35294117647058826,
+        "high": 0.7666666666666667
+      },
+      "matchedVsV15": {
+        "delta": -0.26041666666666663,
+        "low": -0.45374999999999993,
+        "high": -0.05555555555555558,
+        "pBelow0": 0.9955
+      },
+      "matchedVsCalendar": {
+        "delta": 0,
+        "low": 0,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "brier": 0.20031467768545283,
+      "brierSkill": -0.033395736104494755,
+      "byElevation": {
+        "<600 m": 0.38095238095238093,
+        "600-1200 m": 0.5986394557823129,
+        ">1200 m": 0.8333333333333334
+      },
+      "byMonth": {
+        "5": null,
+        "6": null,
+        "7": null,
+        "8": null,
+        "9": null,
+        "10": null,
+        "11": null
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.5717948717948718,
+        "solo incertezza nota": 0.5373931623931624,
+        "senza Trentino-Alto Adige": 0.5738095238095238
+      },
+      "caseBands": [],
+      "caseMedian": 0.14285714285714285
+    },
+    {
+      "key": "calendario-giorno",
+      "label": "(f2) nullo: calendario a nucleo",
+      "change": "densita' dei giorni dell'anno dei casi degli altri anni, nucleo 10 giorni",
+      "auc": 0.6069444444444444,
+      "ci": {
+        "low": 0.42499591503267975,
+        "high": 0.7861249999999999
+      },
+      "vsV15": {
+        "delta": -0.22222222222222232,
+        "low": -0.36298611111111106,
+        "high": -0.07222222222222219,
+        "pBelow0": 0.998
+      },
+      "vsCalendar": {
+        "delta": 0.05694444444444435,
+        "low": -0.051851851851851816,
+        "high": 0.16520370370370363,
+        "pBelow0": 0.1915
+      },
+      "vsKernel": {
+        "delta": 0,
+        "low": 0,
+        "high": 0,
+        "pBelow0": 1
+      },
+      "matched": 0.5416666666666666,
+      "matchedCi": {
+        "low": 0.3333333333333333,
+        "high": 0.7777777777777778
+      },
+      "matchedVsV15": {
+        "delta": -0.27083333333333337,
+        "low": -0.45098039215686275,
+        "high": -0.0888888888888888,
+        "pBelow0": 0.999
+      },
+      "matchedVsCalendar": {
+        "delta": -0.01041666666666674,
+        "low": -0.12499999999999994,
+        "high": 0.11458333333333326,
+        "pBelow0": 0.6195
+      },
+      "brier": 0.19499624492831952,
+      "brierSkill": -0.0059586765865184965,
+      "byElevation": {
+        "<600 m": 0.4444444444444444,
+        "600-1200 m": 0.6462585034013606,
+        ">1200 m": 0.8333333333333334
+      },
+      "byMonth": {
+        "5": null,
+        "6": 0.18181818181818182,
+        "7": 0,
+        "8": 0,
+        "9": 0.4375,
+        "10": 0,
+        "11": 0.4166666666666667
+      },
+      "sensitivity": {
+        "casi giu-nov": 0.6068376068376068,
+        "solo incertezza nota": 0.561965811965812,
+        "senza Trentino-Alto Adige": 0.5904761904761905
+      },
+      "caseBands": [],
+      "caseMedian": 0.13350964778993302
+    }
+  ],
+  "reliability": {
+    "v15": [
+      {
+        "n": 6,
+        "meanPredicted": 0.16040234004562173,
+        "observedRate": 0,
+        "minPredicted": 0.15828882023154214,
+        "maxPredicted": 0.1613651779867085
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.16544151664362025,
+        "observedRate": 0,
+        "minPredicted": 0.16409930113873678,
+        "maxPredicted": 0.16780113892939527
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.17251805790626418,
+        "observedRate": 0,
+        "minPredicted": 0.16828867878662454,
+        "maxPredicted": 0.17463251716550282
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.17707348750523363,
+        "observedRate": 0,
+        "minPredicted": 0.1748636733143644,
+        "maxPredicted": 0.17984781339730543
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.18819062874433015,
+        "observedRate": 0.5,
+        "minPredicted": 0.18212752170440544,
+        "maxPredicted": 0.194420535621195
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.19971125022074687,
+        "observedRate": 0.16666666666666666,
+        "minPredicted": 0.1949882280257637,
+        "maxPredicted": 0.20853803261064024
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2196956392094304,
+        "observedRate": 0.5,
+        "minPredicted": 0.20985530908654232,
+        "maxPredicted": 0.2250649074442016
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2540490712293474,
+        "observedRate": 0.5,
+        "minPredicted": 0.23630718542577803,
+        "maxPredicted": 0.28045647433933657
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.3236033372924715,
+        "observedRate": 0.5,
+        "minPredicted": 0.284668649209179,
+        "maxPredicted": 0.36467922533320224
+      },
+      {
+        "n": 7,
+        "meanPredicted": 0.7702748610940752,
+        "observedRate": 0.42857142857142855,
+        "minPredicted": 0.4223415453632016,
+        "maxPredicted": 0.9720144498999987
+      }
+    ],
+    "calendario-mese": [
+      {
+        "n": 6,
+        "meanPredicted": 0.1913797023842484,
+        "observedRate": 0.6666666666666666,
+        "minPredicted": 0.18126956208077666,
+        "maxPredicted": 0.21159998299119187
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2369218850626692,
+        "observedRate": 0,
+        "minPredicted": 0.22340023943135578,
+        "maxPredicted": 0.24368270787832585
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2493097353113677,
+        "observedRate": 0.16666666666666666,
+        "minPredicted": 0.24651494892633408,
+        "maxPredicted": 0.24986869258837438
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.25346419702735984,
+        "observedRate": 0.16666666666666666,
+        "minPredicted": 0.24986869258837438,
+        "maxPredicted": 0.2544751970412953
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.25913021963361493,
+        "observedRate": 0,
+        "minPredicted": 0.25913021963361493,
+        "maxPredicted": 0.25913021963361493
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.26014393374349915,
+        "observedRate": 0.16666666666666666,
+        "minPredicted": 0.25913021963361493,
+        "maxPredicted": 0.26115764785338336
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2653408501532188,
+        "observedRate": 0.16666666666666666,
+        "minPredicted": 0.26115764785338336,
+        "maxPredicted": 0.2706899281243041
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.2740790244645692,
+        "observedRate": 0.3333333333333333,
+        "minPredicted": 0.27114877645398033,
+        "maxPredicted": 0.27639579947052484
+      },
+      {
+        "n": 6,
+        "meanPredicted": 0.28330108493396794,
+        "observedRate": 1,
+        "minPredicted": 0.2766595912569699,
+        "maxPredicted": 0.2939701497779111
+      },
+      {
+        "n": 7,
+        "meanPredicted": 0.3521055987356195,
+        "observedRate": 0,
+        "minPredicted": 0.2947579323117346,
+        "maxPredicted": 0.4168325101959328
+      }
+    ]
+  }
+}
