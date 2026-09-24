@@ -7,6 +7,7 @@ import { BottomNav } from '@/components/BottomNav'
 import { JsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
 import { ServiceWorker } from '@/components/ServiceWorker'
+import { SiteAnalytics } from '@/components/SiteAnalytics'
 import { AuthProvider } from '@/lib/auth/context'
 import {
   BASE_OPEN_GRAPH,
@@ -15,6 +16,7 @@ import {
   SITE_URL,
   TITLE_SUFFIX,
 } from '@/lib/seo/metadata'
+import { verificationMetadata } from '@/lib/seo/services'
 import { APP_VERSION, BUILD_TIME } from '@/lib/ui/version'
 import { WELCOME_BOOT_SCRIPT } from '@/lib/ui/welcome'
 import './globals.css'
@@ -41,6 +43,8 @@ export const metadata: Metadata = {
   title: { default: SITE_NAME, template: `%s${TITLE_SUFFIX}` },
   description: DEFAULT_DESCRIPTION,
   applicationName: 'FungiCast',
+  // Search Console e Bing: vuoto finché non c'è un codice (`lib/seo/services.ts`).
+  verification: verificationMetadata(),
   manifest: '/manifest.webmanifest',
   appleWebApp: { capable: true, title: 'FungiCast', statusBarStyle: 'black-translucent' },
   openGraph: {
@@ -130,6 +134,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           <BottomNav />
         </AuthProvider>
         <ServiceWorker />
+        <SiteAnalytics />
         {/*
          * Widget flottante di Buy Me a Coffee: script ufficiale, caricato dopo tutto il resto
          * (`lazyOnload`) perché non è mai necessario all'uso dell'app. Un'unica istanza qui basta
