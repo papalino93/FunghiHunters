@@ -1,5 +1,6 @@
 import type { MetadataRoute } from 'next'
 
+import { PICKING_RULES } from '@/lib/rules'
 import { SITE_URL } from '@/lib/seo/metadata'
 import { loadItaliaIndex } from '@/lib/snapshot/load-italia'
 
@@ -38,5 +39,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${SITE_URL}/meteo`, changeFrequency: 'daily', priority: 0.5 },
     { url: `${SITE_URL}/guida`, changeFrequency: 'monthly', priority: 0.4 },
     { url: `${SITE_URL}/metodo`, changeFrequency: 'monthly', priority: 0.5 },
+    { url: `${SITE_URL}/regole`, changeFrequency: 'monthly', priority: 0.6 },
+    ...PICKING_RULES.map((r) => ({
+      url: `${SITE_URL}/regole/${r.slug}`,
+      lastModified: new Date(`${r.verifiedOn}T12:00:00Z`),
+      changeFrequency: 'monthly' as const,
+      priority: 0.5,
+    })),
   ]
 }

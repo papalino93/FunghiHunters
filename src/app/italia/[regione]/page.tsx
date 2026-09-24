@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 
 import { TodayScreen } from '@/components/today/TodayScreen'
+import { rulesLinksFor } from '@/lib/rules/links'
 import { pageMetadata } from '@/lib/seo/metadata'
 import { loadItaliaIndex, loadRegion } from '@/lib/snapshot/load-italia'
 import { toListSnapshot } from '@/lib/snapshot/list-view'
@@ -74,6 +75,20 @@ export default async function Page({ params }: { params: Promise<{ regione: stri
           ← Tutte le regioni
         </Link>
         <h1 className="mt-1 text-lg font-semibold text-ink">{name}</h1>
+        <p className="text-sm text-ink-dim">
+          Regole di raccolta:{' '}
+          {rulesLinksFor(regione, name.split('/')[0] ?? name).map((link, i) => (
+            <span key={link.slug}>
+              {i > 0 && ' · '}
+              <Link
+                href={`/regole/${link.slug}`}
+                className="inline-block py-1.5 text-accent underline underline-offset-2"
+              >
+                {link.name}
+              </Link>
+            </span>
+          ))}
+        </p>
       </div>
       {/*
         * `catalogue: true`: queste sono le zone del catalogo nazionale, e i collegamenti verso la

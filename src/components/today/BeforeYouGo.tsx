@@ -5,6 +5,7 @@ import { useState } from 'react'
 
 import type { Suggestion } from '@/lib/recommend/rank'
 import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
+import { rulesLinksFor } from '@/lib/rules/links'
 
 /**
  * "Prima di partire".
@@ -12,7 +13,7 @@ import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
  * Informazioni che servono **prima** di mettersi in macchina, non dopo. Chiusa per default,
  * perché chi le ha già lette non deve scorrerle ogni volta, ma sempre allo stesso posto.
  *
- * Le norme hanno una data: sono state verificate il 14 settembre 2026 sulla pagina ufficiale
+ * Le norme hanno una data: sono state verificate il 24 settembre 2026 sulla pagina ufficiale
  * della Regione. Una regola citata senza data invecchia in silenzio, ed è peggio che non citarla.
  *
  * **Bug corretto (22/09/2026, trovato mentre si estendeva questo componente)**: il blocco
@@ -24,7 +25,7 @@ import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
  * un'altra regione che non sono state verificate.
  */
 
-const RULES_CHECKED_ON = '14 settembre 2026'
+const RULES_CHECKED_ON = '24 settembre 2026'
 const RULES_SOURCE = 'https://www.regione.toscana.it/-/raccolta-funghi-ecco-le-disposizioni'
 
 export function BeforeYouGo({
@@ -38,6 +39,7 @@ export function BeforeYouGo({
 }) {
   const [open, setOpen] = useState(false)
   const isToscana = regionSlug === DEFAULT_REGION_SLUG
+  const rulesLinks = rulesLinksFor(regionSlug, regionName)
 
   return (
     <section className="rounded-xl border border-edge bg-surface-1">
@@ -83,11 +85,10 @@ export function BeforeYouGo({
             </>
           ) : (
             <Block title="Norme locali">
-              Il tesserino, i limiti di raccolta e gli orari cambiano da regione a regione: quelli
-              che conosciamo con una fonte verificata sono solo per la Toscana (L.R. 16/1999). Per{' '}
-              <strong className="text-ink">{regionName}</strong> verifica le norme presso il
-              comune o l&apos;ente regionale competente prima di partire — non abbiamo un dato
-              verificato da mostrare qui, e preferiamo dirlo piuttosto che indovinare.
+              Il tesserino, i limiti di raccolta e gli orari cambiano da regione a regione. Per{' '}
+              <strong className="text-ink">{regionName}</strong> li trovi riassunti dalle fonti
+              ufficiali, con la data di verifica, nella pagina delle regole qui sotto; dove una
+              regola non è confermata lo diciamo, invece di indovinarla.
             </Block>
           )}
 
@@ -130,6 +131,21 @@ export function BeforeYouGo({
               . Verifica sempre la versione vigente: questa è una comodità, non una fonte legale.
             </p>
           )}
+
+          <p className="text-sm">
+            Regole di raccolta:{' '}
+            {rulesLinks.map((link, i) => (
+              <span key={link.slug}>
+                {i > 0 && ' · '}
+                <Link
+                  href={`/regole/${link.slug}`}
+                  className="inline-block py-1.5 font-medium text-accent underline underline-offset-2"
+                >
+                  {link.name}
+                </Link>
+              </span>
+            ))}
+          </p>
 
           <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-warn">
             L&apos;app non riconosce le specie e non dice mai se un fungo è commestibile. Per
