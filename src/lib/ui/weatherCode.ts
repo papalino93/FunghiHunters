@@ -26,3 +26,27 @@ export function weatherCodeLabel(code: number | null): string | null {
   if (code === null) return null
   return LABELS.find((entry) => entry.codes.includes(code))?.label ?? null
 }
+
+/** La famiglia di icona per un codice WMO: poche figure, riconoscibili a colpo d'occhio. */
+export type WeatherIconKind =
+  | 'sole'
+  | 'poco-nuvoloso'
+  | 'coperto'
+  | 'nebbia'
+  | 'pioggerella'
+  | 'pioggia'
+  | 'temporale'
+  | 'neve'
+
+export function weatherCodeIcon(code: number | null): WeatherIconKind | null {
+  if (code === null) return null
+  if (code === 0) return 'sole'
+  if (code === 1 || code === 2) return 'poco-nuvoloso'
+  if (code === 3) return 'coperto'
+  if (code === 45 || code === 48) return 'nebbia'
+  if (code >= 51 && code <= 57) return 'pioggerella'
+  if ((code >= 61 && code <= 67) || (code >= 80 && code <= 82)) return 'pioggia'
+  if ((code >= 71 && code <= 77) || code === 85 || code === 86) return 'neve'
+  if (code >= 95 && code <= 99) return 'temporale'
+  return null
+}

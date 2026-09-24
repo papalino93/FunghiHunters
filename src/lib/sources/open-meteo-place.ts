@@ -93,6 +93,8 @@ export interface PlaceDailyWeather {
   readonly vpdMeanKpa: number | null
   readonly soilMoistureMean: number | null
   readonly soilTemperatureMeanC: number | null
+  /** Codice WMO del giorno: il tempo più significativo (Open-Meteo), per l'icona della tabella. */
+  readonly weatherCode: number | null
   readonly isForecast: boolean
 }
 
@@ -148,6 +150,7 @@ const DAILY_VARS = [
   'wind_speed_10m_max',
   'wind_gusts_10m_max',
   'et0_fao_evapotranspiration',
+  'weather_code',
 ] as const
 
 const HOURLY_VARS = [
@@ -247,6 +250,7 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
   const windMax = numberColumn(parsed.daily, 'wind_speed_10m_max')
   const gustMax = numberColumn(parsed.daily, 'wind_gusts_10m_max')
   const et0 = numberColumn(parsed.daily, 'et0_fao_evapotranspiration')
+  const dailyCode = numberColumn(parsed.daily, 'weather_code')
 
   const hourlyTimes = timeColumn(parsed.hourly)
   const humidityByDay = aggregateHourlyToDaily(hourlyTimes, numberColumn(parsed.hourly, 'relative_humidity_2m'))
@@ -278,6 +282,7 @@ export function parsePlaceForecast(payload: unknown): PlaceForecast {
       vpdMeanKpa: vpdByDay.get(date) ?? null,
       soilMoistureMean: soilMoistureByDay.get(date) ?? null,
       soilTemperatureMeanC: soilTempByDay.get(date) ?? null,
+      weatherCode: dailyCode[i] ?? null,
       isForecast: date > todayIso,
     }))
     .filter((d) => d.date !== '')

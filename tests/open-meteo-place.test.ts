@@ -120,3 +120,30 @@ describe('normalizzazione della risposta', () => {
     expect(result.hourlyByDate[tomorrow]).toBeUndefined()
   })
 })
+
+describe('icona del tempo', () => {
+  it('raggruppa i codici WMO nelle figure giuste', async () => {
+    const { weatherCodeIcon } = await import('@/lib/ui/weatherCode')
+    expect(weatherCodeIcon(0)).toBe('sole')
+    expect(weatherCodeIcon(2)).toBe('poco-nuvoloso')
+    expect(weatherCodeIcon(3)).toBe('coperto')
+    expect(weatherCodeIcon(45)).toBe('nebbia')
+    expect(weatherCodeIcon(53)).toBe('pioggerella')
+    expect(weatherCodeIcon(63)).toBe('pioggia')
+    expect(weatherCodeIcon(81)).toBe('pioggia')
+    expect(weatherCodeIcon(73)).toBe('neve')
+    expect(weatherCodeIcon(95)).toBe('temporale')
+    expect(weatherCodeIcon(null)).toBeNull()
+  })
+
+  it('chiede e legge il codice meteo giornaliero', async () => {
+    const { buildPlaceForecastUrl, parsePlaceForecast } = await import('@/lib/sources/open-meteo-place')
+    expect(new URL(buildPlaceForecastUrl(43.9, 11.4, null)).searchParams.get('daily')).toContain('weather_code')
+    const f = parsePlaceForecast({
+      latitude: 43.9, longitude: 11.4,
+      daily: { time: ['2026-09-24'], weather_code: [61], precipitation_sum: [3] },
+      hourly: { time: [] },
+    })
+    expect(f.daily[0]?.weatherCode).toBe(61)
+  })
+})

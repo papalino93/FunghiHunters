@@ -14,6 +14,7 @@ import {
 } from '@/lib/sources/open-meteo-place'
 import { formatDate, formatValue } from '@/lib/ui/scale'
 import { weatherCodeLabel } from '@/lib/ui/weatherCode'
+import { WeatherBadge, WeatherIcon } from '@/components/meteo/WeatherIcon'
 
 /**
  * Meteo e pluviometria per un luogo qualsiasi.
@@ -174,7 +175,7 @@ export function MeteoScreen() {
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-8">
+    <div className="mx-auto flex max-w-2xl flex-col gap-4 p-4 pb-8 lg:max-w-4xl">
       <header>
         <h1 className="text-lg font-semibold text-ink">Meteo</h1>
         <p className="mt-1 text-xs leading-snug text-ink-dim">
@@ -339,14 +340,17 @@ function CurrentCard({ forecast }: { forecast: PlaceForecast }) {
   return (
     <div className="rounded-lg bg-surface-2 p-3">
       <p className="text-xs text-ink-faint">Adesso{description !== null ? ` · ${description}` : ''}</p>
-      <p className="mt-0.5 text-2xl font-semibold text-ink">
-        {formatValue(c.temperatureC, '°C', 0)}
-        {c.apparentTemperatureC !== null && (
-          <span className="ml-1.5 text-sm font-normal text-ink-faint">
-            percepiti {formatValue(c.apparentTemperatureC, '°C', 0)}
-          </span>
-        )}
-      </p>
+      <div className="mt-0.5 flex items-center gap-2.5">
+        <WeatherIcon code={c.weatherCode} size={36} />
+        <p className="text-2xl font-semibold text-ink">
+          {formatValue(c.temperatureC, '°C', 0)}
+          {c.apparentTemperatureC !== null && (
+            <span className="ml-1.5 text-sm font-normal text-ink-faint">
+              percepiti {formatValue(c.apparentTemperatureC, '°C', 0)}
+            </span>
+          )}
+        </p>
+      </div>
       <dl className="mt-2 grid grid-cols-2 gap-2 text-xs sm:grid-cols-4">
         <Stat label="Umidità" value={formatValue(c.humidityPercent, '%', 0)} />
         <Stat label="Pioggia" value={formatValue(c.precipitationMm, 'mm', 1)} />
@@ -424,13 +428,14 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
       <p className="mb-1.5 text-xs font-semibold text-ink-dim">Giorno per giorno</p>
       <p className="mb-1.5 text-xs text-ink-faint">Tocca un giorno per il dettaglio ora per ora.</p>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-left text-xs">
+        <table className="w-full min-w-[640px] whitespace-nowrap text-left text-xs">
           <thead>
             <tr className="text-ink-faint">
               <th className="py-1 pr-2 font-medium">Giorno</th>
+              <th className="py-1 pr-2 font-medium">Tempo</th>
               <th className="py-1 pr-2 font-medium">Pioggia</th>
               <th className="py-1 pr-2 font-medium">Min/Max</th>
-              <th className="py-1 pr-2 font-medium">Vento</th>
+              <th className="py-1 pr-2 font-medium">Vento (raffica)</th>
               <th className="py-1 pr-2 font-medium">Umidità</th>
               <th className="py-1 pr-2 font-medium">Suolo</th>
               <th className="py-1 font-medium">ET0</th>
@@ -469,15 +474,19 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                         )}
                       </button>
                     </td>
+                    <td className="py-1.5 pr-2 text-ink-dim">
+                      <WeatherBadge code={day.weatherCode} />
+                    </td>
                     <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.precipitationMm, 'mm', 1)}</td>
                     <td className="py-1.5 pr-2 text-ink-dim">
                       {formatValue(day.temperatureMinC, '', 0)} / {formatValue(day.temperatureMaxC, '°C', 0)}
                     </td>
                     <td className="py-1.5 pr-2 text-ink-dim">
-                      {formatValue(day.windMaxKmh, 'km/h', 0)}
+                      {formatValue(day.windMaxKmh, '', 0)}
                       {day.windGustMaxKmh !== null && (
-                        <span className="text-ink-faint"> ({formatValue(day.windGustMaxKmh, 'km/h', 0)} raffica)</span>
-                      )}
+                        <span className="text-ink-faint"> ({formatValue(day.windGustMaxKmh, '', 0)})</span>
+                      )}{' '}
+                      km/h
                     </td>
                     <td className="py-1.5 pr-2 text-ink-dim">{formatValue(day.humidityMeanPercent, '%', 0)}</td>
                     <td className="py-1.5 pr-2 text-ink-dim">
@@ -501,7 +510,7 @@ function DailyTable({ forecast }: { forecast: PlaceForecast }) {
                         node?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
                       }}
                     >
-                      <td colSpan={7} className="bg-surface-2 p-0">
+                      <td colSpan={8} className="bg-surface-2 p-0">
                         <HourlyDetail hours={forecast.hourlyByDate[day.date] ?? []} />
                       </td>
                     </tr>
@@ -542,7 +551,9 @@ function HourlyDetail({ hours }: { hours: readonly PlaceHourlyWeather[] }) {
           {hours.map((h) => (
             <tr key={h.time} className="border-t border-edge/60">
               <td className="py-1 pr-2 text-ink">{formatHour(h.time)}</td>
-              <td className="py-1 pr-2 text-ink-dim">{weatherCodeLabel(h.weatherCode) ?? '—'}</td>
+              <td className="py-1 pr-2 text-ink-dim">
+                <WeatherBadge code={h.weatherCode} />
+              </td>
               <td className="py-1 pr-2 text-ink-dim">{formatValue(h.temperatureC, '°C', 0)}</td>
               <td className="py-1 pr-2 text-ink-dim">{formatValue(h.precipitationMm, 'mm', 1)}</td>
               <td className="py-1 pr-2 text-ink-dim">
