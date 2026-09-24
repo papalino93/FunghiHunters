@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
 
@@ -51,8 +51,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
    * Zona preselezionata da "Dove vado oggi".
    *
    * Arrivare qui da una scheda deve aprire quella zona, altrimenti il pulsante "vedi sulla mappa"
-   * prometterebbe qualcosa che non fa. Il parametro vale come stato iniziale: appena l'utente
-   * tocca un'altra zona, comanda lui.
+   * prometterebbe qualcosa che non fa.
    */
   const searchParams = useSearchParams()
   const initialCode = searchParams.get('zona')
@@ -67,9 +66,49 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
       ? requestedDate
       : todayDate,
   )
-  const [override, setOverride] = useState<string | null | undefined>(undefined)
-  const selectedCode = override === undefined ? initialCode : override
-  const setSelectedCode = setOverride
+  /*
+   * La zona aperta sta nell'indirizzo (`?zona=`), non in uno stato a parte: così il link si può
+   * condividere o salvare, e il tasto indietro del telefono chiude la scheda invece di uscire
+   * dalla mappa. Next integra `pushState`/`replaceState` con `useSearchParams`.
+   *
+   * Aprire una zona dalla mappa aggiunge una voce alla cronologia; passare a un'altra zona o
+   * chiuderne una arrivata dal link della home la sostituisce, per non riempire la cronologia.
+   */
+  const selectedCode =
+    initialCode !== null && snapshot.zones.some((z) => z.code === initialCode) ? initialCode : null
+  const openedHere = useRef(false)
+  useEffect(() => {
+    if (selectedCode === null) openedHere.current = false
+  }, [selectedCode])
+  const writeUrl = (mutate: (params: URLSearchParams) => void, push: boolean): void => {
+    const params = new URLSearchParams(window.location.search)
+    mutate(params)
+    const query = params.toString()
+    const url = `${window.location.pathname}${query === '' ? '' : `?${query}`}`
+    if (push) window.history.pushState(null, '', url)
+    else window.history.replaceState(null, '', url)
+  }
+  const setSelectedCode = (code: string | null): void => {
+    if (code === null) {
+      if (openedHere.current) {
+        openedHere.current = false
+        window.history.back()
+        return
+      }
+      writeUrl((params) => { params.delete('zona') }, false)
+      return
+    }
+    const push = selectedCode === null
+    if (push) openedHere.current = true
+    writeUrl((params) => { params.set('zona', code) }, push)
+  }
+  const changeDate = (date: string): void => {
+    setSelectedDate(date)
+    writeUrl((params) => {
+      if (date === todayDate) params.delete('giorno')
+      else params.set('giorno', date)
+    }, false)
+  }
   const [showStations, setShowStations] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
 
@@ -266,7 +305,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
                 dates={dates}
                 selectedDate={selectedDate}
                 todayDate={todayDate}
-                onChange={setSelectedDate}
+                onChange={changeDate}
                 provenance={selectedProvenance}
               />
             </div>
@@ -287,7 +326,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
               dates={dates}
               selectedDate={selectedDate}
               todayDate={todayDate}
-              onChange={setSelectedDate}
+              onChange={changeDate}
               provenance={selectedProvenance}
             />
             <ZoneSheet
