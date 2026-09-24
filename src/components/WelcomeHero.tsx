@@ -126,7 +126,9 @@ export function WelcomeHero({ zoneCount }: WelcomeHeroProps) {
           * essere una porta — che è il difetto da cui questa scheda nasce.
           */}
         <p className="mt-1.5 text-sm leading-snug text-ink-dim">
-          Qui sotto {zoneCount === 1 ? "l'unica area coperta" : `le ${zoneCount} aree`} in fila,
+          {/* «dalla più consigliata», non «le 7 aree»: l'elenco ne mostra le prime cinque, e il
+              numero prometteva schede che poi non c'erano. */}
+          Qui sotto {zoneCount === 1 ? "l'unica area coperta" : 'le aree, dalla più consigliata'},
           ognuna con un punteggio da 0 a 100: quanto pioggia, temperature e stagione di quel bosco
           somigliano — oggi — alle condizioni in cui nasce il porcino.
         </p>

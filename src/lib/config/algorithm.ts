@@ -417,6 +417,12 @@ export interface TriggerConfig {
   readonly lagSigmaDays: Param
   /** Quanto l'innesco puo' alzare il punteggio, in frazione. */
   readonly weight: Param
+  /**
+   * Quota della parte mancante del punteggio idrico che la pioggia intensa restituisce nel pieno
+   * della finestra (moltiplicata per quanto si e' vicini al picco atteso). Vedi `computeMpi` e la
+   * nota della versione 1.5.0.
+   */
+  readonly waterRelief: Param
 }
 
 // ============================================================================
@@ -626,7 +632,11 @@ export interface AlgorithmConfig {
  * mappa e' generica il punteggio non scende: scende la confidence. Vedi `src/lib/model/forest.ts`.
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
-  version: '1.4.0-porcino',
+  /*
+   * 1.5.0 (24/09/2026): la pioggia intensa di due settimane prima non viene piu' annullata dal
+   * terreno che nel frattempo si e' asciugato. Motivo e dato: `trigger.waterRelief`.
+   */
+  version: '1.5.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -732,6 +742,34 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       0.35,
       'Quanto l\'innesco alza il punteggio. La direzione e il ritardo hanno una fonte, ' +
         'l\'ampiezza no.',
+    ),
+    /*
+     * Il primo parametro tarato su un'osservazione sul campo, non su un ragionamento.
+     *
+     * Il 23 e 24 settembre 2026 nel Mugello si trovavano porcini in abbondanza (segnalazione
+     * certa del proprietario del progetto; in tutta la Toscana voci concordi, senza luoghi
+     * precisi). Il modello 1.4.0 dava 12/100, «condizioni sfavorevoli»: dopo i 36 mm del 10
+     * settembre il bilancio idrico, con un dimezzamento di circa 12 giorni e il fabbisogno
+     * alzato a 100 mm perche' il terreno partiva secco, contava 27 mm efficaci e il fattore acqua
+     * scendeva a 0.14, schiacciando per moltiplicazione tutto il resto — compreso l'innesco,
+     * che pure segnalava il picco atteso proprio quei giorni.
+     *
+     * Nessun ritocco ai parametri del bilancio bastava (provati: senza deficit iniziale,
+     * decadimento dimezzato, innesco a peso pieno, e le combinazioni: il Mugello restava sotto
+     * 25). Il difetto e' di struttura: la fruttificazione segue la pioggia intensa con un ritardo
+     * (Salerni 2023, 12 giorni, fonte peer-reviewed gia' in `lagDays`), e in quel ritardo il
+     * suolo superficiale si asciuga per forza. Un bilancio che lo punisce contraddice la fonte
+     * stessa dell'innesco. Qui, nella finestra, la pioggia intensa restituisce questa quota di cio'
+     * che manca al fattore acqua, in proporzione alla vicinanza al picco: fuori finestra non cambia
+     * niente, e piu' acqua resta sempre meglio di meno acqua.
+     *
+     * Il valore e' tarato su un solo luogo e due giorni: e' un'ipotesi da verificare con le
+     * uscite del diario, non una misura.
+     */
+    waterRelief: calibrate(
+      0.8,
+      'Tarato sul Mugello, 23-24 settembre 2026 (porcini abbondanti con 12/100 del modello 1.4.0): ' +
+        'nella finestra dopo una pioggia intensa l\'acqua non azzera piu\' il punteggio.',
     ),
   },
 

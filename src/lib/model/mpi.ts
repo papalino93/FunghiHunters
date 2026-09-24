@@ -187,6 +187,7 @@ export function computeTrigger(
   if (days === null) {
     return {
       factor: 1,
+      closeness: 0,
       daysSinceEvent: null,
       detail: `nessuna pioggia oltre ${t.intenseEventMm.value} mm in un giorno nella finestra`,
     }
@@ -194,9 +195,10 @@ export function computeTrigger(
   const closeness = gaussian(days, t.lagDays.value, t.lagSigmaDays.value)
   return {
     factor: 1 + t.weight.value * closeness,
+    closeness,
     daysSinceEvent: days,
     detail:
-      `ultima pioggia intensa ${days} giorni fa; il massimo atteso e' al giorno ` +
+      `ultima pioggia intensa ${days} giorni fa; il massimo atteso è al giorno ` +
       `${t.lagDays.value.toFixed(0)}`,
   }
 }
@@ -307,12 +309,17 @@ export function computePenalties(
 export interface TriggerResult {
   /** Moltiplicatore applicato, 1 quando nessun evento intenso e' in finestra. */
   readonly factor: number
+  /** Vicinanza al picco atteso, 0-1 (0 senza evento intenso in finestra). */
+  readonly closeness: number
   readonly daysSinceEvent: number | null
   readonly detail: string
 }
 
 export interface MpiComponents {
+  /** Il fattore acqua usato nel punteggio: il bilancio, o il minimo dopo una pioggia intensa. */
   readonly water: number
+  /** Il solo bilancio idrico, prima del minimo dopo pioggia intensa (1.5.0). */
+  readonly waterBalance: number
   readonly trigger: TriggerResult
   readonly thermal: ThermalResult
   readonly phenology: number
@@ -367,7 +374,15 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
     anomalyFactor
 
   const trigger = computeTrigger(features, config)
-  const core = features.water.score * thermal.score * phenology * trigger.factor
+  // Nella finestra dopo una pioggia intensa il suolo che si asciuga non azzera il punteggio:
+  // vedi `trigger.waterRelief` in `config/algorithm.ts` (versione 1.5.0) per dato e motivo.
+  //
+  // Si somma alla parte che manca, non si prende il massimo: con un «almeno X» due piogge diverse
+  // (25 mm dopo la siccità o su terreno umido, 50 o 120 mm) finivano allo stesso valore, e il
+  // bilancio smetteva di distinguerle proprio nei giorni che contano. Così resta monotono.
+  const relief = config.trigger.waterRelief.value * trigger.closeness
+  const water = features.water.score + (1 - features.water.score) * relief
+  const core = water * thermal.score * phenology * trigger.factor
   const penalties = computePenalties(features, config)
   const penaltyProduct = penalties.reduce((acc, p) => acc * p.factor, 1)
 
@@ -395,7 +410,8 @@ export function computeMpi(input: MpiInput, config: AlgorithmConfig = ALGORITHM_
     algorithmVersion: config.version,
     date: features.date,
     components: {
-      water: features.water.score,
+      water,
+      waterBalance: features.water.score,
       trigger,
       thermal,
       phenology,

@@ -26,6 +26,8 @@ import { InstallPrompt } from '@/components/InstallPrompt'
 import { RegionPicker } from '@/components/RegionPicker'
 import { DEFAULT_REGION_SLUG, type RegionChoice } from '@/lib/region/preference'
 import { formatDate } from '@/lib/ui/scale'
+import { today as localToday } from '@/lib/domain/time'
+import { effectiveToday } from '@/lib/snapshot/freshness'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { useFollowedZones } from '@/lib/zones/useFollowedZones'
 import { useItaliaIndexClient } from '@/lib/zones/useItaliaIndexClient'
@@ -90,7 +92,8 @@ export function TodayScreen({
   region = TUSCANY_CALIBRATION,
   heading = true,
 }: TodayScreenProps) {
-  const today = snapshot.referenceDate
+  // Vedi `effectiveToday`: uno snapshot di ieri non deve chiamare «oggi» il giorno prima.
+  const today = effectiveToday(snapshot, localToday())
   const hydrated = useIsHydrated()
 
   /*

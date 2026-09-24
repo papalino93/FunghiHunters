@@ -5,6 +5,8 @@ import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
 
 import type { Snapshot } from '@/lib/snapshot/types'
+import { today as localToday } from '@/lib/domain/time'
+import { effectiveToday } from '@/lib/snapshot/freshness'
 import type { RegionChoice } from '@/lib/region/preference'
 import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
 import { RegionPicker } from '@/components/RegionPicker'
@@ -36,7 +38,8 @@ export interface AppShellProps {
 }
 
 export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: AppShellProps) {
-  const todayDate = snapshot.referenceDate
+  // Vedi `effectiveToday`: uno snapshot di ieri non deve chiamare «oggi» il giorno prima.
+  const todayDate = effectiveToday(snapshot, localToday())
   const dates = useMemo(
     () => snapshot.zones[0]?.series.map((p) => p.date) ?? [todayDate],
     [snapshot.zones, todayDate],
