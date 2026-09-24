@@ -1,5 +1,7 @@
 import Link from 'next/link'
 
+import { ANALYTICS_ENABLED } from '@/lib/seo/services'
+
 /**
  * La guida dell'app, in una pagina sola.
  *
@@ -201,6 +203,9 @@ export function GuideScreen() {
             'I punti salvati (fissi e di un’uscita) restano sempre e solo sul dispositivo: non vengono mai sincronizzati, con o senza account.',
             'La posizione precisa di un’uscita viene salvata sfocata a circa un chilometro, a meno che tu scelga esplicitamente «coordinate esatte» per quella voce.',
             'La sfocatura è definitiva: una volta salvata l’area, le coordinate precise non esistono più da nessuna parte.',
+            ...(ANALYTICS_ENABLED
+              ? ['Contiamo le visite con Vercel Web Analytics, senza cookie e senza identificativi salvati sul dispositivo: vediamo quante persone aprono quali pagine, in forma aggregata, non chi sei né dove ti trovi. Anche la velocità delle pagine è misurata così.']
+              : []),
           ]}
         />
         <p className="text-ink-faint">

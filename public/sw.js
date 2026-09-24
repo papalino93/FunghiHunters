@@ -95,6 +95,9 @@ self.addEventListener('fetch', (event) => {
   // del router, e offline non servono: se falliscono il router di Next ripiega su una navigazione
   // completa, che passa da qui come documento e trova la copia HTML o la pagina offline.
   if (isRscRequest(request, url)) return
+  // Statistiche di Vercel (`/_vercel/insights`, `/_vercel/speed-insights`): solo rete, mai in
+  // cache. Offline non servono, e salvate occupavano posti destinati alle pagine.
+  if (url.pathname.startsWith('/_vercel/')) return
 
   if (request.mode === 'navigate') {
     handleNavigation(event)
