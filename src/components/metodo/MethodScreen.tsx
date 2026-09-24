@@ -154,6 +154,10 @@ export function MethodScreen({ nationalZones }: { nationalZones: number }) {
         <Link href="/guida" className="text-accent underline underline-offset-2">
           Come si usa l&apos;app, schermata per schermata
         </Link>
+        {' · '}
+        <Link href="/regole" className="text-accent underline underline-offset-2">
+          Le regole di raccolta, regione per regione
+        </Link>
       </p>
     </div>
   )
