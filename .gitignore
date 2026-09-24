@@ -50,3 +50,6 @@ next-env.d.ts
 # asset vendor copiati a ogni build
 /public/maplibre/
 .forest-work/
+
+# Cartelle di lavoro temporanee degli agenti (git worktree): mai nel repository.
+.claude/worktrees/
