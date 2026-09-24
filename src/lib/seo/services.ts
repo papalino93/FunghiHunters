@@ -17,9 +17,10 @@ export const BING_SITE_VERIFICATION = process.env.NEXT_PUBLIC_BING_SITE_VERIFICA
 
 /**
  * Vercel Web Analytics e Speed Insights: niente cookie, niente identificativi salvati sul
- * dispositivo, visite contate in forma aggregata. Accesi solo dopo averli attivati nel pannello.
+ * dispositivo, visite contate in forma aggregata. Accesi dal 24/09/2026; `NEXT_PUBLIC_ANALYTICS=0`
+ * su Vercel li spegne senza toccare il codice.
  */
-export const ANALYTICS_ENABLED = process.env.NEXT_PUBLIC_ANALYTICS === '1'
+export const ANALYTICS_ENABLED = process.env.NEXT_PUBLIC_ANALYTICS !== '0'
 
 /** I metadati di verifica, nel formato di `Metadata['verification']`; vuoto se non ce ne sono. */
 export function verificationMetadata(): { google?: string; other?: Record<string, string> } {
