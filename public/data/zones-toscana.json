@@ -5,7 +5,7 @@
     "https://api.open-meteo.com/v1/elevation"
   ],
   "license": "CC-BY (ISTAT, via guglielmo/geojson-italy)",
-  "generatedAt": "2026-09-25T07:39:38.304Z",
+  "generatedAt": "2026-09-25T07:50:18.558Z",
   "criteria": {
     "minElevationM": 0,
     "maxZones": 273,
@@ -18,9 +18,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.88011,
-      "longitude": 11.69007,
-      "elevationM": 650,
+      "latitude": 42.87713,
+      "longitude": 11.687,
+      "elevationM": 761,
       "forest": []
     },
     {
@@ -29,9 +29,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 44.13473,
-      "longitude": 10.70446,
-      "elevationM": 1075,
+      "latitude": 44.13397,
+      "longitude": 10.70131,
+      "elevationM": 1053,
       "forest": []
     },
     {
@@ -40,9 +40,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.89955,
-      "longitude": 10.99774,
-      "elevationM": 42,
+      "latitude": 43.8975,
+      "longitude": 10.99536,
+      "elevationM": 41,
       "forest": []
     },
     {
@@ -51,9 +51,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.81829,
-      "longitude": 10.68047,
-      "elevationM": 17,
+      "latitude": 43.82693,
+      "longitude": 10.6974,
+      "elevationM": 18,
       "forest": []
     },
     {
@@ -62,9 +62,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.53728,
-      "longitude": 12.02598,
-      "elevationM": 350,
+      "latitude": 43.53866,
+      "longitude": 12.02124,
+      "elevationM": 420,
       "forest": []
     },
     {
@@ -73,9 +73,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.84896,
-      "longitude": 11.48388,
-      "elevationM": 1002,
+      "latitude": 42.84829,
+      "longitude": 11.49088,
+      "elevationM": 1000,
       "forest": []
     },
     {
@@ -84,9 +84,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.44788,
-      "longitude": 11.91613,
-      "elevationM": 283,
+      "latitude": 43.44602,
+      "longitude": 11.92574,
+      "elevationM": 315,
       "forest": []
     },
     {
@@ -95,9 +95,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.23123,
-      "longitude": 11.51976,
-      "elevationM": 228,
+      "latitude": 43.2362,
+      "longitude": 11.52592,
+      "elevationM": 203,
       "forest": []
     },
     {
@@ -106,9 +106,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.19768,
-      "longitude": 9.9893,
-      "elevationM": 86,
+      "latitude": 44.19497,
+      "longitude": 9.99067,
+      "elevationM": 114,
       "forest": []
     },
     {
@@ -117,9 +117,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.70339,
-      "longitude": 12.17964,
-      "elevationM": 671,
+      "latitude": 43.69839,
+      "longitude": 12.17508,
+      "elevationM": 752,
       "forest": []
     },
     {
@@ -128,9 +128,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.04274,
-      "longitude": 10.63543,
-      "elevationM": 729,
+      "latitude": 44.03988,
+      "longitude": 10.63829,
+      "elevationM": 536,
       "forest": []
     },
     {
@@ -139,9 +139,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.74166,
-      "longitude": 11.33407,
-      "elevationM": 159,
+      "latitude": 43.73526,
+      "longitude": 11.34679,
+      "elevationM": 270,
       "forest": []
     },
     {
@@ -172,9 +172,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.52797,
-      "longitude": 11.19437,
-      "elevationM": 218,
+      "latitude": 43.52878,
+      "longitude": 11.19992,
+      "elevationM": 247,
       "forest": []
     },
     {
@@ -194,9 +194,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.73268,
-      "longitude": 11.85616,
-      "elevationM": 685,
+      "latitude": 43.73617,
+      "longitude": 11.86073,
+      "elevationM": 741,
       "forest": []
     },
     {
@@ -205,9 +205,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.26296,
-      "longitude": 10.62504,
-      "elevationM": 102,
+      "latitude": 43.26369,
+      "longitude": 10.63565,
+      "elevationM": 210,
       "forest": []
     },
     {
@@ -216,9 +216,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.72595,
-      "longitude": 10.64043,
-      "elevationM": 9,
+      "latitude": 43.71477,
+      "longitude": 10.65293,
+      "elevationM": 38,
       "forest": []
     },
     {
@@ -227,9 +227,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.97211,
-      "longitude": 10.50823,
-      "elevationM": 453,
+      "latitude": 43.97282,
+      "longitude": 10.51295,
+      "elevationM": 563,
       "forest": []
     },
     {
@@ -238,9 +238,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.97077,
-      "longitude": 11.41722,
-      "elevationM": 251,
+      "latitude": 43.97778,
+      "longitude": 11.42698,
+      "elevationM": 294,
       "forest": []
     },
     {
@@ -249,9 +249,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.43214,
-      "longitude": 11.60972,
-      "elevationM": 250,
+      "latitude": 43.43372,
+      "longitude": 11.60418,
+      "elevationM": 327,
       "forest": []
     },
     {
@@ -260,9 +260,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.88398,
-      "longitude": 10.73206,
-      "elevationM": 85,
+      "latitude": 43.89476,
+      "longitude": 10.72949,
+      "elevationM": 125,
       "forest": []
     },
     {
@@ -271,9 +271,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.14109,
-      "longitude": 11.46853,
-      "elevationM": 144,
+      "latitude": 43.13778,
+      "longitude": 11.44354,
+      "elevationM": 175,
       "forest": []
     },
     {
@@ -282,9 +282,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.73538,
-      "longitude": 10.59457,
-      "elevationM": 366,
+      "latitude": 43.73779,
+      "longitude": 10.58513,
+      "elevationM": 415,
       "forest": []
     },
     {
@@ -293,9 +293,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.72697,
-      "longitude": 10.52901,
-      "elevationM": 178,
+      "latitude": 43.73345,
+      "longitude": 10.52965,
+      "elevationM": 246,
       "forest": []
     },
     {
@@ -304,9 +304,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.67958,
-      "longitude": 10.61184,
-      "elevationM": 13,
+      "latitude": 43.68363,
+      "longitude": 10.62784,
+      "elevationM": 55,
       "forest": []
     },
     {
@@ -315,9 +315,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.89711,
-      "longitude": 11.19487,
-      "elevationM": 217,
+      "latitude": 43.89485,
+      "longitude": 11.19515,
+      "elevationM": 249,
       "forest": []
     },
     {
@@ -326,9 +326,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.9188,
-      "longitude": 10.3238,
-      "elevationM": 119,
+      "latitude": 43.92404,
+      "longitude": 10.33259,
+      "elevationM": 116,
       "forest": []
     },
     {
@@ -337,9 +337,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.85009,
-      "longitude": 11.26124,
-      "elevationM": 52,
+      "latitude": 42.84234,
+      "longitude": 11.24722,
+      "elevationM": 91,
       "forest": []
     },
     {
@@ -348,9 +348,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.81162,
-      "longitude": 11.12692,
-      "elevationM": 35,
+      "latitude": 43.81394,
+      "longitude": 11.13222,
+      "elevationM": 38,
       "forest": []
     },
     {
@@ -359,9 +359,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.03697,
-      "longitude": 10.61477,
-      "elevationM": 43,
+      "latitude": 43.04709,
+      "longitude": 10.60878,
+      "elevationM": 186,
       "forest": []
     },
     {
@@ -370,9 +370,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.75167,
-      "longitude": 10.22341,
-      "elevationM": 29,
+      "latitude": 42.75544,
+      "longitude": 10.21613,
+      "elevationM": 80,
       "forest": []
     },
     {
@@ -392,9 +392,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 44.03193,
-      "longitude": 11.10492,
-      "elevationM": 455,
+      "latitude": 44.03133,
+      "longitude": 11.09843,
+      "elevationM": 411,
       "forest": []
     },
     {
@@ -403,9 +403,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.45267,
-      "longitude": 11.43013,
-      "elevationM": 153,
+      "latitude": 42.46109,
+      "longitude": 11.42699,
+      "elevationM": 245,
       "forest": []
     },
     {
@@ -414,9 +414,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.58708,
-      "longitude": 10.66576,
-      "elevationM": 79,
+      "latitude": 43.57036,
+      "longitude": 10.6759,
+      "elevationM": 54,
       "forest": []
     },
     {
@@ -425,9 +425,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.83996,
-      "longitude": 10.57555,
-      "elevationM": 15,
+      "latitude": 43.82789,
+      "longitude": 10.58706,
+      "elevationM": 14,
       "forest": []
     },
     {
@@ -436,9 +436,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.75174,
-      "longitude": 10.34591,
-      "elevationM": 0,
+      "latitude": 42.76442,
+      "longitude": 10.35034,
+      "elevationM": 54,
       "forest": []
     },
     {
@@ -447,9 +447,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.56142,
-      "longitude": 11.84635,
-      "elevationM": 305,
+      "latitude": 43.56075,
+      "longitude": 11.83685,
+      "elevationM": 341,
       "forest": []
     },
     {
@@ -458,9 +458,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.75415,
-      "longitude": 10.99746,
-      "elevationM": 107,
+      "latitude": 43.7615,
+      "longitude": 10.99483,
+      "elevationM": 179,
       "forest": []
     },
     {
@@ -469,9 +469,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.04481,
-      "longitude": 9.82064,
-      "elevationM": 237,
+      "latitude": 43.03975,
+      "longitude": 9.8195,
+      "elevationM": 201,
       "forest": []
     },
     {
@@ -480,9 +480,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.6375,
-      "longitude": 11.97378,
-      "elevationM": 651,
+      "latitude": 43.6349,
+      "longitude": 11.96874,
+      "elevationM": 837,
       "forest": []
     },
     {
@@ -502,9 +502,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 43.79924,
-      "longitude": 11.02501,
-      "elevationM": 88,
+      "latitude": 43.79693,
+      "longitude": 11.0196,
+      "elevationM": 132,
       "forest": []
     },
     {
@@ -513,9 +513,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.09397,
-      "longitude": 10.09736,
-      "elevationM": 402,
+      "latitude": 44.09565,
+      "longitude": 10.09045,
+      "elevationM": 199,
       "forest": []
     },
     {
@@ -524,9 +524,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.29588,
-      "longitude": 10.61204,
-      "elevationM": 129,
+      "latitude": 43.2997,
+      "longitude": 10.61782,
+      "elevationM": 210,
       "forest": []
     },
     {
@@ -546,9 +546,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.6858,
-      "longitude": 10.49224,
-      "elevationM": 7,
+      "latitude": 43.69214,
+      "longitude": 10.49093,
+      "elevationM": 4,
       "forest": []
     },
     {
@@ -557,9 +557,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.2006,
-      "longitude": 10.19337,
-      "elevationM": 430,
+      "latitude": 44.20405,
+      "longitude": 10.17782,
+      "elevationM": 325,
       "forest": []
     },
     {
@@ -568,9 +568,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.30935,
-      "longitude": 11.08558,
-      "elevationM": 292,
+      "latitude": 43.30508,
+      "longitude": 11.07857,
+      "elevationM": 324,
       "forest": []
     },
     {
@@ -579,9 +579,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.18467,
-      "longitude": 10.62433,
-      "elevationM": 115,
+      "latitude": 43.18253,
+      "longitude": 10.62904,
+      "elevationM": 82,
       "forest": []
     },
     {
@@ -590,9 +590,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.93231,
-      "longitude": 11.50893,
-      "elevationM": 348,
+      "latitude": 42.92503,
+      "longitude": 11.50526,
+      "elevationM": 278,
       "forest": []
     },
     {
@@ -601,9 +601,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.6405,
-      "longitude": 11.78031,
-      "elevationM": 649,
+      "latitude": 43.64261,
+      "longitude": 11.78321,
+      "elevationM": 634,
       "forest": []
     },
     {
@@ -623,9 +623,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.62165,
-      "longitude": 10.95444,
-      "elevationM": 45,
+      "latitude": 43.62245,
+      "longitude": 10.94179,
+      "elevationM": 107,
       "forest": []
     },
     {
@@ -634,9 +634,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.73843,
-      "longitude": 10.7132,
-      "elevationM": 47,
+      "latitude": 43.74137,
+      "longitude": 10.72756,
+      "elevationM": 81,
       "forest": []
     },
     {
@@ -645,9 +645,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.64324,
-      "longitude": 11.56036,
-      "elevationM": 414,
+      "latitude": 43.64179,
+      "longitude": 11.56683,
+      "elevationM": 535,
       "forest": []
     },
     {
@@ -678,9 +678,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.39597,
-      "longitude": 10.5419,
-      "elevationM": 207,
+      "latitude": 43.39505,
+      "longitude": 10.5509,
+      "elevationM": 238,
       "forest": []
     },
     {
@@ -689,9 +689,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.37607,
-      "longitude": 11.43116,
-      "elevationM": 313,
+      "latitude": 43.37281,
+      "longitude": 11.43695,
+      "elevationM": 279,
       "forest": []
     },
     {
@@ -711,9 +711,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.18774,
-      "longitude": 10.87571,
-      "elevationM": 582,
+      "latitude": 43.18522,
+      "longitude": 10.87403,
+      "elevationM": 553,
       "forest": []
     },
     {
@@ -722,9 +722,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.5491,
-      "longitude": 11.74694,
-      "elevationM": 471,
+      "latitude": 43.54843,
+      "longitude": 11.75594,
+      "elevationM": 501,
       "forest": []
     },
     {
@@ -733,9 +733,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.33193,
-      "longitude": 11.94311,
-      "elevationM": 323,
+      "latitude": 43.32827,
+      "longitude": 11.95234,
+      "elevationM": 449,
       "forest": []
     },
     {
@@ -744,9 +744,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.98318,
-      "longitude": 11.62858,
-      "elevationM": 508,
+      "latitude": 42.97738,
+      "longitude": 11.62274,
+      "elevationM": 582,
       "forest": []
     },
     {
@@ -766,9 +766,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.1823,
-      "longitude": 10.4447,
-      "elevationM": 665,
+      "latitude": 44.185,
+      "longitude": 10.44615,
+      "elevationM": 851,
       "forest": []
     },
     {
@@ -788,9 +788,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.31643,
-      "longitude": 10.51638,
-      "elevationM": 5,
+      "latitude": 43.3094,
+      "longitude": 10.48272,
+      "elevationM": 8,
       "forest": []
     },
     {
@@ -799,9 +799,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.74227,
-      "longitude": 10.8615,
-      "elevationM": 56,
+      "latitude": 43.74906,
+      "longitude": 10.8517,
+      "elevationM": 58,
       "forest": []
     },
     {
@@ -810,9 +810,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.56237,
-      "longitude": 11.07385,
-      "elevationM": 96,
+      "latitude": 43.57173,
+      "longitude": 11.06528,
+      "elevationM": 156,
       "forest": []
     },
     {
@@ -821,9 +821,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.94208,
-      "longitude": 11.91393,
-      "elevationM": 298,
+      "latitude": 42.93705,
+      "longitude": 11.90279,
+      "elevationM": 446,
       "forest": []
     },
     {
@@ -832,9 +832,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.03672,
-      "longitude": 11.82662,
-      "elevationM": 457,
+      "latitude": 43.04193,
+      "longitude": 11.8209,
+      "elevationM": 418,
       "forest": []
     },
     {
@@ -843,9 +843,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.46984,
-      "longitude": 10.64564,
-      "elevationM": 334,
+      "latitude": 43.46646,
+      "longitude": 10.63779,
+      "elevationM": 296,
       "forest": []
     },
     {
@@ -854,9 +854,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.84386,
-      "longitude": 10.72195,
-      "elevationM": 23,
+      "latitude": 43.84092,
+      "longitude": 10.72201,
+      "elevationM": 22,
       "forest": []
     },
     {
@@ -865,9 +865,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.66526,
-      "longitude": 11.89354,
-      "elevationM": 688,
+      "latitude": 43.65893,
+      "longitude": 11.88918,
+      "elevationM": 723,
       "forest": []
     },
     {
@@ -876,9 +876,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.17693,
-      "longitude": 11.14524,
-      "elevationM": 281,
+      "latitude": 43.1826,
+      "longitude": 11.15619,
+      "elevationM": 274,
       "forest": []
     },
     {
@@ -887,9 +887,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.03579,
-      "longitude": 11.94613,
-      "elevationM": 287,
+      "latitude": 43.03027,
+      "longitude": 11.94871,
+      "elevationM": 283,
       "forest": []
     },
     {
@@ -898,9 +898,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.714,
-      "longitude": 11.90482,
-      "elevationM": 821,
+      "latitude": 43.70339,
+      "longitude": 11.92161,
+      "elevationM": 991,
       "forest": []
     },
     {
@@ -909,9 +909,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.91483,
-      "longitude": 11.36377,
-      "elevationM": 119,
+      "latitude": 42.91385,
+      "longitude": 11.33993,
+      "elevationM": 204,
       "forest": []
     },
     {
@@ -931,9 +931,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.99544,
-      "longitude": 11.31093,
-      "elevationM": 218,
+      "latitude": 43,
+      "longitude": 11.31105,
+      "elevationM": 222,
       "forest": []
     },
     {
@@ -942,9 +942,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.39767,
-      "longitude": 11.08885,
-      "elevationM": 226,
+      "latitude": 43.39523,
+      "longitude": 11.08039,
+      "elevationM": 238,
       "forest": []
     },
     {
@@ -953,9 +953,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.5741,
-      "longitude": 10.44835,
-      "elevationM": 16,
+      "latitude": 43.58059,
+      "longitude": 10.44771,
+      "elevationM": 73,
       "forest": []
     },
     {
@@ -964,9 +964,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.31505,
-      "longitude": 10.12736,
-      "elevationM": 1333,
+      "latitude": 44.31214,
+      "longitude": 10.1282,
+      "elevationM": 1133,
       "forest": []
     },
     {
@@ -975,9 +975,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.0953,
-      "longitude": 10.57507,
-      "elevationM": 1122,
+      "latitude": 44.09419,
+      "longitude": 10.57004,
+      "elevationM": 947,
       "forest": []
     },
     {
@@ -986,9 +986,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.26638,
-      "longitude": 12.03927,
-      "elevationM": 468,
+      "latitude": 43.27236,
+      "longitude": 12.04256,
+      "elevationM": 426,
       "forest": []
     },
     {
@@ -997,9 +997,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.57593,
-      "longitude": 10.535,
-      "elevationM": 27,
+      "latitude": 43.57102,
+      "longitude": 10.55258,
+      "elevationM": 87,
       "forest": []
     },
     {
@@ -1008,9 +1008,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.92286,
-      "longitude": 11.56503,
-      "elevationM": 280,
+      "latitude": 43.92176,
+      "longitude": 11.54983,
+      "elevationM": 457,
       "forest": []
     },
     {
@@ -1019,9 +1019,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.70581,
-      "longitude": 10.9467,
-      "elevationM": 29,
+      "latitude": 43.69443,
+      "longitude": 10.93761,
+      "elevationM": 54,
       "forest": []
     },
     {
@@ -1030,9 +1030,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.02778,
-      "longitude": 10.40591,
-      "elevationM": 763,
+      "latitude": 44.02282,
+      "longitude": 10.40133,
+      "elevationM": 714,
       "forest": []
     },
     {
@@ -1041,9 +1041,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.57426,
-      "longitude": 10.49523,
-      "elevationM": 68,
+      "latitude": 43.5714,
+      "longitude": 10.50317,
+      "elevationM": 36,
       "forest": []
     },
     {
@@ -1052,9 +1052,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.80554,
-      "longitude": 11.3252,
-      "elevationM": 368,
+      "latitude": 43.80762,
+      "longitude": 11.32958,
+      "elevationM": 414,
       "forest": []
     },
     {
@@ -1063,9 +1063,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.62564,
-      "longitude": 11.44052,
-      "elevationM": 211,
+      "latitude": 43.62552,
+      "longitude": 11.43702,
+      "elevationM": 252,
       "forest": []
     },
     {
@@ -1074,9 +1074,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.3629,
-      "longitude": 9.95487,
-      "elevationM": 373,
+      "latitude": 44.36637,
+      "longitude": 9.95289,
+      "elevationM": 409,
       "forest": []
     },
     {
@@ -1085,9 +1085,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.77655,
-      "longitude": 11.25722,
-      "elevationM": 61,
+      "latitude": 43.75861,
+      "longitude": 11.26059,
+      "elevationM": 100,
       "forest": []
     },
     {
@@ -1096,9 +1096,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 44.13756,
-      "longitude": 11.36309,
-      "elevationM": 523,
+      "latitude": 44.14085,
+      "longitude": 11.36196,
+      "elevationM": 518,
       "forest": []
     },
     {
@@ -1107,9 +1107,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.21226,
-      "longitude": 10.14294,
-      "elevationM": 476,
+      "latitude": 44.21715,
+      "longitude": 10.13443,
+      "elevationM": 493,
       "forest": []
     },
     {
@@ -1118,9 +1118,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.27077,
-      "longitude": 11.80779,
-      "elevationM": 269,
+      "latitude": 43.26857,
+      "longitude": 11.80343,
+      "elevationM": 300,
       "forest": []
     },
     {
@@ -1129,9 +1129,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.96325,
-      "longitude": 10.75697,
-      "elevationM": 150,
+      "latitude": 42.96499,
+      "longitude": 10.75465,
+      "elevationM": 143,
       "forest": []
     },
     {
@@ -1140,9 +1140,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.96804,
-      "longitude": 10.17602,
-      "elevationM": 4,
+      "latitude": 43.95111,
+      "longitude": 10.18332,
+      "elevationM": 10,
       "forest": []
     },
     {
@@ -1151,9 +1151,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.1206,
-      "longitude": 10.47843,
-      "elevationM": 790,
+      "latitude": 44.12175,
+      "longitude": 10.47059,
+      "elevationM": 872,
       "forest": []
     },
     {
@@ -1173,9 +1173,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.75843,
-      "longitude": 10.78144,
-      "elevationM": 23,
+      "latitude": 43.76364,
+      "longitude": 10.77092,
+      "elevationM": 34,
       "forest": []
     },
     {
@@ -1184,9 +1184,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.43736,
-      "longitude": 11.44793,
-      "elevationM": 483,
+      "latitude": 43.43586,
+      "longitude": 11.4569,
+      "elevationM": 445,
       "forest": []
     },
     {
@@ -1195,9 +1195,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.04184,
-      "longitude": 10.43973,
-      "elevationM": 689,
+      "latitude": 44.04074,
+      "longitude": 10.43258,
+      "elevationM": 570,
       "forest": []
     },
     {
@@ -1206,9 +1206,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.52303,
-      "longitude": 10.93896,
-      "elevationM": 306,
+      "latitude": 43.51851,
+      "longitude": 10.94685,
+      "elevationM": 325,
       "forest": []
     },
     {
@@ -1217,9 +1217,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.92938,
-      "longitude": 10.96238,
-      "elevationM": 79,
+      "latitude": 42.93193,
+      "longitude": 10.96186,
+      "elevationM": 113,
       "forest": []
     },
     {
@@ -1228,9 +1228,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.61501,
-      "longitude": 11.32867,
-      "elevationM": 459,
+      "latitude": 43.61803,
+      "longitude": 11.33162,
+      "elevationM": 465,
       "forest": []
     },
     {
@@ -1239,8 +1239,8 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.78611,
-      "longitude": 11.09226,
+      "latitude": 42.78085,
+      "longitude": 11.09374,
       "elevationM": 8,
       "forest": []
     },
@@ -1250,9 +1250,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.31386,
-      "longitude": 10.6323,
-      "elevationM": 280,
+      "latitude": 43.3089,
+      "longitude": 10.63086,
+      "elevationM": 240,
       "forest": []
     },
     {
@@ -1261,9 +1261,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.70664,
-      "longitude": 11.24894,
-      "elevationM": 266,
+      "latitude": 43.70498,
+      "longitude": 11.24672,
+      "elevationM": 260,
       "forest": []
     },
     {
@@ -1272,9 +1272,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.36329,
-      "longitude": 10.89365,
-      "elevationM": 219,
+      "latitude": 42.35874,
+      "longitude": 10.89818,
+      "elevationM": 277,
       "forest": []
     },
     {
@@ -1283,9 +1283,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.46147,
-      "longitude": 10.73269,
-      "elevationM": 131,
+      "latitude": 43.44775,
+      "longitude": 10.71106,
+      "elevationM": 200,
       "forest": []
     },
     {
@@ -1294,9 +1294,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.80872,
-      "longitude": 10.87475,
-      "elevationM": 34,
+      "latitude": 43.81278,
+      "longitude": 10.88937,
+      "elevationM": 64,
       "forest": []
     },
     {
@@ -1305,9 +1305,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.82937,
-      "longitude": 10.86066,
-      "elevationM": 32,
+      "latitude": 43.83485,
+      "longitude": 10.87745,
+      "elevationM": 70,
       "forest": []
     },
     {
@@ -1327,9 +1327,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.47036,
-      "longitude": 11.6946,
-      "elevationM": 277,
+      "latitude": 43.46812,
+      "longitude": 11.6921,
+      "elevationM": 305,
       "forest": []
     },
     {
@@ -1338,9 +1338,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.30165,
-      "longitude": 10.06052,
-      "elevationM": 815,
+      "latitude": 44.29868,
+      "longitude": 10.06544,
+      "elevationM": 608,
       "forest": []
     },
     {
@@ -1349,9 +1349,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.52328,
-      "longitude": 10.35963,
-      "elevationM": 65,
+      "latitude": 43.52206,
+      "longitude": 10.36723,
+      "elevationM": 124,
       "forest": []
     },
     {
@@ -1393,9 +1393,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.284,
-      "longitude": 11.73583,
-      "elevationM": 332,
+      "latitude": 43.28757,
+      "longitude": 11.73001,
+      "elevationM": 313,
       "forest": []
     },
     {
@@ -1404,9 +1404,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.63369,
-      "longitude": 11.25132,
-      "elevationM": 161,
+      "latitude": 42.64479,
+      "longitude": 11.25497,
+      "elevationM": 206,
       "forest": []
     },
     {
@@ -1415,9 +1415,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.55464,
-      "longitude": 11.50222,
-      "elevationM": 212,
+      "latitude": 42.55042,
+      "longitude": 11.50215,
+      "elevationM": 214,
       "forest": []
     },
     {
@@ -1426,9 +1426,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.78648,
-      "longitude": 10.21188,
-      "elevationM": 372,
+      "latitude": 42.78249,
+      "longitude": 10.20407,
+      "elevationM": 555,
       "forest": []
     },
     {
@@ -1437,9 +1437,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.79807,
-      "longitude": 10.19479,
-      "elevationM": 82,
+      "latitude": 42.79604,
+      "longitude": 10.19803,
+      "elevationM": 107,
       "forest": []
     },
     {
@@ -1448,9 +1448,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.31248,
-      "longitude": 11.79494,
-      "elevationM": 263,
+      "latitude": 43.30904,
+      "longitude": 11.79015,
+      "elevationM": 294,
       "forest": []
     },
     {
@@ -1481,9 +1481,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.05426,
-      "longitude": 10.16737,
-      "elevationM": 135,
+      "latitude": 44.05505,
+      "longitude": 10.17125,
+      "elevationM": 238,
       "forest": []
     },
     {
@@ -1492,9 +1492,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.90418,
-      "longitude": 10.75058,
-      "elevationM": 118,
+      "latitude": 43.91714,
+      "longitude": 10.74839,
+      "elevationM": 303,
       "forest": []
     },
     {
@@ -1503,9 +1503,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 43.04069,
-      "longitude": 10.89147,
-      "elevationM": 343,
+      "latitude": 43.03596,
+      "longitude": 10.89639,
+      "elevationM": 274,
       "forest": []
     },
     {
@@ -1514,9 +1514,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.86857,
-      "longitude": 10.3337,
-      "elevationM": 3,
+      "latitude": 43.87886,
+      "longitude": 10.34466,
+      "elevationM": 53,
       "forest": []
     },
     {
@@ -1536,9 +1536,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.06746,
-      "longitude": 10.37656,
-      "elevationM": 852,
+      "latitude": 44.07255,
+      "longitude": 10.37688,
+      "elevationM": 689,
       "forest": []
     },
     {
@@ -1547,9 +1547,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.85826,
-      "longitude": 10.83122,
-      "elevationM": 48,
+      "latitude": 43.86695,
+      "longitude": 10.8407,
+      "elevationM": 154,
       "forest": []
     },
     {
@@ -1569,9 +1569,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.05145,
-      "longitude": 11.48245,
-      "elevationM": 535,
+      "latitude": 43.05227,
+      "longitude": 11.4781,
+      "elevationM": 443,
       "forest": []
     },
     {
@@ -1580,9 +1580,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.95059,
-      "longitude": 11.02649,
-      "elevationM": 237,
+      "latitude": 43.95991,
+      "longitude": 11.02246,
+      "elevationM": 505,
       "forest": []
     },
     {
@@ -1591,9 +1591,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.40981,
-      "longitude": 11.15813,
-      "elevationM": 392,
+      "latitude": 42.40578,
+      "longitude": 11.1593,
+      "elevationM": 473,
       "forest": []
     },
     {
@@ -1602,9 +1602,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.34259,
-      "longitude": 11.73136,
-      "elevationM": 269,
+      "latitude": 43.33232,
+      "longitude": 11.71246,
+      "elevationM": 333,
       "forest": []
     },
     {
@@ -1613,9 +1613,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.85541,
-      "longitude": 10.67393,
-      "elevationM": 64,
+      "latitude": 43.84993,
+      "longitude": 10.66664,
+      "elevationM": 120,
       "forest": []
     },
     {
@@ -1624,9 +1624,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.32125,
-      "longitude": 10.70951,
-      "elevationM": 53,
+      "latitude": 43.31725,
+      "longitude": 10.72241,
+      "elevationM": 130,
       "forest": []
     },
     {
@@ -1635,9 +1635,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.90547,
-      "longitude": 10.78685,
-      "elevationM": 235,
+      "latitude": 43.90811,
+      "longitude": 10.78541,
+      "elevationM": 266,
       "forest": []
     },
     {
@@ -1646,9 +1646,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.72601,
-      "longitude": 11.0167,
-      "elevationM": 52,
+      "latitude": 43.72082,
+      "longitude": 11.02473,
+      "elevationM": 98,
       "forest": []
     },
     {
@@ -1668,9 +1668,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 43.93128,
-      "longitude": 11.05008,
-      "elevationM": 158,
+      "latitude": 43.93702,
+      "longitude": 11.05927,
+      "elevationM": 304,
       "forest": []
     },
     {
@@ -1679,9 +1679,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.10579,
-      "longitude": 11.83688,
-      "elevationM": 287,
+      "latitude": 43.10534,
+      "longitude": 11.81557,
+      "elevationM": 339,
       "forest": []
     },
     {
@@ -1701,9 +1701,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.37134,
-      "longitude": 11.22134,
-      "elevationM": 376,
+      "latitude": 43.36669,
+      "longitude": 11.22128,
+      "elevationM": 454,
       "forest": []
     },
     {
@@ -1712,9 +1712,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.21781,
-      "longitude": 11.39677,
-      "elevationM": 185,
+      "latitude": 43.20642,
+      "longitude": 11.37078,
+      "elevationM": 291,
       "forest": []
     },
     {
@@ -1734,9 +1734,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.33579,
-      "longitude": 10.60536,
-      "elevationM": 79,
+      "latitude": 43.33123,
+      "longitude": 10.6061,
+      "elevationM": 103,
       "forest": []
     },
     {
@@ -1756,9 +1756,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.49196,
-      "longitude": 11.56595,
-      "elevationM": 234,
+      "latitude": 43.49735,
+      "longitude": 11.55717,
+      "elevationM": 224,
       "forest": []
     },
     {
@@ -1800,9 +1800,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.01504,
-      "longitude": 10.17659,
-      "elevationM": 165,
+      "latitude": 44.01892,
+      "longitude": 10.17771,
+      "elevationM": 136,
       "forest": []
     },
     {
@@ -1811,9 +1811,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.66729,
-      "longitude": 10.72619,
-      "elevationM": 23,
+      "latitude": 43.66001,
+      "longitude": 10.73399,
+      "elevationM": 44,
       "forest": []
     },
     {
@@ -1822,9 +1822,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.29475,
-      "longitude": 9.88864,
-      "elevationM": 810,
+      "latitude": 44.29864,
+      "longitude": 9.89059,
+      "elevationM": 778,
       "forest": []
     },
     {
@@ -1844,9 +1844,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.48683,
-      "longitude": 11.22914,
-      "elevationM": 5,
+      "latitude": 42.477,
+      "longitude": 11.24559,
+      "elevationM": 83,
       "forest": []
     },
     {
@@ -1866,9 +1866,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.6738,
-      "longitude": 11.73313,
-      "elevationM": 654,
+      "latitude": 43.67078,
+      "longitude": 11.7287,
+      "elevationM": 725,
       "forest": []
     },
     {
@@ -1877,9 +1877,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.61239,
-      "longitude": 10.75892,
-      "elevationM": 101,
+      "latitude": 43.61481,
+      "longitude": 10.75686,
+      "elevationM": 111,
       "forest": []
     },
     {
@@ -1899,9 +1899,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.52887,
-      "longitude": 10.76993,
-      "elevationM": 65,
+      "latitude": 43.53797,
+      "longitude": 10.77482,
+      "elevationM": 142,
       "forest": []
     },
     {
@@ -1910,9 +1910,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.781,
-      "longitude": 11.50821,
-      "elevationM": 473,
+      "latitude": 43.77779,
+      "longitude": 11.51515,
+      "elevationM": 447,
       "forest": []
     },
     {
@@ -1921,9 +1921,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.96045,
-      "longitude": 10.4353,
-      "elevationM": 493,
+      "latitude": 43.96407,
+      "longitude": 10.432,
+      "elevationM": 541,
       "forest": []
     },
     {
@@ -1932,9 +1932,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.91681,
-      "longitude": 10.70366,
-      "elevationM": 327,
+      "latitude": 43.92218,
+      "longitude": 10.69213,
+      "elevationM": 176,
       "forest": []
     },
     {
@@ -1943,9 +1943,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.82795,
-      "longitude": 11.68776,
-      "elevationM": 477,
+      "latitude": 42.82773,
+      "longitude": 11.67939,
+      "elevationM": 523,
       "forest": []
     },
     {
@@ -1965,9 +1965,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.06321,
-      "longitude": 11.69535,
-      "elevationM": 326,
+      "latitude": 43.0796,
+      "longitude": 11.71234,
+      "elevationM": 434,
       "forest": []
     },
     {
@@ -1976,9 +1976,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.95741,
-      "longitude": 10.22677,
-      "elevationM": 11,
+      "latitude": 43.96023,
+      "longitude": 10.2393,
+      "elevationM": 90,
       "forest": []
     },
     {
@@ -1987,9 +1987,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.86645,
-      "longitude": 10.79822,
-      "elevationM": 19,
+      "latitude": 43.88521,
+      "longitude": 10.79153,
+      "elevationM": 114,
       "forest": []
     },
     {
@@ -1998,9 +1998,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.14711,
-      "longitude": 10.44523,
-      "elevationM": 542,
+      "latitude": 44.14439,
+      "longitude": 10.45207,
+      "elevationM": 723,
       "forest": []
     },
     {
@@ -2009,9 +2009,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.67996,
-      "longitude": 12.0569,
-      "elevationM": 546,
+      "latitude": 43.68228,
+      "longitude": 12.05679,
+      "elevationM": 617,
       "forest": []
     },
     {
@@ -2020,9 +2020,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.98174,
-      "longitude": 10.58762,
-      "elevationM": 3,
+      "latitude": 42.96853,
+      "longitude": 10.58721,
+      "elevationM": 1,
       "forest": []
     },
     {
@@ -2031,9 +2031,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.68965,
-      "longitude": 10.33271,
-      "elevationM": 2,
+      "latitude": 43.69374,
+      "longitude": 10.31838,
+      "elevationM": 15,
       "forest": []
     },
     {
@@ -2042,9 +2042,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 44.00326,
-      "longitude": 10.90342,
-      "elevationM": 436,
+      "latitude": 44.0061,
+      "longitude": 10.90508,
+      "elevationM": 313,
       "forest": []
     },
     {
@@ -2053,9 +2053,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.6085,
-      "longitude": 11.67024,
-      "elevationM": 282,
+      "latitude": 42.61095,
+      "longitude": 11.66219,
+      "elevationM": 288,
       "forest": []
     },
     {
@@ -2064,9 +2064,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.21214,
-      "longitude": 9.93884,
-      "elevationM": 558,
+      "latitude": 44.20863,
+      "longitude": 9.9405,
+      "elevationM": 404,
       "forest": []
     },
     {
@@ -2075,9 +2075,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.4578,
-      "longitude": 11.16626,
-      "elevationM": 121,
+      "latitude": 43.44859,
+      "longitude": 11.16163,
+      "elevationM": 167,
       "forest": []
     },
     {
@@ -2086,9 +2086,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 43.81868,
-      "longitude": 11.03854,
-      "elevationM": 89,
+      "latitude": 43.82049,
+      "longitude": 11.0448,
+      "elevationM": 83,
       "forest": []
     },
     {
@@ -2108,9 +2108,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.61078,
-      "longitude": 10.63944,
-      "elevationM": 25,
+      "latitude": 43.60592,
+      "longitude": 10.64542,
+      "elevationM": 56,
       "forest": []
     },
     {
@@ -2119,9 +2119,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.81827,
-      "longitude": 11.42987,
-      "elevationM": 269,
+      "latitude": 43.81935,
+      "longitude": 11.43555,
+      "elevationM": 294,
       "forest": []
     },
     {
@@ -2130,9 +2130,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.8365,
-      "longitude": 10.75428,
-      "elevationM": 17,
+      "latitude": 43.81382,
+      "longitude": 10.75372,
+      "elevationM": 20,
       "forest": []
     },
     {
@@ -2141,9 +2141,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.646,
-      "longitude": 10.64363,
-      "elevationM": 21,
+      "latitude": 43.64246,
+      "longitude": 10.66458,
+      "elevationM": 36,
       "forest": []
     },
     {
@@ -2152,9 +2152,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.40873,
-      "longitude": 9.86728,
-      "elevationM": 553,
+      "latitude": 44.41134,
+      "longitude": 9.86529,
+      "elevationM": 579,
       "forest": []
     },
     {
@@ -2163,9 +2163,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.74917,
-      "longitude": 11.76383,
-      "elevationM": 427,
+      "latitude": 43.75644,
+      "longitude": 11.77429,
+      "elevationM": 580,
       "forest": []
     },
     {
@@ -2174,9 +2174,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.82561,
-      "longitude": 10.62078,
-      "elevationM": 11,
+      "latitude": 43.85002,
+      "longitude": 10.62376,
+      "elevationM": 75,
       "forest": []
     },
     {
@@ -2185,9 +2185,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.7709,
-      "longitude": 10.38074,
-      "elevationM": 138,
+      "latitude": 42.77747,
+      "longitude": 10.38616,
+      "elevationM": 75,
       "forest": []
     },
     {
@@ -2196,9 +2196,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.8021,
-      "longitude": 10.31404,
-      "elevationM": 2,
+      "latitude": 42.79149,
+      "longitude": 10.3026,
+      "elevationM": 120,
       "forest": []
     },
     {
@@ -2207,9 +2207,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 43.88866,
-      "longitude": 11.09963,
-      "elevationM": 65,
+      "latitude": 43.8911,
+      "longitude": 11.11478,
+      "elevationM": 141,
       "forest": []
     },
     {
@@ -2218,9 +2218,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.81141,
-      "longitude": 11.69422,
-      "elevationM": 604,
+      "latitude": 43.81136,
+      "longitude": 11.68963,
+      "elevationM": 557,
       "forest": []
     },
     {
@@ -2229,9 +2229,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.8499,
-      "longitude": 10.97836,
-      "elevationM": 48,
+      "latitude": 43.83823,
+      "longitude": 10.98309,
+      "elevationM": 84,
       "forest": []
     },
     {
@@ -2240,9 +2240,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.48553,
-      "longitude": 11.36629,
-      "elevationM": 481,
+      "latitude": 43.48642,
+      "longitude": 11.35917,
+      "elevationM": 426,
       "forest": []
     },
     {
@@ -2251,9 +2251,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.91447,
-      "longitude": 11.76445,
-      "elevationM": 675,
+      "latitude": 42.91604,
+      "longitude": 11.7736,
+      "elevationM": 594,
       "forest": []
     },
     {
@@ -2262,9 +2262,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.22979,
-      "longitude": 11.00584,
-      "elevationM": 379,
+      "latitude": 43.22493,
+      "longitude": 11.00963,
+      "elevationM": 343,
       "forest": []
     },
     {
@@ -2273,9 +2273,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.27493,
-      "longitude": 11.62846,
-      "elevationM": 331,
+      "latitude": 43.2796,
+      "longitude": 11.6312,
+      "elevationM": 355,
       "forest": []
     },
     {
@@ -2284,9 +2284,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.69717,
-      "longitude": 11.53628,
-      "elevationM": 563,
+      "latitude": 43.70091,
+      "longitude": 11.53783,
+      "elevationM": 596,
       "forest": []
     },
     {
@@ -2295,9 +2295,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.72282,
-      "longitude": 11.41791,
-      "elevationM": 396,
+      "latitude": 43.72492,
+      "longitude": 11.41433,
+      "elevationM": 351,
       "forest": []
     },
     {
@@ -2306,9 +2306,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 42.82171,
-      "longitude": 10.40967,
-      "elevationM": 132,
+      "latitude": 42.82253,
+      "longitude": 10.40536,
+      "elevationM": 217,
       "forest": []
     },
     {
@@ -2328,9 +2328,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.776,
-      "longitude": 11.47115,
-      "elevationM": 633,
+      "latitude": 42.77673,
+      "longitude": 11.46473,
+      "elevationM": 639,
       "forest": []
     },
     {
@@ -2339,9 +2339,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 43.01016,
-      "longitude": 11.14588,
-      "elevationM": 268,
+      "latitude": 43.01107,
+      "longitude": 11.14038,
+      "elevationM": 195,
       "forest": []
     },
     {
@@ -2350,9 +2350,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.41411,
-      "longitude": 10.45576,
-      "elevationM": 123,
+      "latitude": 43.41817,
+      "longitude": 10.44647,
+      "elevationM": 130,
       "forest": []
     },
     {
@@ -2383,9 +2383,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 42.86259,
-      "longitude": 11.85088,
-      "elevationM": 423,
+      "latitude": 42.86562,
+      "longitude": 11.85788,
+      "elevationM": 467,
       "forest": []
     },
     {
@@ -2394,9 +2394,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.65272,
-      "longitude": 11.1854,
-      "elevationM": 275,
+      "latitude": 43.65161,
+      "longitude": 11.18993,
+      "elevationM": 250,
       "forest": []
     },
     {
@@ -2405,9 +2405,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.46367,
-      "longitude": 11.0379,
-      "elevationM": 261,
+      "latitude": 43.45416,
+      "longitude": 11.03151,
+      "elevationM": 279,
       "forest": []
     },
     {
@@ -2416,9 +2416,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.56005,
-      "longitude": 11.52123,
-      "elevationM": 195,
+      "latitude": 43.55229,
+      "longitude": 11.51563,
+      "elevationM": 163,
       "forest": []
     },
     {
@@ -2427,9 +2427,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.75274,
-      "longitude": 10.40024,
-      "elevationM": 2,
+      "latitude": 43.75702,
+      "longitude": 10.39894,
+      "elevationM": 1,
       "forest": []
     },
     {
@@ -2460,9 +2460,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.66872,
-      "longitude": 10.83865,
-      "elevationM": 94,
+      "latitude": 43.66833,
+      "longitude": 10.83161,
+      "elevationM": 106,
       "forest": []
     },
     {
@@ -2471,9 +2471,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.06409,
-      "longitude": 11.60548,
-      "elevationM": 422,
+      "latitude": 43.05038,
+      "longitude": 11.58805,
+      "elevationM": 331,
       "forest": []
     },
     {
@@ -2482,9 +2482,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.1893,
-      "longitude": 10.35336,
-      "elevationM": 882,
+      "latitude": 44.18989,
+      "longitude": 10.34634,
+      "elevationM": 846,
       "forest": []
     },
     {
@@ -2493,9 +2493,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.05515,
-      "longitude": 10.55154,
-      "elevationM": 9,
+      "latitude": 43.05668,
+      "longitude": 10.54747,
+      "elevationM": 20,
       "forest": []
     },
     {
@@ -2504,9 +2504,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.59622,
-      "longitude": 12.12362,
-      "elevationM": 450,
+      "latitude": 43.59997,
+      "longitude": 12.13437,
+      "elevationM": 653,
       "forest": []
     },
     {
@@ -2515,9 +2515,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.71536,
-      "longitude": 10.77268,
-      "elevationM": 16,
+      "latitude": 43.73975,
+      "longitude": 10.75909,
+      "elevationM": 45,
       "forest": []
     },
     {
@@ -2526,9 +2526,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.8284,
-      "longitude": 11.5959,
-      "elevationM": 593,
+      "latitude": 42.82898,
+      "longitude": 11.60047,
+      "elevationM": 581,
       "forest": []
     },
     {
@@ -2537,9 +2537,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.45642,
-      "longitude": 10.53456,
-      "elevationM": 88,
+      "latitude": 43.45361,
+      "longitude": 10.56913,
+      "elevationM": 251,
       "forest": []
     },
     {
@@ -2548,9 +2548,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.70002,
-      "longitude": 10.68572,
-      "elevationM": 86,
+      "latitude": 43.71015,
+      "longitude": 10.68406,
+      "elevationM": 95,
       "forest": []
     },
     {
@@ -2570,9 +2570,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.14167,
-      "longitude": 10.66937,
-      "elevationM": 292,
+      "latitude": 43.13714,
+      "longitude": 10.65877,
+      "elevationM": 201,
       "forest": []
     },
     {
@@ -2581,9 +2581,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.73581,
-      "longitude": 11.15156,
-      "elevationM": 261,
+      "latitude": 43.72835,
+      "longitude": 11.14864,
+      "elevationM": 273,
       "forest": []
     },
     {
@@ -2592,9 +2592,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.71874,
-      "longitude": 11.31729,
-      "elevationM": 473,
+      "latitude": 42.71973,
+      "longitude": 11.31168,
+      "elevationM": 478,
       "forest": []
     },
     {
@@ -2603,9 +2603,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.91187,
-      "longitude": 10.83202,
-      "elevationM": 30,
+      "latitude": 42.90072,
+      "longitude": 10.83901,
+      "elevationM": 120,
       "forest": []
     },
     {
@@ -2614,9 +2614,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.9916,
-      "longitude": 11.30534,
-      "elevationM": 273,
+      "latitude": 43.98351,
+      "longitude": 11.30765,
+      "elevationM": 260,
       "forest": []
     },
     {
@@ -2625,9 +2625,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.93564,
-      "longitude": 11.57334,
-      "elevationM": 483,
+      "latitude": 42.93746,
+      "longitude": 11.57904,
+      "elevationM": 537,
       "forest": []
     },
     {
@@ -2647,9 +2647,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.00476,
-      "longitude": 10.2193,
-      "elevationM": 104,
+      "latitude": 44.00988,
+      "longitude": 10.22743,
+      "elevationM": 404,
       "forest": []
     },
     {
@@ -2680,9 +2680,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.84039,
-      "longitude": 11.22455,
-      "elevationM": 243,
+      "latitude": 43.84943,
+      "longitude": 11.23138,
+      "elevationM": 553,
       "forest": []
     },
     {
@@ -2691,9 +2691,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.28908,
-      "longitude": 11.32181,
-      "elevationM": 229,
+      "latitude": 43.29796,
+      "longitude": 11.31801,
+      "elevationM": 257,
       "forest": []
     },
     {
@@ -2702,9 +2702,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.78549,
-      "longitude": 11.09522,
-      "elevationM": 55,
+      "latitude": 43.78331,
+      "longitude": 11.08112,
+      "elevationM": 80,
       "forest": []
     },
     {
@@ -2713,9 +2713,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.23699,
-      "longitude": 10.29173,
-      "elevationM": 890,
+      "latitude": 44.23975,
+      "longitude": 10.29024,
+      "elevationM": 981,
       "forest": []
     },
     {
@@ -2724,9 +2724,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.21857,
-      "longitude": 11.74461,
-      "elevationM": 264,
+      "latitude": 43.21969,
+      "longitude": 11.72803,
+      "elevationM": 430,
       "forest": []
     },
     {
@@ -2735,9 +2735,9 @@
       "region": "Toscana",
       "province": "Grosseto",
       "provinceAcronym": "GR",
-      "latitude": 42.69816,
-      "longitude": 11.72311,
-      "elevationM": 385,
+      "latitude": 42.70068,
+      "longitude": 11.71941,
+      "elevationM": 445,
       "forest": []
     },
     {
@@ -2746,9 +2746,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.24482,
-      "longitude": 11.23586,
-      "elevationM": 190,
+      "latitude": 43.2449,
+      "longitude": 11.21255,
+      "elevationM": 249,
       "forest": []
     },
     {
@@ -2768,9 +2768,9 @@
       "region": "Toscana",
       "province": "Arezzo",
       "provinceAcronym": "AR",
-      "latitude": 43.59884,
-      "longitude": 11.88192,
-      "elevationM": 401,
+      "latitude": 43.60021,
+      "longitude": 11.8935,
+      "elevationM": 626,
       "forest": []
     },
     {
@@ -2779,9 +2779,9 @@
       "region": "Toscana",
       "province": "Livorno",
       "provinceAcronym": "LI",
-      "latitude": 43.05499,
-      "longitude": 10.72627,
-      "elevationM": 78,
+      "latitude": 43.05104,
+      "longitude": 10.73211,
+      "elevationM": 71,
       "forest": []
     },
     {
@@ -2812,9 +2812,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.53397,
-      "longitude": 10.67979,
-      "elevationM": 76,
+      "latitude": 43.53869,
+      "longitude": 10.68142,
+      "elevationM": 99,
       "forest": []
     },
     {
@@ -2823,9 +2823,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.14889,
-      "longitude": 11.76293,
-      "elevationM": 317,
+      "latitude": 43.14664,
+      "longitude": 11.74387,
+      "elevationM": 420,
       "forest": []
     },
     {
@@ -2834,9 +2834,9 @@
       "region": "Toscana",
       "province": "Siena",
       "provinceAcronym": "SI",
-      "latitude": 43.15895,
-      "longitude": 11.67796,
-      "elevationM": 475,
+      "latitude": 43.15685,
+      "longitude": 11.68295,
+      "elevationM": 506,
       "forest": []
     },
     {
@@ -2856,9 +2856,9 @@
       "region": "Toscana",
       "province": "Pistoia",
       "provinceAcronym": "PT",
-      "latitude": 43.87807,
-      "longitude": 10.70837,
-      "elevationM": 38,
+      "latitude": 43.8905,
+      "longitude": 10.71071,
+      "elevationM": 132,
       "forest": []
     },
     {
@@ -2867,9 +2867,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 44.11115,
-      "longitude": 10.28982,
-      "elevationM": 549,
+      "latitude": 44.10866,
+      "longitude": 10.28337,
+      "elevationM": 587,
       "forest": []
     },
     {
@@ -2878,9 +2878,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.8856,
-      "longitude": 11.2903,
-      "elevationM": 347,
+      "latitude": 43.88895,
+      "longitude": 11.28786,
+      "elevationM": 321,
       "forest": []
     },
     {
@@ -2900,9 +2900,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.78801,
-      "longitude": 10.35357,
-      "elevationM": 1,
+      "latitude": 43.8018,
+      "longitude": 10.34981,
+      "elevationM": -1,
       "forest": []
     },
     {
@@ -2911,9 +2911,9 @@
       "region": "Toscana",
       "province": "Prato",
       "provinceAcronym": "PO",
-      "latitude": 44.06846,
-      "longitude": 11.15591,
-      "elevationM": 646,
+      "latitude": 44.07115,
+      "longitude": 11.15488,
+      "elevationM": 655,
       "forest": []
     },
     {
@@ -2922,9 +2922,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.86363,
-      "longitude": 10.26751,
-      "elevationM": 4,
+      "latitude": 43.85175,
+      "longitude": 10.25686,
+      "elevationM": 10,
       "forest": []
     },
     {
@@ -2933,9 +2933,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.96088,
-      "longitude": 11.50839,
-      "elevationM": 349,
+      "latitude": 43.96262,
+      "longitude": 11.51408,
+      "elevationM": 376,
       "forest": []
     },
     {
@@ -2944,9 +2944,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.69617,
-      "longitude": 10.55328,
-      "elevationM": 217,
+      "latitude": 43.6973,
+      "longitude": 10.55998,
+      "elevationM": 119,
       "forest": []
     },
     {
@@ -2955,9 +2955,9 @@
       "region": "Toscana",
       "province": "Lucca",
       "provinceAcronym": "LU",
-      "latitude": 43.93839,
-      "longitude": 10.62916,
-      "elevationM": 544,
+      "latitude": 43.94049,
+      "longitude": 10.63066,
+      "elevationM": 601,
       "forest": []
     },
     {
@@ -2977,9 +2977,9 @@
       "region": "Toscana",
       "province": "Massa-Carrara",
       "provinceAcronym": "MS",
-      "latitude": 44.29769,
-      "longitude": 9.96285,
-      "elevationM": 154,
+      "latitude": 44.29421,
+      "longitude": 9.96544,
+      "elevationM": 151,
       "forest": []
     },
     {
@@ -2988,9 +2988,9 @@
       "region": "Toscana",
       "province": "Firenze",
       "provinceAcronym": "FI",
-      "latitude": 43.76787,
-      "longitude": 10.93148,
-      "elevationM": 91,
+      "latitude": 43.77587,
+      "longitude": 10.93896,
+      "elevationM": 85,
       "forest": []
     },
     {
@@ -2999,9 +2999,9 @@
       "region": "Toscana",
       "province": "Pisa",
       "provinceAcronym": "PI",
-      "latitude": 43.40635,
-      "longitude": 10.88154,
-      "elevationM": 347,
+      "latitude": 43.41086,
+      "longitude": 10.87726,
+      "elevationM": 361,
       "forest": []
     },
     {
@@ -3015,5 +3015,6 @@
       "elevationM": 587,
       "forest": []
     }
-  ]
+  ],
+  "pointRule": "Il punto di calcolo di ogni zona e' il baricentro del bosco misurato attorno al centroide del comune (ForestPaths 10 m), vincolato a restare dentro il confine comunale. Prima era il centroide geometrico, che nei comuni alpini cade sopra il limite degli alberi. La quota e' riletta sul punto nuovo."
 }
