@@ -1,9 +1,9 @@
 # Backtest GBIF — riepilogo generato
 
-Generato: 2026-09-24T11:20:14.400Z — seme 20260924, bootstrap 2000 replicati a grappoli (localita'-anno).
+Generato: 2026-09-25T08:49:01.035Z — seme 20260924, bootstrap 2000 replicati a grappoli (localita'-anno).
 
 GBIF: 907 record scaricati, 490 accettati, 437 dopo deduplica (stesso giorno entro 1 km), 413 localita'-anno. Scarti: {"obscured":292,"uncertainty-large":63,"uncertainty-missing":62}.
-Campione: 250 localita'-anno (strati: regione, allocazione uguale). Meteo disponibile per 250 (1 scaricate ora, 249 da cache, 0 fallite).
+Campione: 250 localita'-anno (strati: regione, allocazione uguale). Meteo disponibile per 250 (0 scaricate ora, 250 da cache, 0 fallite).
 Righe: 1014 = 264 casi + 750 controlli (0 giorni scartati per meteo mancante). Quota dei casi: mediana 949 m, 10°-90° percentile 265-1626 m.
 Casi per regione: Trentino-Alto Adige 35, Toscana 35, Piemonte 34, Lombardia 33, Veneto 23, ignota 15, Emilia-Romagna 14, Sardegna 12, Lazio 12, Calabria 11, Liguria 8, Valle d'Aosta 6, Abruzzo 6, Sicilia 6, Campania 5, Friuli-Venezia Giulia 4, Marche 2, Molise 1, Basilicata 1, Umbria 1.
 Brier di riferimento (sola prevalenza, LOYO): 0.193.
@@ -23,7 +23,11 @@ Brier di riferimento (sola prevalenza, LOYO): 0.193.
 | (g2) 1.5 + autunno a bassa quota (0,8) | phenology.lowElevationAutumnWeight = 0.8 (estate invariata) | 0.734 [0.699, 0.767] | 0.036 [0.012, 0.061] | 0.088 [0.043, 0.133] | 0.045 [0.003, 0.087] | 0.1762 | 0.085 |
 | (h) ottimo 15 °C + autunno a bassa quota (0,5) | thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.5 | 0.749 [0.715, 0.782] | 0.052 [0.032, 0.073] | 0.103 [0.058, 0.148] | 0.061 [0.018, 0.104] | 0.1755 | 0.089 |
 | (h2) ottimo 15 °C + autunno a bassa quota (0,8) | thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.8 | 0.755 [0.721, 0.788] | 0.058 [0.034, 0.082] | 0.109 [0.066, 0.154] | 0.067 [0.025, 0.108] | 0.1720 | 0.107 |
-| (p) modello in produzione | ALGORITHM_V1 (1.6.0-porcino) | 0.755 [0.721, 0.788] | 0.058 [0.034, 0.082] | 0.109 [0.066, 0.154] | 0.067 [0.025, 0.108] | 0.1720 | 0.107 |
+| (j1) produzione + ottimo autunnale 17 °C in basso | thermal.optAutumnC 15 -> 17 sotto 700 m, sfumato fino a 900 m | 0.760 [0.725, 0.792] | 0.062 [0.040, 0.085] | 0.113 [0.070, 0.157] | 0.071 [0.030, 0.112] | 0.1714 | 0.110 |
+| (j2) produzione + ottimo autunnale 19 °C in basso | thermal.optAutumnC 15 -> 19 sotto 700 m, sfumato fino a 900 m | 0.760 [0.727, 0.792] | 0.062 [0.043, 0.082] | 0.114 [0.071, 0.157] | 0.071 [0.031, 0.112] | 0.1721 | 0.106 |
+| (j3) produzione + caldo tollerato in basso | thermal.sigmaWarmC 7.5 -> 10 sotto 700 m, sfumato fino a 900 m | 0.755 [0.721, 0.788] | 0.058 [0.035, 0.082] | 0.109 [0.066, 0.153] | 0.067 [0.026, 0.108] | 0.1716 | 0.109 |
+| (j4) produzione + ottimo 17 °C e caldo tollerato in basso | optAutumnC 17 e sigmaWarmC 10 sotto 700 m, sfumati fino a 900 m | 0.759 [0.725, 0.792] | 0.062 [0.040, 0.084] | 0.113 [0.070, 0.157] | 0.071 [0.030, 0.111] | 0.1713 | 0.111 |
+| (p) modello in produzione | ALGORITHM_V1 (1.6.1-porcino) | 0.755 [0.721, 0.788] | 0.058 [0.034, 0.082] | 0.109 [0.066, 0.154] | 0.067 [0.025, 0.108] | 0.1720 | 0.107 |
 | (f) nullo: calendario mensile | frazione dei casi degli altri anni nello stesso mese | 0.646 [0.600, 0.693] | -0.051 [-0.098, -0.003] | — | -0.042 [-0.060, -0.025] | 0.1807 | 0.062 |
 | (f2) nullo: calendario a nucleo | densita' dei giorni dell'anno dei casi degli altri anni, nucleo 10 giorni | 0.689 [0.646, 0.732] | -0.009 [-0.056, 0.038] | 0.042 [0.025, 0.060] | — | 0.1770 | 0.081 |
 
@@ -42,6 +46,10 @@ Brier di riferimento (sola prevalenza, LOYO): 0.193.
 | (g2) 1.5 + autunno a bassa quota (0,8) | 0.736 [0.695, 0.775] | 0.018 [-0.012, 0.048] | 0.071 [0.022, 0.120] |
 | (h) ottimo 15 °C + autunno a bassa quota (0,5) | 0.767 [0.727, 0.803] | 0.049 [0.023, 0.076] | 0.102 [0.049, 0.152] |
 | (h2) ottimo 15 °C + autunno a bassa quota (0,8) | 0.771 [0.733, 0.806] | 0.052 [0.021, 0.084] | 0.105 [0.057, 0.152] |
+| (j1) produzione + ottimo autunnale 17 °C in basso | 0.767 [0.727, 0.803] | 0.049 [0.021, 0.077] | 0.102 [0.053, 0.149] |
+| (j2) produzione + ottimo autunnale 19 °C in basso | 0.766 [0.726, 0.802] | 0.048 [0.021, 0.076] | 0.101 [0.053, 0.147] |
+| (j3) produzione + caldo tollerato in basso | 0.768 [0.731, 0.803] | 0.050 [0.019, 0.081] | 0.103 [0.055, 0.150] |
+| (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.766 [0.726, 0.802] | 0.047 [0.019, 0.076] | 0.100 [0.052, 0.147] |
 | (p) modello in produzione | 0.771 [0.733, 0.806] | 0.052 [0.021, 0.084] | 0.105 [0.057, 0.152] |
 | (f) nullo: calendario mensile | 0.665 [0.616, 0.713] | -0.053 [-0.106, 0.000] | — |
 | (f2) nullo: calendario a nucleo | 0.697 [0.652, 0.742] | -0.021 [-0.072, 0.031] | 0.032 [0.006, 0.056] |
@@ -63,6 +71,10 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (g2) 1.5 + autunno a bassa quota (0,8) | 0.777 | 0.735 | 0.700 | — | 0.662 | 0.708 | 0.843 | 0.543 | 0.680 | 0.777 |
 | (h) ottimo 15 °C + autunno a bassa quota (0,5) | 0.772 | 0.752 | 0.736 | — | 0.678 | 0.707 | 0.841 | 0.554 | 0.707 | 0.812 |
 | (h2) ottimo 15 °C + autunno a bassa quota (0,8) | 0.786 | 0.753 | 0.736 | — | 0.678 | 0.707 | 0.842 | 0.562 | 0.729 | 0.820 |
+| (j1) produzione + ottimo autunnale 17 °C in basso | 0.796 | 0.758 | 0.736 | — | 0.678 | 0.707 | 0.840 | 0.565 | 0.743 | 0.820 |
+| (j2) produzione + ottimo autunnale 19 °C in basso | 0.796 | 0.756 | 0.736 | — | 0.678 | 0.707 | 0.838 | 0.571 | 0.730 | 0.810 |
+| (j3) produzione + caldo tollerato in basso | 0.787 | 0.753 | 0.736 | — | 0.678 | 0.705 | 0.838 | 0.563 | 0.731 | 0.821 |
+| (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.794 | 0.758 | 0.736 | — | 0.678 | 0.704 | 0.837 | 0.567 | 0.743 | 0.820 |
 | (p) modello in produzione | 0.786 | 0.753 | 0.736 | — | 0.678 | 0.707 | 0.842 | 0.562 | 0.729 | 0.820 |
 | (f) nullo: calendario mensile | 0.644 | 0.663 | 0.647 | — | — | — | — | — | — | — |
 | (f2) nullo: calendario a nucleo | 0.669 | 0.727 | 0.675 | — | 0.412 | 0.565 | 0.293 | 0.440 | 0.655 | 0.732 |
@@ -82,6 +94,10 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (g2) 1.5 + autunno a bassa quota (0,8) | 0.740 | 0.737 | 0.740 |
 | (h) ottimo 15 °C + autunno a bassa quota (0,5) | 0.755 | 0.752 | 0.752 |
 | (h2) ottimo 15 °C + autunno a bassa quota (0,8) | 0.761 | 0.757 | 0.759 |
+| (j1) produzione + ottimo autunnale 17 °C in basso | 0.765 | 0.761 | 0.763 |
+| (j2) produzione + ottimo autunnale 19 °C in basso | 0.766 | 0.762 | 0.764 |
+| (j3) produzione + caldo tollerato in basso | 0.762 | 0.758 | 0.759 |
+| (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.765 | 0.761 | 0.763 |
 | (p) modello in produzione | 0.761 | 0.757 | 0.759 |
 | (f) nullo: calendario mensile | 0.664 | 0.644 | 0.654 |
 | (f2) nullo: calendario a nucleo | 0.706 | 0.685 | 0.699 |
@@ -101,6 +117,10 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (g2) 1.5 + autunno a bassa quota (0,8) | 81 (31%) | 63 (24%) | 34 (13%) | 31 (12%) | 55 (21%) | 33.2 |
 | (h) ottimo 15 °C + autunno a bassa quota (0,5) | 95 (36%) | 60 (23%) | 49 (19%) | 23 (9%) | 37 (14%) | 31.1 |
 | (h2) ottimo 15 °C + autunno a bassa quota (0,8) | 85 (32%) | 55 (21%) | 32 (12%) | 40 (15%) | 52 (20%) | 33.8 |
+| (j1) produzione + ottimo autunnale 17 °C in basso | 86 (33%) | 56 (21%) | 32 (12%) | 39 (15%) | 51 (19%) | 33.8 |
+| (j2) produzione + ottimo autunnale 19 °C in basso | 91 (34%) | 55 (21%) | 34 (13%) | 38 (14%) | 46 (17%) | 33.0 |
+| (j3) produzione + caldo tollerato in basso | 83 (31%) | 56 (21%) | 29 (11%) | 42 (16%) | 54 (20%) | 34.3 |
+| (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 86 (33%) | 55 (21%) | 33 (13%) | 39 (15%) | 51 (19%) | 34.3 |
 | (p) modello in produzione | 85 (32%) | 55 (21%) | 32 (12%) | 40 (15%) | 52 (20%) | 33.8 |
 
 ## Affidabilita' (decili, dopo calibrazione logistica LOYO)
