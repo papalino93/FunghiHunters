@@ -33,6 +33,10 @@ concurrency:
 jobs:
   snapshot:
     runs-on: ubuntu-latest
+    # Registro delle chiamate a Open-Meteo condiviso fra i passi: vedi `ledgerPath` in
+    # `src/lib/sources/open-meteo-rate.ts`. Fuori dal repository, non si committa.
+    env:
+      OPEN_METEO_LEDGER: /tmp/open-meteo-ledger.json
     # Lo snapshot toscano dura pochi minuti; quello nazionale deve rallentare apposta per non
     # sfondare i limiti orari del piano gratuito di Open-Meteo, e con 1200 zone e la pioggia
     # ICON-2I arriva a quasi due ore. La Toscana completa con le stazioni SIR aggiunge mezz'ora.

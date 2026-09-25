@@ -70,7 +70,9 @@ describe('toListSnapshot', () => {
     expect(z?.limitingFactor).toBe(original.limitingFactor)
     expect(z?.thermalOptimumC).toBe(original.thermalOptimumC)
     expect(z?.forest).toEqual(original.forest)
-    expect(z?.stations).toEqual(original.stations)
+    // Delle stazioni resta la più vicina: l'elenco legge solo se ce ne sono.
+    expect(z?.stations).toHaveLength(Math.min(1, original.stations.length))
+    expect(z?.stations[0]?.code).toBe(original.stations[0]?.code)
   })
 
   it('non tocca il numero di zone né i campi a livello di snapshot', () => {

@@ -99,3 +99,26 @@ describe('RatePacer', () => {
     )
   })
 })
+
+describe('registro condiviso fra processi', () => {
+  it('un secondo regolatore parte sapendo quanto ha già speso il primo', async () => {
+    const { mkdtempSync } = await import('node:fs')
+    const { tmpdir } = await import('node:os')
+    const { join } = await import('node:path')
+    const file = join(mkdtempSync(join(tmpdir(), 'ledger-')), 'ledger.json')
+    let clock = 1_000_000
+    const opts = { ledgerPath: file, now: () => clock, wait: async (ms: number) => { clock += ms } }
+    const first = new RatePacer(opts)
+    await first.reserve(500)
+    await first.reserve(400)
+    const second = new RatePacer(opts)
+    expect(second.used).toBe(900)
+    // Nel minuto corrente ci sono già le 400 del primo: altre 250 sfonderebbero le 600.
+    expect(second.waitMsFor(250)).toBeGreaterThan(0)
+    expect(second.waitMsFor(150)).toBe(0)
+  })
+
+  it('senza file, o con un file rotto, parte da zero', async () => {
+    expect(new RatePacer({ ledgerPath: '/non/esiste/ledger.json' }).used).toBe(0)
+  })
+})
