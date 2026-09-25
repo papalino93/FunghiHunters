@@ -14,6 +14,7 @@
  * stati, sotto Italia → Toscana.
  */
 
+import { ZONES } from '@/lib/config/zones'
 import { loadSnapshot } from '@/lib/snapshot/load'
 import { loadItaliaIndex, loadRegion } from '@/lib/snapshot/load-italia'
 import type { Snapshot } from '@/lib/snapshot/types'
@@ -78,6 +79,25 @@ export async function loadReferenceRegion(
     const snapshot = await loadRegion(slug)
     if (snapshot !== null && snapshot.zones.length > 0) {
       return { slug, name, snapshot, choices, isTuscanyCalibration: false }
+    }
+  }
+
+  /*
+   * Dal 25/09/2026 la Toscana ha un file completo, con le sette zone di taratura e tutti i comuni
+   * boscati calcolati con le stazioni SIR (`scripts/build-snapshot-toscana.ts`): quando c'e', e'
+   * lui la Toscana della home. Si riconosce dalle zone di taratura dentro; il vecchio file del
+   * catalogo nazionale (24 comuni di montagna, senza stazioni) non le ha, e allora si resta alle
+   * sette di sempre.
+   */
+  const full = await loadRegion(DEFAULT_REGION_SLUG)
+  const calibrationCodes = new Set(ZONES.map((z) => z.code))
+  if (full !== null && full.zones.some((z) => calibrationCodes.has(z.code))) {
+    return {
+      slug: DEFAULT_REGION_SLUG,
+      name: choices.find((r) => r.slug === DEFAULT_REGION_SLUG)?.name ?? 'Toscana',
+      snapshot: full,
+      choices,
+      isTuscanyCalibration: false,
     }
   }
 

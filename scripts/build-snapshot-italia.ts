@@ -275,6 +275,17 @@ export function keptIndexEntry(zone: SnapshotZone, region: string, todayIso: str
   }
 }
 
+/** `true` quando catalogo e bosco toscani ci sono: la Toscana passa a `build-snapshot-toscana.ts`. */
+async function tuscanyCatalogReady(): Promise<boolean> {
+  try {
+    await readFile('public/data/zones-toscana.json', 'utf-8')
+    await readFile('public/data/forest-toscana.json', 'utf-8')
+    return true
+  } catch {
+    return false
+  }
+}
+
 /** Il file di regione della corsa precedente, se c'e' ed e' leggibile. */
 async function loadPreviousRegion(slug: string): Promise<Snapshot | null> {
   try {
@@ -303,7 +314,14 @@ function shortError(error: unknown): string {
 }
 
 async function main(): Promise<void> {
-  const zones = await loadZones()
+  const catalogZones = await loadZones()
+  /*
+   * La Toscana, quando c'e' il suo catalogo completo, la calcola `build-snapshot-toscana.ts` con i
+   * pluviometri della Regione: qui si salta, e le sue voci d'indice si riprendono dal suo file.
+   */
+  const tuscanyOwned = await tuscanyCatalogReady()
+  const zones = catalogZones === null ? null : catalogZones.filter((z) => !(tuscanyOwned && z.region === 'Toscana'))
+  if (tuscanyOwned) console.log('Toscana calcolata a parte, con le stazioni SIR: esclusa da questa corsa.')
   const forestByCode = await loadForest()
   if (zones === null) {
     console.log(
@@ -518,6 +536,14 @@ async function main(): Promise<void> {
     written.push(plan.slug)
     indexRegions.push({ name: plan.region, slug: plan.slug, zoneCount: plan.zones.length })
     indexZones.push(...plan.zones.map((zone) => toIndexEntry(zone, plan.region)))
+  }
+
+  if (tuscanyOwned) {
+    const tuscany = await loadPreviousRegion('toscana')
+    if (tuscany !== null) {
+      indexRegions.push({ name: 'Toscana', slug: 'toscana', zoneCount: tuscany.zones.length })
+      indexZones.push(...tuscany.zones.map((zone) => keptIndexEntry(zone, 'Toscana', todayIso)))
+    }
   }
 
   const index: ItaliaIndex = {

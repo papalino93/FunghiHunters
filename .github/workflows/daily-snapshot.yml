@@ -34,8 +34,9 @@ jobs:
   snapshot:
     runs-on: ubuntu-latest
     # Lo snapshot toscano dura pochi minuti; quello nazionale deve rallentare apposta per non
-    # sfondare i limiti orari del piano gratuito di Open-Meteo, e con 1200 zone arriva a un'ora.
-    timeout-minutes: 150
+    # sfondare i limiti orari del piano gratuito di Open-Meteo, e con 1200 zone e la pioggia
+    # ICON-2I arriva a quasi due ore. La Toscana completa con le stazioni SIR aggiunge mezz'ora.
+    timeout-minutes: 240
 
     steps:
       - uses: actions/checkout@v5
@@ -61,6 +62,18 @@ jobs:
         id: toscana
         continue-on-error: true
         run: npx tsx scripts/build-snapshot.ts --stations 45
+
+      # Tutti i comuni boscati della Toscana, con pioggia e temperature dai pluviometri SIR (vedi
+      # `scripts/build-snapshot-toscana.ts`). Prima del nazionale, che ne riprende le voci
+      # d'indice. Solo sulla corsa delle 11:40: due corse al giorno di questo e del nazionale
+      # starebbero troppo vicine al tetto giornaliero di Open-Meteo. Senza catalogo toscano lo
+      # script esce senza fare nulla.
+      - name: Calcola la Toscana completa con le stazioni
+        id: toscana_completa
+        if: github.event.schedule != '5 23 * * *'
+        continue-on-error: true
+        timeout-minutes: 60
+        run: npx tsx scripts/build-snapshot-toscana.ts
 
       # Le zone fuori dalla Toscana: solo modello meteo, nessuna stazione da scaricare. Costano
       # pero' molto in chiamate pesate a Open-Meteo (una localita' su 68 giorni vale quasi cinque
@@ -127,10 +140,11 @@ jobs:
       # ora la corsa diventa rossa — cosi' GitHub manda l'email di fallimento al proprietario
       # invece di lasciare un job verde con un pezzo mancante.
       - name: Segnala i calcoli falliti
-        if: ${{ !cancelled() && (steps.toscana.outcome == 'failure' || steps.nazionale.outcome == 'failure') }}
+        if: ${{ !cancelled() && (steps.toscana.outcome == 'failure' || steps.toscana_completa.outcome == 'failure' || steps.nazionale.outcome == 'failure') }}
         env:
           TOSCANA: ${{ steps.toscana.outcome }}
+          TOSCANA_COMPLETA: ${{ steps.toscana_completa.outcome }}
           NAZIONALE: ${{ steps.nazionale.outcome }}
         run: |
-          echo "::error title=Snapshot incompleto::snapshot toscano: $TOSCANA, nazionale: $NAZIONALE. I dati calcolati sono stati committati, il resto e' rimasto alla corsa precedente: dettagli nelle annotazioni e nei log dei due passi."
+          echo "::error title=Snapshot incompleto::snapshot toscano: $TOSCANA, Toscana completa: $TOSCANA_COMPLETA, nazionale: $NAZIONALE. I dati calcolati sono stati committati, il resto e' rimasto alla corsa precedente: dettagli nelle annotazioni e nei log dei due passi."
           exit 1

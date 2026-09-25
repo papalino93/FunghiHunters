@@ -2,7 +2,7 @@ import { MethodScreen } from '@/components/metodo/MethodScreen'
 import { JsonLd } from '@/components/JsonLd'
 import { ALGORITHM_V1 } from '@/lib/config/algorithm'
 import { SITE_URL, pageMetadata } from '@/lib/seo/metadata'
-import { loadItaliaIndex } from '@/lib/snapshot/load-italia'
+import { loadItaliaIndex, loadRegion } from '@/lib/snapshot/load-italia'
 
 export const metadata = pageMetadata({
   title: 'Come calcoliamo l’indice',
@@ -13,7 +13,7 @@ export const metadata = pageMetadata({
 })
 
 export default async function MetodoPage() {
-  const index = await loadItaliaIndex()
+  const [index, tuscany] = await Promise.all([loadItaliaIndex(), loadRegion('toscana')])
   return (
     <>
       {/*
@@ -40,7 +40,10 @@ export default async function MetodoPage() {
           isBasedOn: ['https://open-meteo.com', 'https://www.sir.toscana.it', 'https://www.gbif.org'],
         }}
       />
-      <MethodScreen nationalZones={index.zones.length} />
+      <MethodScreen
+        nationalZones={index.zones.filter((z) => z.regionSlug !== 'toscana').length}
+        tuscanyStationZones={Math.max(7, tuscany?.zones.filter((z) => z.stations.length > 0).length ?? 7)}
+      />
     </>
   )
 }
