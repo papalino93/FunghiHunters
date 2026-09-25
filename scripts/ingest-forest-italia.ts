@@ -2,6 +2,7 @@
  * Assegna a ogni zona italiana il bosco che ha davvero, leggendolo dalla mappa europea dei generi.
  *
  *   npx tsx scripts/ingest-forest-italia.ts [--columns 4300,4400] [--radius-km 3] [--dry-run]
+ *   npx tsx scripts/ingest-forest-italia.ts --catalog toscana [--relocate]
  *
  * **Perche' esiste.** Fuori dalla Toscana ogni zona dichiara di non sapere che bosco ha: il campo
  * `forest` del catalogo nasce vuoto perche' finora non c'era una fonte. Per un sito sui porcini e'
@@ -450,7 +451,13 @@ async function main(): Promise<void> {
     .map((c) => Number(c.trim()))
     .filter((c) => Number.isFinite(c))
 
-  const zonesPath = path.join(process.cwd(), 'public/data/zones-italia.json')
+  /*
+   * `--catalog toscana` legge e scrive i file del catalogo toscano completo
+   * (`scripts/ingest-zones-toscana.ts`), con la stessa procedura. Le sette zone di taratura
+   * stanno gia' nel file nazionale del bosco, quindi li' non si ripetono.
+   */
+  const catalog = flag('catalog') === 'toscana' ? 'toscana' : 'italia'
+  const zonesPath = path.join(process.cwd(), `public/data/zones-${catalog}.json`)
   const zonesFile = JSON.parse(await readFile(zonesPath, 'utf-8')) as ZonesFile
   const zones = zonesFile.zones
   /*
@@ -467,7 +474,7 @@ async function main(): Promise<void> {
    */
   const sampled: ItalianZone[] = [
     ...zones,
-    ...TUSCAN_ZONES.map((zone) => ({
+    ...(catalog === 'toscana' ? [] : TUSCAN_ZONES).map((zone) => ({
       code: zone.code,
       name: zone.name,
       region: 'Toscana',
@@ -583,7 +590,7 @@ async function main(): Promise<void> {
     radiusKm,
     zones: records,
   }
-  const outPath = path.join(process.cwd(), 'public/data/forest-italia.json')
+  const outPath = path.join(process.cwd(), `public/data/forest-${catalog}.json`)
   await writeFile(outPath, `${JSON.stringify(file)}\n`, 'utf8')
   console.log(`Scritto ${outPath}`)
   await rm(workDir, { recursive: true, force: true })

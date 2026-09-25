@@ -32,6 +32,10 @@ on:
         description: "true = sposta il punto di calcolo di ogni zona dentro il bosco e riscrive il catalogo zone. Non pubblica il bosco: serve una seconda corsa normale sui punti nuovi"
         required: false
         default: 'false'
+      catalog:
+        description: "italia = catalogo nazionale (zones-italia.json); toscana = tutti i comuni toscani (zones-toscana.json)"
+        required: false
+        default: 'italia'
 
 permissions:
   contents: write
@@ -67,6 +71,7 @@ jobs:
           ${{ inputs.columns != '' && format('--columns {0}', inputs.columns) || '' }}
           ${{ inputs.dry_run == 'true' && '--dry-run' || '' }}
           ${{ inputs.relocate == 'true' && '--relocate' || '' }}
+          ${{ inputs.catalog == 'toscana' && '--catalog toscana' || '' }}
 
       # Aggiorna l'etichetta del bosco sui file gia' pronti, senza rifare il meteo.
       #
@@ -77,7 +82,7 @@ jobs:
       # chiamate del budget giornaliero — la pagherebbe comunque il calcolo notturno. Quando
       # conta, si lancia a mano lo snapshot subito dopo.
       - name: Scrivilo sugli snapshot di regione
-        if: inputs.dry_run != 'true' && inputs.relocate != 'true'
+        if: inputs.dry_run != 'true' && inputs.relocate != 'true' && inputs.catalog != 'toscana'
         run: npx tsx scripts/apply-forest-to-snapshots.ts
 
       - name: Commit
@@ -89,7 +94,7 @@ jobs:
           if git diff --staged --quiet; then
             echo "Nessuna variazione: niente da committare."
           else
-            git commit -m "${{ inputs.relocate == 'true' && 'Punti di calcolo spostati nel bosco' || 'Catalogo boschi Italia' }} $(date -u +%Y-%m-%d)"
+            git commit -m "${{ inputs.relocate == 'true' && 'Punti di calcolo spostati nel bosco' || 'Catalogo boschi' }} (${{ inputs.catalog }}) $(date -u +%Y-%m-%d)"
             git pull --rebase origin "${GITHUB_REF_NAME}"
             git push origin HEAD:"${GITHUB_REF_NAME}"
           fi
