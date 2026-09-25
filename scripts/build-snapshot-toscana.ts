@@ -239,6 +239,19 @@ async function main(): Promise<void> {
     return
   }
 
+  /*
+   * Le sette zone di taratura, calcolate poco prima da `build-snapshot.ts` nella stessa corsa,
+   * entrano nello stesso file: cosi' la home toscana e la mappa mostrano un elenco solo, le sette
+   * aree storiche insieme a tutti i comuni boscati. Solo se sono di oggi: un file vecchio
+   * mescolerebbe punteggi di giorni diversi nella stessa classifica.
+   */
+  const calibration = await readJson<Snapshot>('public/data/snapshot.json')
+  if (calibration !== null && calibration.referenceDate === todayIso) {
+    const known = new Set(computed.map((z) => z.code))
+    computed.push(...calibration.zones.filter((z) => !known.has(z.code)))
+    console.log(`  + ${calibration.zones.length} zone di taratura dallo snapshot toscano di oggi`)
+  }
+
   const pluvio = seriesCount['pluvio0_24'] ?? 0
   const generatedAt = new Date().toISOString()
   const sources: SnapshotSource[] = [

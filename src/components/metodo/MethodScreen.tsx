@@ -12,7 +12,13 @@ import { formatDate } from '@/lib/ui/scale'
  * `ALGORITHM_V1` e non scritti a mano: una pagina di trasparenza che resta indietro rispetto al
  * modello che descrive sarebbe il contrario di ciò che promette.
  */
-export function MethodScreen({ nationalZones }: { nationalZones: number }) {
+export function MethodScreen({
+  nationalZones,
+  tuscanyStationZones,
+}: {
+  nationalZones: number
+  tuscanyStationZones: number
+}) {
   const c = ALGORITHM_V1
   const counts = paramCounts()
   const sources = (Object.keys(REFERENCES) as Array<keyof typeof REFERENCES>).map((key) => ({
@@ -74,15 +80,18 @@ export function MethodScreen({ nationalZones }: { nationalZones: number }) {
       <Section title="Quanto ci si può fidare">
         <ul className="list-disc space-y-2 pl-5">
           <li>
-            <strong className="text-ink">Sette aree toscane</strong> usano le misure delle stazioni
-            del Servizio Idrologico Regionale: pioggia e temperature vere, non solo modello.
+            <strong className="text-ink">
+              {tuscanyStationZones.toLocaleString('it-IT')} zone toscane
+            </strong>{' '}
+            (le sette aree storiche e i comuni con almeno il 40% di bosco) usano le misure delle
+            stazioni del Servizio Idrologico Regionale: pioggia e temperature vere, non solo modello.
           </li>
           <li>
             <strong className="text-ink">
               Le altre {nationalZones.toLocaleString('it-IT')} zone
             </strong>{' '}
-            in tutta Italia usano il solo
-            modello meteo e sono segnate come <em>anteprima</em>: utili per orientarsi, meno solide.
+            nel resto d&apos;Italia usano il solo modello meteo (per la pioggia, la media di due
+            modelli) e sono segnate come <em>anteprima</em>: utili per orientarsi, meno solide.
           </li>
           <li>
             Dei parametri del modello, <strong className="text-ink">{counts.sourced}</strong> hanno

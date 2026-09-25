@@ -279,6 +279,12 @@ completi in `docs/validazione/pioggia-modelli.md`.
 | ICON-2I ItaliaMeteo-ARPAE | 38 mm | 16 mm | 68% | 40 | 89% |
 | **Media dei due (dalla 1.6.1)** | **37 mm** | **14 mm** | **73%** | **16** | 76% |
 
+**Toscana.** Dove i pluviometri ci sono si usano quelli: dalla 1.6.1 tutti i comuni toscani con
+almeno il 40% di bosco misurato (219 su 273, colline comprese) sono zone calcolate come le sette
+storiche, con pioggia e temperature interpolate da una stazione SIR per cella di 0,12°
+(`scripts/build-snapshot-toscana.ts`). Il catalogo nazionale li escludeva perché teneva solo i
+comuni più alti, per il tetto di Open-Meteo.
+
 **Decisione.** Dalla 1.6.1 la pioggia delle zone del catalogo nazionale è la media dei due modelli
 negli ultimi 28 giorni e nei primi 3 di previsione (oltre, ICON-2I non c'è), con una richiesta in
 più a Open-Meteo da una sola variabile. Nessun parametro del punteggio cambia. Le sette zone

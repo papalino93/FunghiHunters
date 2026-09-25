@@ -227,10 +227,11 @@ export function GuideScreen() {
           storia a sé. È un indice di compatibilità, non una previsione di raccolto.
         </Faq>
         <Faq domanda="Perché la mia zona non c'è?">
-          L&apos;app copre 1.202 zone in tutte e venti le regioni, più sette aree della Toscana
-          seguite a parte. Le zone sono comuni, e sono i più alti d&apos;Italia: entra chi ha il
-          terreno sopra i 600 metri. Se il tuo comune non c&apos;è, quasi sempre sta più in basso
-          di così.
+          Fuori dalla Toscana le zone sono i comuni più alti di ogni regione: entra chi ha il
+          terreno sopra i 600 metri, perché il servizio meteo gratuito che usiamo non regge tutti
+          i comuni d&apos;Italia. Se il tuo comune non c&apos;è, quasi sempre sta più in basso di
+          così. In Toscana invece ci sono tutti i comuni con almeno il 40% di bosco, colline
+          comprese, più le sette aree storiche.
           <br />
           <br />
           Il punto in cui calcoliamo il meteo, però, non è il centro del comune: lo spostiamo
@@ -238,9 +239,10 @@ export function GuideScreen() {
           zona mostra una quota sotto i 600 metri — è la quota del suo bosco, non quella del paese.
           <br />
           <br />
-          Le sette aree toscane restano le uniche con stazioni di misura al suolo collegate, e per
-          questo sono le più affidabili. Altrove il punteggio viene dal solo modello meteo, e
-          l&apos;affidabilità indicata su ogni zona ne tiene conto: è più bassa, dichiaratamente.
+          In Toscana pioggia e temperature vengono dai pluviometri e dai termometri della Regione,
+          ed è per questo che lì il punteggio è il più affidabile. Altrove viene dal solo modello
+          meteo (per la pioggia, la media di due modelli), e l&apos;affidabilità indicata su ogni
+          zona ne tiene conto: è più bassa, dichiaratamente.
         </Faq>
         <Faq domanda="Il bosco conta nel punteggio?">
           Sì, da questa versione. Di ogni zona misuriamo da satellite quanto bosco c&apos;è attorno
