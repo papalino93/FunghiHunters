@@ -295,3 +295,25 @@ che il dato di base sbaglia in modo sistematico, non una taratura definitiva. La
 il misurato (76%), quindi dove ci sono pluviometri vanno usati quelli: è il passo successivo per
 tutta la Toscana. Il banco di prova GBIF non può valutare questa scelta, perché ICON-2I non ha un
 archivio pluriennale confrontabile con ERA5.
+
+## 12. Il caldo a bassa quota: varianti (j), 25/09/2026
+
+Porcini a Roveta e Chiesanuova (~250 m, querceti) con 21,6 °C di media a 20 giorni, dove il modello
+mette l'ottimo a 15,6 °C; settembre è il mese in cui il banco di prova distingue peggio (AUC 0,56).
+Quattro varianti sul modello in produzione, attive solo sotto 700 m e sfumate fino a 900 m.
+
+| Variante | AUC | AUC appaiata | Settembre | Sotto 600 m |
+|---|---|---|---|---|
+| (p) produzione 1.6.1 | 0,755 | **0,771** | 0,562 | 0,786 |
+| (j1) ottimo autunnale 17 °C in basso | 0,760 | 0,767 | 0,565 | 0,796 |
+| (j2) ottimo autunnale 19 °C in basso | 0,760 | 0,766 | 0,571 | 0,796 |
+| (j3) caldo tollerato in basso (sigmaWarm 10) | 0,755 | 0,768 | 0,563 | 0,787 |
+| (j4) j1 + j3 | 0,759 | 0,766 | 0,567 | 0,794 |
+
+**Decisione: nessun cambio.** I guadagni sono di mezzo punto, dentro gli intervalli di confidenza, e
+nell'AUC appaiata (lo stesso posto in giorni diversi, il confronto più severo) la produzione resta
+davanti. La debolezza di settembre non si spiega con l'ottimo termico di collina. Ipotesi aperte, da
+verificare: in settembre anche i giorni di controllo cadono in piena stagione (il contrasto con i
+casi è intrinsecamente minimo), e i ritrovamenti GBIF di settembre sono i più influenzati da quando
+la gente va nel bosco. Le osservazioni puntuali (Roveta, Chiesanuova) restano in
+`docs/EVIDENZA-MODELLO.md`: servono le uscite del diario, con le assenze, per andare oltre.
