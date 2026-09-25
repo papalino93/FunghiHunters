@@ -640,6 +640,10 @@ export interface AlgorithmConfig {
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
   /*
+   * 1.6.1 (25/09/2026): nessun parametro cambia; cambia il dato di pioggia delle zone senza
+   * stazioni, ora media fra Open-Meteo e ICON-2I (`blendRain` in `pipeline/open-meteo-series.ts`),
+   * validata su 132 pluviometri SIR in `docs/validazione/pioggia-modelli.md`.
+   *
    * 1.6.0 (24/09/2026): i primi due parametri tarati sul banco di prova delle presenze GBIF,
    * non su un ragionamento: ottimo autunnale a 15 gradi e autunno anche a bassa quota. Vedi
    * `thermal.optAutumnC` e `phenology.lowElevationAutumnWeight`.
@@ -647,7 +651,7 @@ export const ALGORITHM_V1: AlgorithmConfig = {
    * 1.5.0 (24/09/2026): la pioggia intensa di due settimane prima non viene piu' annullata dal
    * terreno che nel frattempo si e' asciugato. Motivo e dato: `trigger.waterRelief`.
    */
-  version: '1.6.0-porcino',
+  version: '1.6.1-porcino',
 
   water: {
     windowDays: sourced(

@@ -94,7 +94,7 @@ export const LICENSES = {
     code: 'CC-BY-4.0',
     name: 'Creative Commons Attribution 4.0 International',
     url: 'https://open-meteo.com/en/terms',
-    attribution: 'Open-Meteo.com, su dati ECMWF IFS, DWD ICON, NOAA GFS ed ERA5',
+    attribution: 'Open-Meteo.com, su dati ECMWF IFS, DWD ICON, NOAA GFS, ItaliaMeteo-ARPAE ICON-2I ed ERA5',
   },
   istatBoundaries: {
     code: 'CC-BY',

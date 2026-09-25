@@ -74,7 +74,7 @@ describe('configurazioni delle varianti', () => {
   })
 
   it('non toccano la configurazione di produzione', () => {
-    expect(ALGORITHM_V1.version).toBe('1.6.0-porcino')
+    expect(ALGORITHM_V1.version).toBe('1.6.1-porcino')
     expect(ALGORITHM_V1.trigger.waterRelief.value).toBe(0.8)
     expect(ALGORITHM_V1.thermal.sigmaWarmC.value).toBe(7.5)
     expect(ALGORITHM_V1.thermal.optAutumnC.value).toBe(15)

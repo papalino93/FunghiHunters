@@ -32,6 +32,11 @@ import {
   MAX_POINTS_PER_REQUEST,
   toModelSeries,
   type OpenMeteoResponse,
+  blendRain,
+  buildRainBlendUrl,
+  rainBlendByDate,
+  rainBlendWeightPerPoint,
+  type RainBlendResponse,
 } from '@/lib/pipeline/open-meteo-series'
 import { mpiLabel } from '@/lib/model/mpi'
 import { buildZoneSnapshot } from '@/lib/pipeline/zone-snapshot'
@@ -68,6 +73,8 @@ const POINTS_PER_REQUEST = Math.min(
   MAX_POINTS_PER_REQUEST,
   Math.max(1, Math.floor(OPEN_METEO_FREE_LIMITS.perMinute / WEIGHT_PER_POINT)),
 )
+/** Peso della seconda richiesta, solo pioggia ICON-2I: vedi `blendRain`. */
+const RAIN_WEIGHT_PER_POINT = rainBlendWeightPerPoint()
 
 const ZONES_FILE = 'public/data/zones-italia.json'
 const FOREST_FILE = 'public/data/forest-italia.json'
@@ -313,7 +320,7 @@ async function main(): Promise<void> {
   )
 
   const todayIso = today()
-  const estimatedWeight = zones.length * WEIGHT_PER_POINT
+  const estimatedWeight = zones.length * (WEIGHT_PER_POINT + RAIN_WEIGHT_PER_POINT)
   console.log(`Snapshot Italia ${ALGORITHM_V1.version} - ${todayIso} - ${zones.length} zone`)
   console.log(
     `Costo stimato: ${Math.round(estimatedWeight)} chiamate pesate su ` +
@@ -332,6 +339,8 @@ async function main(): Promise<void> {
   // Attesa massima per lotto poco oltre l'ora: sopra le ~1.000 zone la corsa deve scavallare la
   // finestra oraria, e dormire e' l'unico modo di restare dentro il piano gratuito.
   const pacer = new RatePacer({ maxWaitMs: 65 * 60_000 })
+  let rainBlendEnabled = true
+  let rainBlendMissing = 0
   const chunks = chunkPoints(zones, POINTS_PER_REQUEST)
   for (const [i, chunk] of chunks.entries()) {
     let responses: OpenMeteoResponse[]
@@ -367,9 +376,33 @@ async function main(): Promise<void> {
       continue
     }
 
+    /*
+     * La pioggia del secondo modello (ICON-2I), da mediare con quella della risposta principale.
+     * Mai bloccante: se manca, il lotto si calcola con il modello di sempre, com'era fino al
+     * 25/09/2026, e il contatore lo dice a fine corsa.
+     */
+    let rainBlend: RainBlendResponse[] | null = null
+    if (rainBlendEnabled) {
+      try {
+        await pacer.reserve(chunk.length * RAIN_WEIGHT_PER_POINT)
+        const blend = await fetchJson<RainBlendResponse[] | RainBlendResponse>(buildRainBlendUrl(chunk), {
+          timeoutMs: 120_000,
+        })
+        const list = Array.isArray(blend) ? blend : [blend]
+        if (list.length === chunk.length) rainBlend = list
+        else console.warn(`  pioggia ICON-2I: ${list.length} risposte per ${chunk.length} punti, lotto senza media`)
+      } catch (error) {
+        if (error instanceof RateBudgetExhausted) rainBlendEnabled = false
+        console.warn(`  pioggia ICON-2I non disponibile per il lotto ${i + 1}: ${shortError(error)}`)
+      }
+    }
+    if (rainBlend === null) rainBlendMissing += chunk.length
+
     for (const [j, zone] of chunk.entries()) {
       const response = responses[j]
       if (response === undefined) continue
+      const blendForZone = rainBlend?.[j]
+      const series = toModelSeries(response, todayIso)
       const measured = forestByCode.get(zone.code)
       const snapshotZone = buildZoneSnapshot({
         zone: {
@@ -388,7 +421,7 @@ async function main(): Promise<void> {
             : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
           stationNotes: NATIONAL_STATION_NOTE,
         },
-        modelSeries: toModelSeries(response, todayIso),
+        modelSeries: blendForZone === undefined ? series : blendRain(series, rainBlendByDate(blendForZone)),
         observationsByDate: NO_OBSERVATIONS,
         todayIso,
         displayPastDays: DISPLAY_PAST_DAYS,
@@ -405,6 +438,12 @@ async function main(): Promise<void> {
         `${Math.round(pacer.used)} chiamate pesate spese`,
     )
   }
+
+  console.log(
+    rainBlendMissing === 0
+      ? 'Pioggia: media Open-Meteo + ICON-2I per tutte le zone.'
+      : `Pioggia: ${rainBlendMissing} zone senza ICON-2I, calcolate con il solo modello di base.`,
+  )
 
   if (computed.length === 0) {
     // Tutto perso: non si scrive niente, ne' le regioni ne' l'indice. I file di ieri restano
@@ -451,7 +490,7 @@ async function main(): Promise<void> {
       // dei comuni perche' un lotto e' fallito e non c'era un file di ieri da tenere.
       status: plan.status,
       recordsFetched: plan.zones.length,
-      coverage: `${plan.region}, modelli a 2-11 km`,
+      coverage: `${plan.region}, modelli a 2-11 km; pioggia: media con ICON-2I (ItaliaMeteo-ARPAE, 2 km)`,
       name: 'Open-Meteo',
       license: LICENSES.openMeteo.code,
       url: LICENSES.openMeteo.url,

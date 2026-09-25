@@ -261,3 +261,31 @@ NODE_USE_ENV_PROXY=1 npx tsx scripts/backtest-gbif.ts --sample 250 --rows --out 
   bootstrap. La cache e i dati GBIF grezzi non sono nel repository.
 - Metriche e campionamento: `tests/validation-metrics.test.ts`,
   `tests/validation-sampling.test.ts`, `tests/validation-variants.test.ts`.
+
+## 11. Il dato di pioggia: modelli contro pluviometri (25/09/2026)
+
+Il banco di prova qui sopra valuta il modello con il meteo storico ERA5. In produzione però le
+zone senza stazioni usano la previsione di Open-Meteo, e il 25/09/2026 una segnalazione da Roveta
+(Scandicci, porcini trovati) ha mostrato che quel dato perdeva i temporali: dal 25 agosto 7 mm,
+contro i 91 del pluviometro SIR di Vingone a 3 km.
+
+`scripts/validate-precip-models.ts` confronta i modelli con i pluviometri `pluvio0_24` della
+Regione Toscana, una stazione per cella di 0,15° (132 stazioni, 11/08-24/09/2026). Risultati
+completi in `docs/validazione/pioggia-modelli.md`.
+
+| Pioggia | Errore 26 giorni | Errore 7 giorni | Temporali ≥ 20 mm visti | Inventati | Totale / misurato |
+|---|---|---|---|---|---|
+| Open-Meteo `best_match` (fino alla 1.6.0) | 46 mm | 16 mm | 47% | 24 | 63% |
+| ICON-2I ItaliaMeteo-ARPAE | 38 mm | 16 mm | 68% | 40 | 89% |
+| **Media dei due (dalla 1.6.1)** | **37 mm** | **14 mm** | **73%** | **16** | 76% |
+
+**Decisione.** Dalla 1.6.1 la pioggia delle zone del catalogo nazionale è la media dei due modelli
+negli ultimi 28 giorni e nei primi 3 di previsione (oltre, ICON-2I non c'è), con una richiesta in
+più a Open-Meteo da una sola variabile. Nessun parametro del punteggio cambia. Le sette zone
+toscane di taratura continuano a usare i pluviometri SIR.
+
+**Limiti.** Un solo mese e mezzo, una sola regione, una stagione di temporali estivi: è la prova
+che il dato di base sbaglia in modo sistematico, non una taratura definitiva. La media resta sotto
+il misurato (76%), quindi dove ci sono pluviometri vanno usati quelli: è il passo successivo per
+tutta la Toscana. Il banco di prova GBIF non può valutare questa scelta, perché ICON-2I non ha un
+archivio pluriennale confrontabile con ERA5.

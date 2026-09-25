@@ -139,7 +139,11 @@ export function MethodScreen({ nationalZones }: { nationalZones: number }) {
 
       <Section title="I dati">
         <ul className="list-disc space-y-1.5 pl-5">
-          <li>Meteo e previsioni: Open-Meteo (CC BY 4.0), su modelli ECMWF, DWD, NOAA ed ERA5.</li>
+          <li>
+            Meteo e previsioni: Open-Meteo (CC BY 4.0), su modelli ECMWF, DWD, NOAA ed ERA5. La pioggia
+            delle zone senza stazioni è la media con ICON-2I di ItaliaMeteo-ARPAE (2 km), che vede
+            meglio i temporali: confronto su 132 pluviometri toscani nel changelog qui sopra.
+          </li>
           <li>Stazioni in Toscana: Regione Toscana, Servizio Idrologico Regionale (CC BY-SA).</li>
           <li>Tipi di bosco: ForestPaths. Confini dei comuni: ISTAT (CC BY).</li>
           <li>Nomi dei luoghi: OpenStreetMap / Nominatim (ODbL). Mappa di base: CARTO, © OpenStreetMap.</li>

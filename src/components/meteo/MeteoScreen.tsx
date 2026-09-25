@@ -325,6 +325,13 @@ function PlaceWeather({
           <p className="border-t border-edge pt-2 text-xs leading-snug text-ink-faint">
             Previsione modellata (Open-Meteo, risoluzione ~9-25 km): a livello locale — in una
             valle stretta o in cresta — i valori reali possono differire, come per ogni previsione.
+            {forecast.rainBlended === true && (
+              <>
+                {' '}
+                La pioggia giornaliera è la media con ICON-2I di ItaliaMeteo-ARPAE (2 km), che vede
+                meglio i temporali; il dettaglio ora per ora resta quello del modello di base.
+              </>
+            )}
           </p>
         </div>
       )}

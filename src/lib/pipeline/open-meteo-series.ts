@@ -144,3 +144,76 @@ export function toModelSeries(response: OpenMeteoResponse, todayIso: string): Da
     }
   })
 }
+
+/*
+ * La pioggia, media di due modelli.
+ *
+ * Il 25/09/2026 una segnalazione da Roveta (Scandicci) ha mostrato che il modello di Open-Meteo
+ * usato fin qui perdeva i temporali: 7 mm in un mese dove il pluviometro SIR a 3 km ne aveva
+ * misurati 91. Il confronto su 132 pluviometri della Regione Toscana, 45 giorni
+ * (`docs/validazione/pioggia-modelli.md`, `scripts/validate-precip-models.ts`), dice che la media
+ * fra quel modello e ICON-2I di ItaliaMeteo-ARPAE (2 km, solo Italia) è la migliore su tutto:
+ * errore sui 26 giorni da 46 a 37 mm, temporali ≥ 20 mm visti dal 47 al 73%, inventati da 24 a 16.
+ *
+ * ICON-2I copre pochi giorni di previsione e non ha l'umidità del suolo, quindi entra solo nella
+ * pioggia, e solo dove c'è: gli ultimi `RAIN_BLEND_PAST_DAYS` giorni (la finestra del bilancio
+ * idrico e dell'innesco) e i primi giorni di previsione. Altrove resta il modello di sempre.
+ * Richiesta separata e leggera (una variabile), per non raddoppiare il peso di quella principale.
+ */
+export const RAIN_BLEND_MODEL = 'italia_meteo_arpae_icon_2i'
+export const RAIN_BLEND_PAST_DAYS = 28
+export const RAIN_BLEND_FORECAST_DAYS = 3
+
+export function rainBlendWeightPerPoint(): number {
+  return estimateCallWeight(1, 1, RAIN_BLEND_PAST_DAYS + RAIN_BLEND_FORECAST_DAYS)
+}
+
+export function buildRainBlendUrl(points: readonly ModelPoint[]): string {
+  const params = new URLSearchParams({
+    latitude: points.map((p) => p.latitude).join(','),
+    longitude: points.map((p) => p.longitude).join(','),
+    elevation: points.map((p) => p.elevationM).join(','),
+    daily: 'precipitation_sum',
+    past_days: String(RAIN_BLEND_PAST_DAYS),
+    forecast_days: String(RAIN_BLEND_FORECAST_DAYS),
+    timezone: PROJECT_TIMEZONE,
+    models: RAIN_BLEND_MODEL,
+  })
+  return `${FORECAST_URL}?${params.toString()}`
+}
+
+export interface RainBlendResponse {
+  readonly daily?: Readonly<Record<string, ReadonlyArray<string | number | null>>>
+}
+
+/** Data → pioggia del secondo modello; i giorni senza valore restano fuori. */
+export function rainBlendByDate(response: RainBlendResponse): Map<string, number> {
+  const out = new Map<string, number>()
+  const daily = response.daily
+  if (daily === undefined) return out
+  const key = Object.keys(daily).find((k) => k.startsWith('precipitation_sum'))
+  const times = daily['time'] ?? []
+  if (key === undefined) return out
+  for (const [i, time] of times.entries()) {
+    const value = daily[key]?.[i]
+    if (typeof time === 'string' && typeof value === 'number' && Number.isFinite(value)) {
+      out.set(time, value)
+    }
+  }
+  return out
+}
+
+/**
+ * La serie con la pioggia mediata dove ci sono entrambi i modelli. Nessun altro campo cambia, e
+ * un giorno che uno dei due non ha resta com'era: meglio un modello solo che un buco.
+ */
+export function blendRain(
+  series: readonly DailyWeather[],
+  other: ReadonlyMap<string, number>,
+): DailyWeather[] {
+  return series.map((day) => {
+    const second = other.get(day.date)
+    if (second === undefined || day.precipitationMm === null) return day
+    return { ...day, precipitationMm: (day.precipitationMm + second) / 2 }
+  })
+}
