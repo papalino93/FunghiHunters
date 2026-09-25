@@ -207,3 +207,17 @@ describe('archivio Open-Meteo', () => {
     expect(out.days[0]?.provenance).toBe('REANALYSIS')
   })
 })
+
+describe('varianti (j): caldo a bassa quota', () => {
+  it('sotto 700 m cambiano ottimo e tolleranza, sopra 900 m sono la produzione', async () => {
+    const { configWarmLow } = await import('@/lib/validation/variants')
+    const low = configWarmLow(300, 17, 10)
+    expect(low.thermal.optAutumnC.value).toBe(17)
+    expect(low.thermal.sigmaWarmC.value).toBe(10)
+    const mid = configWarmLow(800, 17, null)
+    expect(mid.thermal.optAutumnC.value).toBeCloseTo(16, 10)
+    const high = configWarmLow(1200, 19, 10)
+    expect(high.thermal.optAutumnC.value).toBe(ALGORITHM_V1.thermal.optAutumnC.value)
+    expect(high.thermal.sigmaWarmC.value).toBe(ALGORITHM_V1.thermal.sigmaWarmC.value)
+  })
+})

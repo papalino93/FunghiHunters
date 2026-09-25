@@ -153,6 +153,7 @@ uscite del diario.
 | Data | Luogo | Osservazione | Modello prima | Modifica | Modello dopo |
 |---|---|---|---|---|---|
 | 23-24/09/2026 | Mugello (FI), ~900 m, faggeta/cerreta | Porcini abbondanti (segnalazione certa del proprietario del progetto; voci concordi in tutta la Toscana, senza luoghi precisi) | 1.4.0: 12/100, «sfavorevoli»; limite «acqua» (27 mm efficaci su 60 caduti, fabbisogno 100 mm su terreno secco) | 1.5.0: `trigger.waterRelief` = 0,8 — nella finestra 12 ± 4 giorni dopo una pioggia ≥ 20 mm (qui 36,5 mm il 10/09, stazioni SIR) il fattore acqua recupera l'80% della parte mancante | 1.5.0: 63-64/100 il 23-24/09, picco nella finestra, calo da sabato senza nuova pioggia |
+| 25/09/2026 | Roveta e Chiesanuova (Scandicci / San Casciano, FI), ~250 m, querceto | Porcini che iniziano a uscire, «meno che nel Mugello ma si trovano» (segnalazione certa del proprietario del progetto) | Non esisteva una zona: la più vicina era a 36 km. Pioggia del modello di base: 7 mm dal 25/08, contro 91 al pluviometro SIR di Vingone (3 km) | 1.6.1: pioggia media con ICON-2I fuori dalla Toscana; in Toscana tutti i comuni con almeno il 40% di bosco, calcolati con i pluviometri SIR | Scandicci 35/100, sotto il Mugello (65) come nella realtà; il limite è la temperatura (21,6 °C di media a 20 giorni, ottimo 15,6): varianti (j) sul banco di prova |
 
 **Cosa è stato provato prima di cambiare la struttura.** Solo sui parametri del bilancio idrico:
 niente deficit iniziale, decadimento dimezzato, innesco a peso pieno e le loro combinazioni.

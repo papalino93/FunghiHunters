@@ -172,6 +172,39 @@ export function configOpt15LowAutumn(weight: number): AlgorithmConfig {
   }
 }
 
+/**
+ * (j) Il caldo a bassa quota, sul modello in produzione (25/09/2026).
+ *
+ * Porcini a Roveta e Chiesanuova (Scandicci / San Casciano, ~250 m, querceti) con 21,6 °C di media
+ * a 20 giorni, dove il modello mette l'ottimo a 15,6 e toglie 23 punti. Le specie di collina (porcino
+ * nero ed estivo) tollerano più caldo di quello di faggeta, e settembre è il mese in cui il banco di
+ * prova distingue peggio. Le varianti agiscono solo sotto `phenology.lowElevationM`, sfumando fino a
+ * `highElevationM`: sopra, identiche alla produzione.
+ */
+function lowElevationShare(elevationM: number, config: AlgorithmConfig = ALGORITHM_V1): number {
+  const low = config.phenology.lowElevationM.value
+  const high = config.phenology.highElevationM.value
+  if (elevationM <= low) return 1
+  if (elevationM >= high) return 0
+  return (high - elevationM) / (high - low)
+}
+
+export function configWarmLow(
+  elevationM: number,
+  lowOptAutumnC: number | null,
+  lowSigmaWarmC: number | null,
+): AlgorithmConfig {
+  const share = lowElevationShare(elevationM)
+  const t = ALGORITHM_V1.thermal
+  const opt = lowOptAutumnC === null ? t.optAutumnC.value : t.optAutumnC.value + (lowOptAutumnC - t.optAutumnC.value) * share
+  const sigma = lowSigmaWarmC === null ? t.sigmaWarmC.value : t.sigmaWarmC.value + (lowSigmaWarmC - t.sigmaWarmC.value) * share
+  return {
+    ...ALGORITHM_V1,
+    version: `backtest-caldo-basso-${String(lowOptAutumnC)}-${String(lowSigmaWarmC)}`,
+    thermal: { ...t, optAutumnC: withValue(t.optAutumnC, opt), sigmaWarmC: withValue(t.sigmaWarmC, sigma) },
+  }
+}
+
 export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   {
     key: 'v14',
@@ -253,6 +286,30 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
     label: '(h2) ottimo 15 °C + autunno a bassa quota (0,8)',
     change: 'thermal.optAutumnC = 15 e phenology.lowElevationAutumnWeight = 0.8',
     score: (input) => scoreWith(configOpt15LowAutumn(0.8), input),
+  },
+  {
+    key: 'p-ottimo-basso-17',
+    label: '(j1) produzione + ottimo autunnale 17 °C in basso',
+    change: 'thermal.optAutumnC 15 -> 17 sotto 700 m, sfumato fino a 900 m',
+    score: (input) => scoreWith(configWarmLow(input.elevationM, 17, null), input),
+  },
+  {
+    key: 'p-ottimo-basso-19',
+    label: '(j2) produzione + ottimo autunnale 19 °C in basso',
+    change: 'thermal.optAutumnC 15 -> 19 sotto 700 m, sfumato fino a 900 m',
+    score: (input) => scoreWith(configWarmLow(input.elevationM, 19, null), input),
+  },
+  {
+    key: 'p-caldo-basso-10',
+    label: '(j3) produzione + caldo tollerato in basso',
+    change: 'thermal.sigmaWarmC 7.5 -> 10 sotto 700 m, sfumato fino a 900 m',
+    score: (input) => scoreWith(configWarmLow(input.elevationM, null, 10), input),
+  },
+  {
+    key: 'p-ottimo17-caldo10',
+    label: '(j4) produzione + ottimo 17 °C e caldo tollerato in basso',
+    change: 'optAutumnC 17 e sigmaWarmC 10 sotto 700 m, sfumati fino a 900 m',
+    score: (input) => scoreWith(configWarmLow(input.elevationM, 17, 10), input),
   },
   {
     key: 'produzione',
