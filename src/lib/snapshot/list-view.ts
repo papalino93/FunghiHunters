@@ -70,6 +70,19 @@ function toListZone(zone: SnapshotZone): SnapshotZone {
     nearbyMunicipalities: [],
     // Le note sulle stazioni le mostra solo la scheda «Dati» della mappa.
     stationNotes: '',
+    /*
+     * Dell'elenco delle stazioni le pagine elenco leggono solo se c'e' (`stations.length > 0`:
+     * «stima solida» contro «anteprima»). Con la Toscana completa (226 zone, 12 stazioni l'una) le
+     * stazioni erano un terzo della home, ~600 KB. Resta la piu' vicina, cosi' la condizione vale
+     * uguale; l'elenco intero lo mostra la scheda della mappa.
+     */
+    stations: zone.stations.slice(0, 1).map((s) => ({
+      ...s,
+      latitude: Math.round(s.latitude * 1000) / 1000,
+      longitude: Math.round(s.longitude * 1000) / 1000,
+      distanceKm: r1(s.distanceKm),
+      effectiveKm: r1(s.effectiveKm),
+    })),
   }
 }
 

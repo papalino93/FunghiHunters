@@ -17,6 +17,8 @@
  * verificare la finestra oraria non verrebbe mai scritto, e la logica resterebbe non verificata.
  */
 
+import { readFileSync, writeFileSync } from 'node:fs'
+
 /** I tre limiti dichiarati dal piano non commerciale, in chiamate pesate. */
 export interface RateLimits {
   readonly perMinute: number
@@ -72,10 +74,21 @@ export interface RatePacerOptions {
   readonly maxWaitMs?: number
   readonly now?: () => number
   readonly wait?: (ms: number) => Promise<void>
+  /**
+   * File in cui le spese restano fra un processo e l'altro dello stesso job.
+   *
+   * I limiti di Open-Meteo sono per indirizzo IP, non per script: nella corsa delle 11:40 la Toscana
+   * completa spende ~800 unita' pochi minuti prima che parta il nazionale, e un regolatore che
+   * riparte da zero crederebbe di avere tutte le 5.000 dell'ora (HTTP 429). Con il registro il
+   * secondo script parte sapendo quanto ha gia' speso il primo. Il workflow lo passa con
+   * `OPEN_METEO_LEDGER`; senza, il regolatore resta in memoria come prima.
+   */
+  readonly ledgerPath?: string
 }
 
 export class RatePacer {
   private readonly spends: Spend[] = []
+  private readonly ledgerPath: string | null
   private readonly limits: RateLimits
   private readonly maxWaitMs: number
   private readonly now: () => number
@@ -86,6 +99,8 @@ export class RatePacer {
     this.maxWaitMs = options.maxWaitMs ?? 20 * MINUTE_MS
     this.now = options.now ?? Date.now
     this.wait = options.wait ?? sleep
+    this.ledgerPath = options.ledgerPath ?? null
+    if (this.ledgerPath !== null) this.spends.push(...readLedger(this.ledgerPath))
   }
 
   /** Peso gia' speso e ancora dentro la finestra giornaliera. */
@@ -122,6 +137,7 @@ export class RatePacer {
     if (waitMs > 0) await this.wait(waitMs)
     this.prune()
     this.spends.push({ at: this.now(), weight })
+    if (this.ledgerPath !== null) writeLedger(this.ledgerPath, this.spends)
     return waitMs
   }
 
@@ -145,5 +161,32 @@ export class RatePacer {
   private prune(): void {
     const floor = this.now() - DAY_MS
     while (this.spends.length > 0 && (this.spends[0]?.at ?? 0) <= floor) this.spends.shift()
+  }
+}
+
+/** Le spese del registro, in ordine di tempo; un file mancante o illeggibile vale «nessuna». */
+function readLedger(file: string): Spend[] {
+  try {
+    const raw: unknown = JSON.parse(readFileSync(file, 'utf-8'))
+    if (!Array.isArray(raw)) return []
+    return raw
+      .filter(
+        (s): s is Spend =>
+          typeof s === 'object' &&
+          s !== null &&
+          typeof (s as Spend).at === 'number' &&
+          typeof (s as Spend).weight === 'number',
+      )
+      .sort((a, b) => a.at - b.at)
+  } catch {
+    return []
+  }
+}
+
+function writeLedger(file: string, spends: readonly Spend[]): void {
+  try {
+    writeFileSync(file, JSON.stringify(spends), 'utf-8')
+  } catch {
+    // Un registro che non si scrive non ferma il calcolo: si perde solo la memoria fra i passi.
   }
 }

@@ -185,7 +185,7 @@ async function main(): Promise<void> {
   // Open-Meteo, a lotti dimensionati sul peso.
   const weightPerPoint = forecastWeightPerPoint(HISTORY_DAYS, FORECAST_DAYS)
   const perRequest = Math.max(1, Math.floor(OPEN_METEO_FREE_LIMITS.perMinute / weightPerPoint))
-  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000 })
+  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000, ledgerPath: process.env['OPEN_METEO_LEDGER'] })
   const computed: SnapshotZone[] = []
   let modelFailures = 0
   for (const chunk of chunkPoints(zones, perRequest)) {

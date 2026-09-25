@@ -356,7 +356,7 @@ async function main(): Promise<void> {
   const failedBatches: string[] = []
   // Attesa massima per lotto poco oltre l'ora: sopra le ~1.000 zone la corsa deve scavallare la
   // finestra oraria, e dormire e' l'unico modo di restare dentro il piano gratuito.
-  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000 })
+  const pacer = new RatePacer({ maxWaitMs: 65 * 60_000, ledgerPath: process.env['OPEN_METEO_LEDGER'] })
   let rainBlendEnabled = true
   let rainBlendMissing = 0
   const chunks = chunkPoints(zones, POINTS_PER_REQUEST)
