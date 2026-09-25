@@ -16,6 +16,20 @@ export interface ModelRelease {
 
 export const MODEL_CHANGELOG: readonly ModelRelease[] = [
   {
+    version: '1.6.1-porcino',
+    date: '2026-09-25',
+    title: 'La pioggia vista meglio: media di due modelli meteo',
+    what:
+      'Per le zone senza stazioni la pioggia è ora la media fra il modello di Open-Meteo usato fin qui ' +
+      'e ICON-2I di ItaliaMeteo-ARPAE, il modello italiano a 2 km. Nessun parametro del punteggio ' +
+      'cambia.',
+    why:
+      'Vicino a Roveta (Scandicci) si trovavano porcini mentre il modello dava 7 mm di pioggia in un ' +
+      'mese; il pluviometro della Regione a 3 km ne aveva misurati 91. Su 132 pluviometri toscani e ' +
+      '45 giorni la media vede il 73% dei temporali forti invece del 47%, ne inventa meno (16 invece ' +
+      'di 24) e sbaglia meno la pioggia dei 26 giorni (37 mm invece di 46).',
+  },
+  {
     version: '1.6.0-porcino',
     date: '2026-09-24',
     title: 'Tarato sui ritrovamenti reali: autunno anche in basso, ottimo a 15 °C',

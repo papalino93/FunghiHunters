@@ -1,0 +1,37 @@
+{
+  "start": "2026-08-11",
+  "end": "2026-09-24",
+  "stations": 132,
+  "scores": {
+    "best_match": {
+      "dailyMae": 2.7746578813989005,
+      "dailyBias": -0.9952356817029892,
+      "sum7Mae": 15.979322033898232,
+      "sum26Mae": 46.11540240518033,
+      "totalRatio": 0.6339003275183804,
+      "eventsObserved": 279,
+      "eventsSeen": 130,
+      "eventsInvented": 24
+    },
+    "italia_meteo_arpae_icon_2i": {
+      "dailyMae": 2.704562607204126,
+      "dailyBias": -0.29207547169811365,
+      "sum7Mae": 15.623448145344415,
+      "sum26Mae": 38.05160750167453,
+      "totalRatio": 0.893195845250639,
+      "eventsObserved": 277,
+      "eventsSeen": 187,
+      "eventsInvented": 40
+    },
+    "media": {
+      "dailyMae": 2.389331046312186,
+      "dailyBias": -0.6513893653516293,
+      "sum7Mae": 13.626788417865264,
+      "sum26Mae": 36.501942397856695,
+      "totalRatio": 0.7618044056400212,
+      "eventsObserved": 277,
+      "eventsSeen": 202,
+      "eventsInvented": 16
+    }
+  }
+}

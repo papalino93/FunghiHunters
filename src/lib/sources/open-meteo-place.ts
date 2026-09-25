@@ -12,6 +12,7 @@ import { z } from 'zod'
 
 import { PROJECT_TIMEZONE, addDays, today } from '@/lib/domain/time'
 import { fetchJson } from '@/lib/sources/http'
+import { RAIN_BLEND_MODEL, rainBlendByDate, type RainBlendResponse } from '@/lib/pipeline/open-meteo-series'
 import { aggregateHourlyToDaily } from '@/lib/sources/open-meteo'
 
 const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search'
@@ -120,6 +121,11 @@ export interface PlaceForecast {
   readonly daily: readonly PlaceDailyWeather[]
   /** Le stesse ore di `daily`, raggruppate per data (`YYYY-MM-DD`), per il dettaglio a richiesta. */
   readonly hourlyByDate: Readonly<Record<string, readonly PlaceHourlyWeather[]>>
+  /**
+   * `true` quando la pioggia giornaliera è la media con ICON-2I (vedi `blendRain` nella pipeline):
+   * la pagina lo dice, perché il dettaglio ora per ora resta quello del solo modello di base.
+   */
+  readonly rainBlended?: boolean
 }
 
 const forecastSchema = z.object({
@@ -235,8 +241,50 @@ export async function fetchPlaceForecast(
   elevationM: number | null,
 ): Promise<PlaceForecast> {
   const url = buildPlaceForecastUrl(latitude, longitude, elevationM)
-  const payload = await fetchJson(url, { timeoutMs: 15_000, attempts: 2 })
-  return parsePlaceForecast(payload)
+  // La pioggia del secondo modello va in parallelo e non è mai bloccante: se non arriva, la
+  // pagina mostra il modello di base come prima del 25/09/2026.
+  const [payload, rain] = await Promise.all([
+    fetchJson(url, { timeoutMs: 15_000, attempts: 2 }),
+    fetchJson<RainBlendResponse>(buildPlaceRainBlendUrl(latitude, longitude, elevationM), {
+      timeoutMs: 15_000,
+      attempts: 1,
+    }).catch(() => null),
+  ])
+  const forecast = parsePlaceForecast(payload)
+  return rain === null ? forecast : blendPlaceRain(forecast, rainBlendByDate(rain))
+}
+
+/** La pioggia di ICON-2I per lo stesso punto e gli stessi giorni del riepilogo «per chi cerca». */
+export function buildPlaceRainBlendUrl(
+  latitude: number,
+  longitude: number,
+  elevationM: number | null,
+): string {
+  const params = new URLSearchParams()
+  params.set('latitude', String(latitude))
+  params.set('longitude', String(longitude))
+  if (elevationM !== null) params.set('elevation', String(elevationM))
+  params.set('daily', 'precipitation_sum')
+  params.set('past_days', String(PAST_DAYS))
+  params.set('forecast_days', '3')
+  params.set('timezone', 'Europe/Rome')
+  params.set('models', RAIN_BLEND_MODEL)
+  return `${FORECAST_URL}?${params.toString()}`
+}
+
+/**
+ * La pioggia giornaliera come media dei due modelli dove ci sono entrambi: la stessa regola dello
+ * snapshot, perché la pagina Meteo e il punteggio non raccontino due piogge diverse.
+ */
+export function blendPlaceRain(forecast: PlaceForecast, other: ReadonlyMap<string, number>): PlaceForecast {
+  let blended = false
+  const daily = forecast.daily.map((day) => {
+    const second = other.get(day.date)
+    if (second === undefined || day.precipitationMm === null) return day
+    blended = true
+    return { ...day, precipitationMm: (day.precipitationMm + second) / 2 }
+  })
+  return { ...forecast, daily, rainBlended: blended }
 }
 
 /** Pura: separata da `fetchPlaceForecast` per essere testabile senza rete, su una fixture. */
