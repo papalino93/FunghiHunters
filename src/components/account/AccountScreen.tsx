@@ -400,8 +400,10 @@ function SignedInPanel({
         </h2>
         <p className="mt-1.5 text-xs leading-snug text-ink-dim">
           Le coordinate esatte delle tue uscite non lasciano mai questo dispositivo, a meno che tu
-          non scelga esplicitamente &quot;coordinate esatte&quot; per una voce. Solo tu puoi leggere
-          o modificare i tuoi dati: lo garantisce la Row Level Security del database.
+          non scelga esplicitamente &quot;coordinate esatte&quot; per una voce. Nessun altro utente
+          può leggere o modificare i tuoi dati: lo garantisce la Row Level Security del database.
+          Il titolare del servizio può leggerli dal pannello dell&apos;app, che registra ogni
+          lettura — vedi la pagina Privacy.
         </p>
         <button
           type="button"
