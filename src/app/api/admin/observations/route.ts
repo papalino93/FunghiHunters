@@ -18,11 +18,13 @@
 import { NextResponse } from 'next/server'
 
 import { requireAdmin } from '@/lib/admin/guard'
+import { NO_STORE, adminNotFound } from '@/lib/admin/responses'
 import { computeStats, type StatRow } from '@/lib/admin/stats'
 import { getAdminClient } from '@/lib/supabase/admin'
 import { isAbundance } from '@/lib/diary/types'
 
 export const dynamic = 'force-dynamic'
+
 
 /** Massimo di righe per richiesta: un diario che cresce non deve far esplodere la pagina. */
 const MAX_ROWS = 2000
@@ -46,16 +48,12 @@ interface ObservationRow {
   deleted_at: string | null
 }
 
-function notFound(): NextResponse {
-  return NextResponse.json({ error: 'Not found' }, { status: 404 })
-}
-
 export async function GET(request: Request): Promise<NextResponse> {
   const check = await requireAdmin(request)
-  if (!check.ok) return notFound()
+  if (!check.ok) return adminNotFound()
 
   const admin = getAdminClient()
-  if (admin === null) return notFound()
+  if (admin === null) return adminNotFound()
 
   const { data, error } = await admin
     .from('user_observations')
@@ -65,7 +63,10 @@ export async function GET(request: Request): Promise<NextResponse> {
     .limit(MAX_ROWS)
 
   if (error !== null) {
-    return NextResponse.json({ error: `Lettura fallita: ${error.message}` }, { status: 500 })
+    return NextResponse.json(
+      { error: `Lettura fallita: ${error.message}` },
+      { status: 500, headers: NO_STORE },
+    )
   }
 
   const rows = (data ?? []) as ObservationRow[]
@@ -98,7 +99,7 @@ export async function GET(request: Request): Promise<NextResponse> {
           'Registro degli accessi non disponibile: la lettura è stata negata. ' +
           'Esegui db/migrations/0009_admin_access_log.sql nell\'SQL Editor di Supabase.',
       },
-      { status: 503 },
+      { status: 503, headers: NO_STORE },
     )
   }
 
@@ -131,5 +132,5 @@ export async function GET(request: Request): Promise<NextResponse> {
       createdAt: r.created_at,
       updatedAt: r.updated_at,
     })),
-  })
+  }, { headers: NO_STORE })
 }

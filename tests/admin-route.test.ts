@@ -33,6 +33,7 @@ vi.mock('@/lib/supabase/admin', () => ({
 }))
 
 const { GET } = await import('@/app/api/admin/observations/route')
+const { GET: GET_ME } = await import('@/app/api/admin/me/route')
 
 const ROW = {
   user_id: 'utente-a', client_id: 'uscita-1', observed_at: '2026-09-20', zone_code: 'amiata',
@@ -59,6 +60,8 @@ describe('rotta amministratore', () => {
   it('restituisce le uscite, note comprese, e registra la lettura', async () => {
     const response = await call()
     expect(response.status).toBe(200)
+    // Il diario di tutti non deve restare in nessuna cache, nemmeno su disco nel browser.
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
     const body = (await response.json()) as { observations: Array<{ notes: string }> }
     expect(body.observations[0]?.notes).toBe('sotto i faggi')
     expect(insert).toHaveBeenCalledWith(
@@ -88,5 +91,42 @@ describe('rotta amministratore', () => {
   it('un 404 da non-amministratore è identico a quello di una rotta che non esiste', async () => {
     getUser.mockResolvedValue({ data: { user: null }, error: { message: 'bad' } })
     expect(await (await call('falso')).json()).toEqual({ error: 'Not found' })
+  })
+})
+
+describe('rotta «sono l\'amministratore?»', () => {
+  function me(token = 'token-buono'): Promise<Response> {
+    return GET_ME(new Request('https://example.test/api/admin/me', {
+      headers: { authorization: `Bearer ${token}` },
+    }))
+  }
+
+  beforeEach(() => {
+    getUser.mockReset().mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
+    adminRow.mockReset().mockResolvedValue({ data: { user_id: ADMIN_ID }, error: null })
+    readObservations.mockReset()
+    insert.mockReset()
+  })
+
+  it('al titolare risponde sì, senza leggere il diario né scrivere nel registro', async () => {
+    const response = await me()
+    expect(response.status).toBe(200)
+    expect(await response.json()).toEqual({ admin: true })
+    expect(response.headers.get('cache-control')).toBe('private, no-store')
+    // Dice solo chi sei: il registro è per le letture del diario, e resta tale.
+    expect(readObservations).not.toHaveBeenCalled()
+    expect(insert).not.toHaveBeenCalled()
+  })
+
+  it('a un utente qualunque risponde lo stesso 404 di una rotta che non esiste', async () => {
+    adminRow.mockResolvedValue({ data: null, error: null })
+    const response = await me()
+    expect(response.status).toBe(404)
+    expect(await response.json()).toEqual({ error: 'Not found' })
+  })
+
+  it('senza un token valido risponde 404', async () => {
+    getUser.mockResolvedValue({ data: { user: null }, error: { message: 'bad' } })
+    expect((await me('falso')).status).toBe(404)
   })
 })
