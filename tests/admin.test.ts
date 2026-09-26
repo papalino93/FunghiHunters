@@ -8,7 +8,7 @@
 
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { bandStats, computeStats, toCsv, type StatRow } from '@/lib/admin/stats'
+import { bandStats, computeStats, formatPeriod, toCsv, type StatRow } from '@/lib/admin/stats'
 
 const ADMIN_ID = '11111111-1111-1111-1111-111111111111'
 const OTHER_ID = '22222222-2222-2222-2222-222222222222'
@@ -172,5 +172,25 @@ describe('esportazione CSV', () => {
   it('scrive le celle vuote come vuote, non come «null»', () => {
     const csv = toCsv(['a', 'b'], [[null, undefined]])
     expect(csv.replace('﻿', '').split('\r\n')[1]).toBe(',')
+  })
+})
+
+describe('periodo in parole', () => {
+  it('un giorno solo non si legge come un altro giorno', () => {
+    // Il difetto che questo test chiude: `2026-09-18` diventava «26-09», cioè «26 settembre».
+    expect(formatPeriod('2026-09-18', '2026-09-18')).toBe('18 set 2026')
+  })
+
+  it('nello stesso anno scrive l\'anno una volta sola', () => {
+    expect(formatPeriod('2026-09-18', '2026-10-03')).toBe('18 set → 3 ott 2026')
+  })
+
+  it('a cavallo di due anni li scrive entrambi', () => {
+    expect(formatPeriod('2025-11-02', '2026-09-18')).toBe('2 nov 2025 → 18 set 2026')
+  })
+
+  it('senza date, o con una data non ISO, dice «—» invece di inventare', () => {
+    expect(formatPeriod(null, null)).toBe('—')
+    expect(formatPeriod('non una data', null)).toBe('—')
   })
 })

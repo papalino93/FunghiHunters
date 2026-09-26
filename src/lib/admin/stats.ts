@@ -135,3 +135,33 @@ export function toCsv(headers: readonly string[], rows: ReadonlyArray<readonly u
   const lines = [headers.map(cell).join(','), ...rows.map((r) => r.map(cell).join(','))]
   return `﻿${lines.join('\r\n')}`
 }
+
+const MONTHS = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'] as const
+
+/** `2026-09-18` → `{ day: 18, month: 'set', year: 2026 }`, `null` se non è una data ISO. */
+function parseIsoDay(iso: string): { day: number; month: string; year: number } | null {
+  const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso)
+  if (match === null) return null
+  const month = MONTHS[Number(match[2]) - 1]
+  if (month === undefined) return null
+  return { day: Number(match[3]), month, year: Number(match[1]) }
+}
+
+/**
+ * Il periodo coperto dalle uscite, in parole: «18 set 2026», «18 set → 3 ott 2026».
+ *
+ * Mai in cifre. La prima versione scriveva `26-09` — anno e mese — e in italiano si legge
+ * «26 settembre»: un'uscita del 18 sembrava di oggi. Con il mese in lettere l'ambiguità fra
+ * giorno, mese e anno sparisce. La data si legge dalla stringa, senza passare da `Date`: un
+ * `new Date('2026-09-18')` è mezzanotte UTC, e in un fuso a ovest di Greenwich diventa il 17.
+ */
+export function formatPeriod(first: string | null, last: string | null): string {
+  const a = first === null ? null : parseIsoDay(first)
+  const b = last === null ? null : parseIsoDay(last)
+  if (a === null) return '—'
+  if (b === null || (a.day === b.day && a.month === b.month && a.year === b.year)) {
+    return `${a.day} ${a.month} ${a.year}`
+  }
+  if (a.year === b.year) return `${a.day} ${a.month} → ${b.day} ${b.month} ${b.year}`
+  return `${a.day} ${a.month} ${a.year} → ${b.day} ${b.month} ${b.year}`
+}

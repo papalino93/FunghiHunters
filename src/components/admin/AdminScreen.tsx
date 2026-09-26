@@ -5,7 +5,8 @@ import { useEffect, useState } from 'react'
 import { useAuth } from '@/lib/auth/context'
 import { getBrowserClient } from '@/lib/supabase/client'
 import { mpiBandColor } from '@/lib/ui/scale'
-import { toCsv, type AdminStats } from '@/lib/admin/stats'
+import { formatPeriod, toCsv, type AdminStats } from '@/lib/admin/stats'
+import { ABUNDANCE_LABELS, ABUNDANCE_RANK, isAbundance } from '@/lib/diary/types'
 
 interface Observation {
   readonly userId: string
@@ -41,6 +42,14 @@ type Load =
 /** Accorcia l'uuid per la tabella: le prime otto cifre bastano a distinguere gli utenti a occhio. */
 function shortId(id: string): string {
   return id.slice(0, 8)
+}
+
+/**
+ * L'esito come lo legge una persona: «pochi», non `few`. Il codice interno resta nel database e
+ * nella colonna `esito_rango` del CSV; in una tabella da leggere a occhio non ha niente da fare.
+ */
+function abundanceLabel(value: string | null): string {
+  return isAbundance(value) ? ABUNDANCE_LABELS[value] : '—'
 }
 
 function download(filename: string, content: string): void {
@@ -165,12 +174,24 @@ export function AdminScreen() {
 
   const { stats, observations, truncated } = load.data
 
+  // Codice → nome, per non mostrare «amiata» sopra una tabella che dice «Monte Amiata».
+  const zoneNames = new Map<string, string>()
+  for (const o of observations) {
+    if (o.zoneCode !== null && o.zoneName !== null && o.zoneName !== '') zoneNames.set(o.zoneCode, o.zoneName)
+  }
+
   const exportCsv = (): void => {
+    /*
+     * `esito_rango` accanto all'etichetta: «pochi» si legge, 1 si calcola. Con il rango da 0
+     * (nessuno) a 4 (eccezionale) in una colonna numerica, una correlazione fra punteggio
+     * previsto ed esito in Excel è una formula, non una tabella di conversione da costruire.
+     */
     const csv = toCsv(
-      ['utente', 'id', 'data', 'zona', 'nome_zona', 'esito', 'quota_m', 'durata_min',
-       'persone', 'punteggio_previsto', 'affidabilita', 'versione_modello', 'note'],
+      ['utente', 'id', 'data', 'zona', 'nome_zona', 'esito', 'esito_rango', 'quota_m',
+       'durata_min', 'persone', 'punteggio_previsto', 'affidabilita', 'versione_modello', 'note'],
       observations.map((o) => [
-        o.userId, o.id, o.date, o.zoneCode, o.zoneName, o.abundance, o.elevationM,
+        o.userId, o.id, o.date, o.zoneCode, o.zoneName, abundanceLabel(o.abundance),
+        isAbundance(o.abundance) ? ABUNDANCE_RANK[o.abundance] : null, o.elevationM,
         o.durationMinutes, o.searchers, o.mpiAtEntry, o.confidenceAtEntry, o.algorithmVersion,
         o.notes,
       ]),
@@ -192,7 +213,7 @@ export function AdminScreen() {
         <Tile label="zone battute" value={String(stats.distinctZones)} />
         <Tile
           label="periodo"
-          value={stats.firstDate === null ? '—' : `${stats.firstDate.slice(2, 7)} → ${(stats.lastDate ?? '').slice(2, 7)}`}
+          value={formatPeriod(stats.firstDate, stats.lastDate)}
         />
       </div>
 
@@ -233,7 +254,11 @@ export function AdminScreen() {
         <Section title="Zone più battute">
           <Table
             headers={['zona', 'uscite', 'con ritrovamento']}
-            rows={stats.topZones.map((z) => [z.zoneCode, String(z.outings), String(z.withFinds)])}
+            rows={stats.topZones.map((z) => [
+              zoneNames.get(z.zoneCode) ?? z.zoneCode,
+              String(z.outings),
+              String(z.withFinds),
+            ])}
           />
         </Section>
       )}
@@ -263,12 +288,12 @@ export function AdminScreen() {
           Scarica CSV
         </button>
         <Table
-          headers={['utente', 'data', 'zona', 'esito', 'prev.', 'min', 'pers.', 'note']}
+          headers={['utente', 'data', 'zona', 'esito', 'punteggio', 'min', 'pers.', 'note']}
           rows={observations.map((o) => [
             shortId(o.userId),
             o.date,
             o.zoneName ?? o.zoneCode ?? '—',
-            o.abundance ?? '—',
+            abundanceLabel(o.abundance),
             o.mpiAtEntry === null ? '—' : o.mpiAtEntry.toFixed(0),
             o.durationMinutes === null ? '—' : String(o.durationMinutes),
             o.searchers === null ? '—' : String(o.searchers),
