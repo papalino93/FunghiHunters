@@ -81,3 +81,9 @@ Bersagli minimo 44 px (56 per la barra in basso); corpo minimo 14 px, didascalie
 CONTENUTI DI ESEMPIO (usali alla lettera)
 Verdetto: "Oggi sì." Motivo: "La pioggia forte di 14 giorni fa cade nella finestra in cui il porcino di solito spunta. Il freno è la temperatura: 19 °C di media, contro i 13 ideali." Consiglio: "Il posto più indicato è Mugello." Zone: Mugello 64/100 favorevoli (900 m, faggeta, cerreta), Pratomagno 72/100, Garfagnana 66/100, Monte Amiata 2/100 sfavorevoli. Piemonte in anteprima: "Oggi buone condizioni, secondo il modello." Etichetta: "Anteprima · stima da modello, non verificata da stazioni". Meteo: "Ultima pioggia vera: 14 giorni fa, 36 mm." Avviso: "L'indice descrive condizioni ambientali compatibili con la fruttificazione, non la presenza reale di funghi."
 ```
+
+## Il segno — scelto il 26/09/2026
+
+Un porcino che è anche un segnaposto: il cappello è la testa, il gambo si stringe fino alla punta che tocca il punto sulla mappa, con l'ombra a terra. Fondo nel verde menta dell'app (`#119070 → #0a5a43`), cappello castagno, gambo crema. Scelto fra tre proposte (evoluzione del porcino, segnaposto, anello di punteggio) perché è l'unico che dice cosa fa l'app — «Dove vado oggi» — e quello che regge meglio a 16 e 32 px, dove un'icona vive davvero.
+
+**Una fonte sola**: forme e colori stanno in `src/lib/brand/mark.ts`. I componenti usano `BrandMark`; `icon.svg`, `icon-maskable.svg` e `favicon.ico` li scrive `npx tsx scripts/build-brand-assets.ts`. Il disegno precedente era copiato a mano in sei file: non ricopiarlo, modificare la fonte e rilanciare lo script.

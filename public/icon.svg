@@ -1,8 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" role="img" aria-label="FungiCast">
-  <rect width="340" height="340" rx="74" fill="#0b0e16"/>
-  <!-- Porcino stilizzato: l'icona deve farsi riconoscere in un istante, il resto dell'app resta senza illustrazioni di funghi. -->
-  <path d="M144 190h52l10 108a26 26 0 0 1-26 28h-20a26 26 0 0 1-26-28z" fill="#efe3c8"/>
-  <path d="M170 42c-84 0-134 56-134 104 0 20 16 34 36 34h196c20 0 36-14 36-34 0-48-50-104-134-104z" fill="#b5793a"/>
-  <path d="M170 42c-84 0-134 56-134 104 0 10 4 18 10 24 18-58 68-98 124-98s106 40 124 98c6-6 10-14 10-24 0-48-50-104-134-104z" fill="#c98f4c"/>
-  <rect x="60" y="176" width="220" height="10" rx="5" fill="#0b0e16" opacity="0.25"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 340 340" role="img" aria-label="FungiCast"><defs><linearGradient id="bg-bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#119070"/><stop offset="1" stop-color="#0a5a43"/></linearGradient></defs><rect width="340" height="340" rx="74" fill="url(#bg-bg)"/><defs><linearGradient id="mk-cap" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a0602e"/><stop offset="1" stop-color="#6a3719"/></linearGradient></defs><ellipse cx="170" cy="302" rx="38" ry="9" fill="#063a2b" opacity="0.6"/><path d="M120 176 L220 176 L186 288 Q170 312 154 288 Z" fill="#f5edd6"/><path d="M60 176 C60 104 110 52 170 52 C230 52 280 104 280 176 C280 188 271 194 258 194 L82 194 C69 194 60 188 60 176 Z" fill="url(#mk-cap)"/><path d="M100 140 C114 100 142 80 170 80" stroke="#c7874d" stroke-width="12" stroke-linecap="round" fill="none" opacity="0.5"/></svg>
