@@ -134,3 +134,17 @@ export function zoneOnDate(zone: SnapshotZone, date: string): ApiZoneOnDate {
     modelOnly: isModelOnly(zone),
   }
 }
+
+/**
+ * `true` se `value` è un giorno che esiste davvero, scritto `AAAA-MM-GG`.
+ *
+ * Prima l'API prendeva qualunque `date` e rispondeva 200 con tutti i punteggi a `null`: chi
+ * scriveva `date=2026-02-30` o `date=ieri` non aveva modo di capire che l'errore era suo e non
+ * un giorno senza dati. Un giorno vero fuori dalla serie resta invece una risposta valida, con
+ * `null`: lì il dato manca davvero.
+ */
+export function isCalendarDate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T00:00:00Z`)
+  return !Number.isNaN(parsed.getTime()) && parsed.toISOString().slice(0, 10) === value
+}

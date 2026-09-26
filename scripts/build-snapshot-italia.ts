@@ -43,6 +43,7 @@ import { buildZoneSnapshot } from '@/lib/pipeline/zone-snapshot'
 import type { DailySamples } from '@/lib/pipeline/zone-series'
 import { LICENSES } from '@/lib/sources/adapter'
 import { annotate } from '@/lib/pipeline/ci-report'
+import { runBatches } from '@/lib/pipeline/batch-retry'
 import { fetchJson, HttpError, NonJsonResponseError } from '@/lib/sources/http'
 import {
   OPEN_METEO_FREE_LIMITS,
@@ -360,101 +361,110 @@ async function main(): Promise<void> {
   let rainBlendEnabled = true
   let rainBlendMissing = 0
   const chunks = chunkPoints(zones, POINTS_PER_REQUEST)
-  for (const [i, chunk] of chunks.entries()) {
-    let responses: OpenMeteoResponse[]
-    try {
-      const waited = await pacer.reserve(chunk.length * WEIGHT_PER_POINT)
-      if (waited > 0) {
-        console.log(`  pausa di ${Math.round(waited / 1000)} s per restare nei limiti Open-Meteo`)
-      }
-      responses = await fetchJson<OpenMeteoResponse[]>(
-        buildForecastUrl(chunk, HISTORY_DAYS, FORECAST_DAYS),
-        { timeoutMs: 180_000 },
-      )
-      if (responses.length !== chunk.length) {
-        // Un disallineamento assegnerebbe il meteo di un comune a un altro: il lotto si scarta.
-        throw new Error(`Open-Meteo: ${responses.length} risposte per ${chunk.length} punti`)
-      }
-    } catch (error) {
-      /*
-       * Il budget finito non e' un guasto del lotto ma il limite del piano: i lotti dopo
-       * fallirebbero allo stesso modo, e provarli vorrebbe dire solo aspettare per niente. Si
-       * fermano tutti qui, e le loro regioni tengono il file di ieri come le altre perse.
-       */
-      const exhausted = error instanceof RateBudgetExhausted
-      const lostChunks = exhausted ? chunks.slice(i) : [chunk]
-      for (const zone of lostChunks.flat()) failedCodes.add(zone.code)
-      const regions = [...new Set(lostChunks.flat().map((z) => z.region))].join(', ')
-      const label = exhausted
-        ? `lotti ${i + 1}-${chunks.length}/${chunks.length}`
-        : `lotto ${i + 1}/${chunks.length}`
-      failedBatches.push(`${label} (${regions}): ${shortError(error)}`)
-      console.error(`  ${label} FALLITO (${regions}): ${describeError(error)}`)
-      if (exhausted) break
-      continue
-    }
-
-    /*
-     * La pioggia del secondo modello (ICON-2I), da mediare con quella della risposta principale.
-     * Mai bloccante: se manca, il lotto si calcola con il modello di sempre, com'era fino al
-     * 25/09/2026, e il contatore lo dice a fine corsa.
-     */
-    let rainBlend: RainBlendResponse[] | null = null
-    if (rainBlendEnabled) {
+  /*
+   * Un lotto fallito si riprova una volta a fine giro, dopo una pausa di oltre un minuto (vedi
+   * `runBatches`): il 26/09/2026 un 429 al minuto sul primo lotto ha lasciato Abruzzo e
+   * Basilicata al giorno prima, e un minuto dopo sarebbe passato. Il budget finito invece non e'
+   * un guasto del lotto ma il limite del piano: i lotti dopo fallirebbero allo stesso modo, quindi
+   * si fermano tutti e le loro regioni tengono il file di ieri come le altre perse.
+   */
+  const lost = await runBatches(
+    chunks,
+    async (chunk, i, attempt) => {
+      let responses: OpenMeteoResponse[]
       try {
-        await pacer.reserve(chunk.length * RAIN_WEIGHT_PER_POINT)
-        const blend = await fetchJson<RainBlendResponse[] | RainBlendResponse>(buildRainBlendUrl(chunk), {
-          timeoutMs: 120_000,
-        })
-        const list = Array.isArray(blend) ? blend : [blend]
-        if (list.length === chunk.length) rainBlend = list
-        else console.warn(`  pioggia ICON-2I: ${list.length} risposte per ${chunk.length} punti, lotto senza media`)
+        const waited = await pacer.reserve(chunk.length * WEIGHT_PER_POINT)
+        if (waited > 0) {
+          console.log(`  pausa di ${Math.round(waited / 1000)} s per restare nei limiti Open-Meteo`)
+        }
+        responses = await fetchJson<OpenMeteoResponse[]>(
+          buildForecastUrl(chunk, HISTORY_DAYS, FORECAST_DAYS),
+          { timeoutMs: 180_000 },
+        )
+        if (responses.length !== chunk.length) {
+          // Un disallineamento assegnerebbe il meteo di un comune a un altro: il lotto si scarta.
+          throw new Error(`Open-Meteo: ${responses.length} risposte per ${chunk.length} punti`)
+        }
       } catch (error) {
-        if (error instanceof RateBudgetExhausted) rainBlendEnabled = false
-        console.warn(`  pioggia ICON-2I non disponibile per il lotto ${i + 1}: ${shortError(error)}`)
+        const regions = [...new Set(chunk.map((z) => z.region))].join(', ')
+        const when = error instanceof RateBudgetExhausted ? 'budget finito' : attempt === 1 ? 'si riprova a fine giro' : 'perso'
+        console.error(`  lotto ${i + 1}/${chunks.length} FALLITO (${regions}), ${when}: ${describeError(error)}`)
+        throw error
       }
-    }
-    if (rainBlend === null) rainBlendMissing += chunk.length
 
-    for (const [j, zone] of chunk.entries()) {
-      const response = responses[j]
-      if (response === undefined) continue
-      const blendForZone = rainBlend?.[j]
-      const series = toModelSeries(response, todayIso)
-      const measured = forestByCode.get(zone.code)
-      const snapshotZone = buildZoneSnapshot({
-        zone: {
-          code: zone.code,
-          name: zone.name,
-          reference: zone.name,
-          province: zone.provinceAcronym,
-          latitude: zone.latitude,
-          longitude: zone.longitude,
-          elevationM: zone.elevationM,
-          // Il catalogo nasce con `forest` vuoto: il bosco vero arriva dalla copertura misurata,
-          // e si ricade sul catalogo solo se quella corsa non e' ancora stata fatta.
-          forest: measured?.forest ?? zone.forest,
-          ...(measured === undefined
-            ? {}
-            : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
-          stationNotes: NATIONAL_STATION_NOTE,
-        },
-        modelSeries: blendForZone === undefined ? series : blendRain(series, rainBlendByDate(blendForZone)),
-        observationsByDate: NO_OBSERVATIONS,
-        todayIso,
-        displayPastDays: DISPLAY_PAST_DAYS,
-        forecastDays: FORECAST_DAYS,
-        // Il comune non va risolto per punto-in-poligono: la zona *e'* un comune, per costruzione.
-        municipality: zone.name,
-        nearbyMunicipalities: [],
-        stationByCode: NO_STATIONS,
-      })
-      if (snapshotZone !== null) computed.push(snapshotZone)
-    }
-    console.log(
-      `  lotto ${i + 1}/${chunks.length}: ${computed.length} zone calcolate, ` +
-        `${Math.round(pacer.used)} chiamate pesate spese`,
-    )
+      /*
+       * La pioggia del secondo modello (ICON-2I), da mediare con quella della risposta principale.
+       * Mai bloccante: se manca, il lotto si calcola con il modello di sempre, com'era fino al
+       * 25/09/2026, e il contatore lo dice a fine corsa.
+       */
+      let rainBlend: RainBlendResponse[] | null = null
+      if (rainBlendEnabled) {
+        try {
+          await pacer.reserve(chunk.length * RAIN_WEIGHT_PER_POINT)
+          const blend = await fetchJson<RainBlendResponse[] | RainBlendResponse>(buildRainBlendUrl(chunk), {
+            timeoutMs: 120_000,
+          })
+          const list = Array.isArray(blend) ? blend : [blend]
+          if (list.length === chunk.length) rainBlend = list
+          else console.warn(`  pioggia ICON-2I: ${list.length} risposte per ${chunk.length} punti, lotto senza media`)
+        } catch (error) {
+          if (error instanceof RateBudgetExhausted) rainBlendEnabled = false
+          console.warn(`  pioggia ICON-2I non disponibile per il lotto ${i + 1}: ${shortError(error)}`)
+        }
+      }
+      if (rainBlend === null) rainBlendMissing += chunk.length
+
+      for (const [j, zone] of chunk.entries()) {
+        const response = responses[j]
+        if (response === undefined) continue
+        const blendForZone = rainBlend?.[j]
+        const series = toModelSeries(response, todayIso)
+        const measured = forestByCode.get(zone.code)
+        const snapshotZone = buildZoneSnapshot({
+          zone: {
+            code: zone.code,
+            name: zone.name,
+            reference: zone.name,
+            province: zone.provinceAcronym,
+            latitude: zone.latitude,
+            longitude: zone.longitude,
+            elevationM: zone.elevationM,
+            // Il catalogo nasce con `forest` vuoto: il bosco vero arriva dalla copertura misurata,
+            // e si ricade sul catalogo solo se quella corsa non e' ancora stata fatta.
+            forest: measured?.forest ?? zone.forest,
+            ...(measured === undefined
+              ? {}
+              : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
+            stationNotes: NATIONAL_STATION_NOTE,
+          },
+          modelSeries: blendForZone === undefined ? series : blendRain(series, rainBlendByDate(blendForZone)),
+          observationsByDate: NO_OBSERVATIONS,
+          todayIso,
+          displayPastDays: DISPLAY_PAST_DAYS,
+          forecastDays: FORECAST_DAYS,
+          // Il comune non va risolto per punto-in-poligono: la zona *e'* un comune, per costruzione.
+          municipality: zone.name,
+          nearbyMunicipalities: [],
+          stationByCode: NO_STATIONS,
+        })
+        if (snapshotZone !== null) computed.push(snapshotZone)
+      }
+      console.log(
+        `  lotto ${i + 1}/${chunks.length}${attempt === 2 ? ' (secondo tentativo)' : ''}: ` +
+          `${computed.length} zone calcolate, ${Math.round(pacer.used)} chiamate pesate spese`,
+      )
+    },
+    {
+      isFatal: (error) => error instanceof RateBudgetExhausted,
+      onRetry: (count, delayMs) => {
+        console.log(`  ${count} lotti falliti: nuovo tentativo fra ${delayMs / 1000} s`)
+      },
+    },
+  )
+  for (const { index, chunk, error } of lost) {
+    for (const zone of chunk) failedCodes.add(zone.code)
+    const regions = [...new Set(chunk.map((z) => z.region))].join(', ')
+    failedBatches.push(`lotto ${index + 1}/${chunks.length} (${regions}): ${shortError(error)}`)
   }
 
   console.log(

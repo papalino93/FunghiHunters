@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server'
 
-import { isModelOnly, toApiZone, zoneOnDate } from '@/lib/api/mpi'
+import { isCalendarDate, isModelOnly, toApiZone, zoneOnDate } from '@/lib/api/mpi'
 import { loadSnapshot } from '@/lib/snapshot/load'
 import { loadItaliaIndex, loadRegion } from '@/lib/snapshot/load-italia'
 import type { Snapshot } from '@/lib/snapshot/types'
@@ -94,7 +94,12 @@ export async function GET(request: Request): Promise<NextResponse> {
   const url = new URL(request.url)
   const zoneCode = url.searchParams.get('zone')
   const date = url.searchParams.get('date')
-  const region = url.searchParams.get('region')
+  // Le regioni sono slug minuscoli: `TOSCANA` o `Toscana` sono la stessa richiesta, non un errore.
+  const region = url.searchParams.get('region')?.trim().toLowerCase() ?? null
+
+  if (date !== null && !isCalendarDate(date)) {
+    return json({ error: `Data non valida: ${date}. Usa il formato AAAA-MM-GG, es. 2026-09-26.` }, 400)
+  }
 
   if (region === 'all') {
     if (date !== null) {
