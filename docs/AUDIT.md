@@ -24,7 +24,8 @@ disallineate, invece di scrivere sopra in silenzio al giro dopo; le pagine elenc
 `/italia/[regione]`) non ricevono più `positiveFactors`/`neutralFactors`/`bestWindow`/
 `nearbyMunicipalities` di ogni zona (`src/lib/snapshot/list-view.ts`) — campi che solo la scheda
 di dettaglio legge, ~30% del payload sul Piemonte; `/api/mpi` è diventato `/api/v1/mpi` (il
-vecchio indirizzo resta un alias) e lo snapshot porta un `schemaVersion` esplicito, distinto da
+vecchio indirizzo resta un alias; dal 26/09/2026 espone anche tutte le zone nazionali con
+`?region=<slug>` e `?region=all`, e ogni zona porta `modelOnly` — vedi il commento della rotta) e lo snapshot porta un `schemaVersion` esplicito, distinto da
 `algorithmVersion`.
 
 **Zone che seguo** (22 settembre 2026): funzione gratuita per salvare le zone del catalogo (calibrazione
