@@ -84,6 +84,6 @@ Verdetto: "Oggi sì." Motivo: "La pioggia forte di 14 giorni fa cade nella fines
 
 ## Il segno — scelto il 26/09/2026
 
-Un porcino che è anche un segnaposto: il cappello è la testa, il gambo si stringe fino alla punta che tocca il punto sulla mappa, con l'ombra a terra. Fondo nel verde menta dell'app (`#119070 → #0a5a43`), cappello castagno, gambo crema. Scelto fra tre proposte (evoluzione del porcino, segnaposto, anello di punteggio) perché è l'unico che dice cosa fa l'app — «Dove vado oggi» — e quello che regge meglio a 16 e 32 px, dove un'icona vive davvero.
+Un porcino d'autunno: cappello largo e scuro color castagna, il bordo giallo paglia dei pori, gambo panciuto color crema con un lato in ombra; attorno due foglie cadute e l'ombra sul terreno, su un fondo arancio d'autunno (`#e0983f → #b85f24`). Sostituisce, lo stesso giorno, il porcino-segnaposto su fondo verde, che «non sembrava né un fungo né un segnaposto»: scelto fra tre nuove proposte perché è l'unico che si legge subito come *porcino* — non un fungo qualsiasi — anche a 16 e 32 px, dove sparite le foglie resta la sagoma tozza cappello-scuro-su-gambo-chiaro. Nel benvenuto, che ha già il suo bosco, il segno compare senza fondo, foglie e ombra: solo il fungo.
 
 **Una fonte sola**: forme e colori stanno in `src/lib/brand/mark.ts`. I componenti usano `BrandMark`; `icon.svg`, `icon-maskable.svg` e `favicon.ico` li scrive `npx tsx scripts/build-brand-assets.ts`. Il disegno precedente era copiato a mano in sei file: non ricopiarlo, modificare la fonte e rilanciare lo script.

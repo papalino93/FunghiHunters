@@ -38,7 +38,7 @@ function svgDocument(body: string): string {
   )
 }
 
-/** L'icona normale: quadrato verde arrotondato, segno a piena misura. */
+/** L'icona normale: quadrato arancio arrotondato, segno a piena misura. */
 const icon = svgDocument(markBackgroundSvg('bg') + markShapesSvg('mk'))
 
 /**
@@ -46,12 +46,12 @@ const icon = svgDocument(markBackgroundSvg('bg') + markShapesSvg('mk'))
  *
  * I launcher Android ritagliano l'icona con forme diverse — cerchio, goccia, quadrato arrotondato
  * — e garantiscono solo il cerchio inscritto nell'80 % centrale. Il segno scalato così ci sta
- * dentro con margine: il punto più lontano dal centro, la cima del cappello, finisce a circa 104
- * unità su un raggio sicuro di 136.
+ * dentro: i punti più lontani dal centro, le punte delle foglie, finiscono a circa 122 unità su
+ * un raggio sicuro di 136; il fungo, che è ciò che conta, sta entro 100.
  */
 const maskable = svgDocument(
   markBackgroundSvg('bg', false) +
-    `<g transform="translate(170 170) scale(0.8) translate(-170 -181.5)">${markShapesSvg('mk')}</g>`,
+    `<g transform="translate(170 170) scale(0.8) translate(-170 -194.5)">${markShapesSvg('mk')}</g>`,
 )
 
 const FAVICON_SIZES = [16, 32, 48, 64] as const
