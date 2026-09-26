@@ -3,7 +3,7 @@
 import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
-import { readLastZonePlace } from '@/lib/zones/lastViewed'
+import { readLastZonePlace, type LastZonePlace } from '@/lib/zones/lastViewed'
 import { addDays, today } from '@/lib/domain/time'
 import { daysAgoLabel, foragerRainSummary } from '@/lib/meteo/forager'
 import {
@@ -25,6 +25,29 @@ import { WeatherBadge, WeatherIcon } from '@/components/meteo/WeatherIcon'
  * punto, senza passare dal punteggio MPI. Sono letture diverse: una guida "dove conviene andare
  * fra le zone note", l'altra risponde a "che tempo fa lì".
  */
+/** L'ultima zona guardata, nella forma di un risultato di ricerca. */
+function lastZoneCandidate(zone: LastZonePlace): PlaceCandidate {
+  return {
+    id: -1,
+    name: zone.name,
+    admin1: 'l’ultima zona che hai guardato',
+    admin2: null,
+    country: null,
+    latitude: zone.latitude,
+    longitude: zone.longitude,
+    elevationM: zone.elevationM,
+  }
+}
+
+function forecastUrl(candidate: PlaceCandidate): string {
+  const params = new URLSearchParams({
+    lat: String(candidate.latitude),
+    lon: String(candidate.longitude),
+  })
+  if (candidate.elevationM !== null) params.set('elevation', String(candidate.elevationM))
+  return `/api/meteo?${params.toString()}`
+}
+
 export function MeteoScreen() {
   const [query, setQuery] = useState('')
   const [rawCandidates, setRawCandidates] = useState<readonly PlaceCandidate[]>([])
@@ -44,6 +67,53 @@ export function MeteoScreen() {
    * riferimento che sopravviva al render, non la funzione di pulizia di un `useEffect`.
    */
   const forecastRequestRef = useRef<AbortController | null>(null)
+
+  /*
+   * Il meteo dell'ultima zona guardata, aperto da solo.
+   *
+   * Prima la pagina si apriva vuota — solo il campo di ricerca — anche a chi arrivava dalla scheda
+   * del Pratomagno e voleva sapere che tempo fa proprio lì: l'app sapeva già la risposta e
+   * chiedeva comunque un tocco in più. Ora la mostra subito, finché l'utente non sceglie un altro
+   * posto; da quel momento comanda lui.
+   *
+   * Uno stato a parte, e non `selectPlace` chiamato in un effetto: quella funzione accende sei
+   * stati in modo sincrono, proprio ciò che la regola `react-hooks/set-state-in-effect` vieta.
+   * Qui l'effetto scrive solo quando la risposta arriva, e caricamento ed errore si ricavano.
+   */
+  const autoCandidate = useMemo(
+    () => (lastZone === null ? null : lastZoneCandidate(lastZone)),
+    [lastZone],
+  )
+  const [autoResult, setAutoResult] = useState<{
+    readonly forecast: PlaceForecast | null
+    readonly error: string | null
+  } | null>(null)
+
+  useEffect(() => {
+    if (autoCandidate === null) return
+    const controller = new AbortController()
+    fetch(forecastUrl(autoCandidate), { signal: controller.signal })
+      .then(async (res) => {
+        const body = (await res.json()) as PlaceForecast & { error?: string }
+        if (!res.ok) throw new Error(body.error ?? 'Previsione non disponibile')
+        setAutoResult({ forecast: body, error: null })
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setAutoResult({
+          forecast: null,
+          error: 'Non sono riuscito a scaricare il meteo per questo luogo. Riprova.',
+        })
+      })
+    return () => { controller.abort() }
+  }, [autoCandidate])
+
+  /** Un luogo scelto esplicitamente vince sempre sull'apertura automatica. */
+  const showingAuto = place === null && autoCandidate !== null
+  const shownPlace = place ?? autoCandidate
+  const shownForecast = showingAuto ? (autoResult?.forecast ?? null) : forecast
+  const shownLoading = showingAuto ? autoResult === null : loadingForecast
+  const shownError = showingAuto ? (autoResult?.error ?? null) : forecastError
 
   // Sotto due caratteri i risultati non vanno mostrati: si deriva dalla query invece di azzerare
   // lo stato in un effetto, così l'effetto sotto ha un solo compito, cercare quando c'è da cercare.
@@ -108,13 +178,7 @@ export function MeteoScreen() {
     const controller = new AbortController()
     forecastRequestRef.current = controller
 
-    const params = new URLSearchParams({
-      lat: String(candidate.latitude),
-      lon: String(candidate.longitude),
-    })
-    if (candidate.elevationM !== null) params.set('elevation', String(candidate.elevationM))
-
-    fetch(`/api/meteo?${params.toString()}`, { signal: controller.signal })
+    fetch(forecastUrl(candidate), { signal: controller.signal })
       .then(async (res) => {
         const body = (await res.json()) as PlaceForecast & { error?: string }
         if (!res.ok) throw new Error(body.error ?? 'Previsione non disponibile')
@@ -248,36 +312,29 @@ export function MeteoScreen() {
           * pagina si apriva vuota, con il solo campo di ricerca, anche a chi aveva appena guardato
           * il Pratomagno e voleva sapere che tempo fa lì.
           */}
-        {lastZone !== null && (
+        {/*
+          * Nascosto mentre la zona è già aperta da sola — riporterebbe dove si è — tranne quando
+          * quell'apertura è fallita: lì l'errore dice «Riprova», e questo è il pulsante che lo fa.
+          */}
+        {autoCandidate !== null && (!showingAuto || shownError !== null) && (
           <button
             type="button"
-            onClick={() => {
-              selectPlace({
-                id: -1,
-                name: lastZone.name,
-                admin1: 'zona di FungiCast',
-                admin2: null,
-                country: null,
-                latitude: lastZone.latitude,
-                longitude: lastZone.longitude,
-                elevationM: lastZone.elevationM,
-              })
-            }}
+            onClick={() => { selectPlace(autoCandidate) }}
             className="min-h-11 rounded-lg border border-accent/40 bg-accent/10 px-3 text-sm
                        font-medium text-ink transition-colors hover:bg-accent/20 focus:outline-none
                        focus-visible:ring-2 focus-visible:ring-accent"
           >
-            Meteo di {lastZone.name}
+            Meteo di {autoCandidate.name}
           </button>
         )}
       </div>
 
-      {place !== null && (
+      {shownPlace !== null && (
         <PlaceWeather
-          place={place}
-          forecast={forecast}
-          loading={loadingForecast}
-          error={forecastError}
+          place={shownPlace}
+          forecast={shownForecast}
+          loading={shownLoading}
+          error={shownError}
         />
       )}
     </div>

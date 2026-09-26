@@ -147,6 +147,10 @@ meteo grezzo, senza passare dal punteggio MPI: condizioni attuali, cinque giorni
 di previsione (temperatura, umidità, pioggia, vento, evapotraspirazione, umidità del suolo).
 Tocca un giorno per il dettaglio ora per ora.
 
+Se hai appena guardato una zona in "Dove vado" o sulla mappa, la scheda si apre già sul suo
+meteo: non serve cercarla. Basta cercare un altro posto per passare a quello, e il pulsante
+"Meteo di …" ti riporta alla zona.
+
 È la stessa fonte gratuita già usata dal modello (Open-Meteo), letta senza filtro: risponde a
 "che tempo fa lì", non a "conviene andarci a cercare porcini" — per quello resta "Dove vado".
 
