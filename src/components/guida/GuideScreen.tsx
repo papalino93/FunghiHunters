@@ -199,7 +199,7 @@ export function GuideScreen() {
         <Elenco
           voci={[
             'Il diario vive sul tuo dispositivo. Senza account non esce di lì, e l’app non ha modo di leggerlo.',
-            'Con un account, il diario si sincronizza per ritrovarlo altrove. Solo tu puoi leggerlo: lo garantisce una regola del database che lega ogni riga al tuo utente.',
+            'Con un account, il diario si sincronizza per ritrovarlo altrove. Nessun altro utente può leggerlo: lo garantisce una regola del database che lega ogni riga al tuo utente. Il titolare del servizio sì, per verificare il modello e darti assistenza: dal pannello dell’app, che registra ogni lettura — i dettagli sono nella pagina Privacy.',
             'I punti salvati (fissi e di un’uscita) restano sempre e solo sul dispositivo: non vengono mai sincronizzati, con o senza account.',
             'La posizione precisa di un’uscita viene salvata sfocata a circa un chilometro, a meno che tu scelga esplicitamente «coordinate esatte» per quella voce.',
             'La sfocatura è definitiva: una volta salvata l’area, le coordinate precise non esistono più da nessuna parte.',

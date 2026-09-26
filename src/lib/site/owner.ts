@@ -9,4 +9,4 @@ export const OWNER_NAME = 'Andrea'
 export const CONTACT_EMAIL: string = 'progettiprivacy@protonmail.com'
 
 /** Data dell'ultima revisione dell'informativa, `YYYY-MM-DD`. */
-export const PRIVACY_UPDATED_ON = '2026-09-24'
+export const PRIVACY_UPDATED_ON = '2026-09-26'

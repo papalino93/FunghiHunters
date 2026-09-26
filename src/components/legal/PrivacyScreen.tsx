@@ -24,7 +24,8 @@ export function PrivacyScreen() {
           <li>Niente cookie di profilazione, niente pubblicità, niente vendita di dati.</li>
           <li>
             Il diario e i punti salvati restano sul tuo dispositivo. Con un account il diario si
-            sincronizza, e solo tu puoi leggerlo.
+            sincronizza: gli altri utenti non possono leggerlo, il titolare sì — dal pannello
+            dell&apos;app, che registra ogni lettura.
           </li>
           <li>Le statistiche di visita sono anonime e aggregate, senza cookie.</li>
         </ul>
@@ -75,13 +76,18 @@ export function PrivacyScreen() {
           </li>
           <li>
             <strong className="text-ink">Perché:</strong> per darti il servizio che hai chiesto,
-            cioè ritrovare il diario su un altro dispositivo (art. 6.1.b GDPR). Le uscite servono
-            anche a confrontare la previsione con quello che hai trovato: solo nel tuo diario, mai
-            pubblicate né condivise.
+            cioè ritrovare il diario su un altro dispositivo (art. 6.1.b GDPR). Il titolare le usa
+            anche, per suo legittimo interesse (art. 6.1.f), per tre cose: verificare se il
+            punteggio predice davvero i ritrovamenti, contare quante persone usano l&apos;app, e
+            aiutarti se qualcosa si rompe. Mai pubblicate, vendute né condivise con terzi.
           </li>
           <li>
-            <strong className="text-ink">Chi può leggerle:</strong> solo tu. Lo garantisce una
-            regola del database che lega ogni riga al tuo utente.
+            <strong className="text-ink">Chi può leggerle:</strong> nessun altro utente — lo
+            garantisce una regola del database che lega ogni riga al tuo utente. Il titolare sì:
+            come in qualunque servizio, chi lo gestisce ha accesso al database, note comprese. Le
+            consulta solo dal pannello dell&apos;app, che registra ogni lettura con data, ora e
+            numero di uscite lette, in un registro che nessun utente — e nessun browser — può
+            modificare. Se il registro non si può scrivere, il pannello non mostra niente.
           </li>
           <li>
             <strong className="text-ink">Accesso:</strong> con un link via email o con Google. Con

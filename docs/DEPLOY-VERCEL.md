@@ -114,9 +114,10 @@ L'app chiede sempre di tornare sull'**origine da cui si è partiti**, più `/acc
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Production, Preview, Development | chiave pubblica, protetta da RLS |
 | `SUPABASE_SERVICE_ROLE_KEY` | Production, Preview | **segreta**, mai con prefisso `NEXT_PUBLIC_` |
 
-La service role key scavalca la Row Level Security: la usa solo `src/app/api/account/delete/route.ts`,
-che gira lato server. Se le si desse il prefisso `NEXT_PUBLIC_` finirebbe nel bundle del browser e
-chiunque potrebbe leggere e cancellare i dati di chiunque.
+La service role key scavalca la Row Level Security: la usano solo due rotte, entrambe lato
+server — `src/app/api/account/delete/route.ts` e `src/app/api/admin/observations/route.ts`. Se le
+si desse il prefisso `NEXT_PUBLIC_` finirebbe nel bundle del browser e chiunque potrebbe leggere e
+cancellare i dati di chiunque.
 
 **Dopo averle aggiunte serve un nuovo deploy.** Le variabili `NEXT_PUBLIC_` non vengono lette dal
 browser a runtime: Next.js le sostituisce nel codice durante `next build`, quindi un deploy fatto
@@ -125,6 +126,37 @@ prova: i valori compaiono letteralmente dentro `.next/static/chunks/*.js`. Su Ve
 **Deployments → … → Redeploy**, meglio senza cache di build.
 
 Per lo sviluppo locale le stesse tre variabili vanno in `.env.local` — vedi `.env.local.example`.
+
+## 5b. Pannello amministratore (facoltativo)
+
+`/admin` mostra al titolare tutte le uscite sincronizzate, di tutti gli utenti, note comprese, con
+le statistiche di calibrazione e l'export CSV. È **chiuso finché non lo apri tu**: senza i due
+passi qui sotto risponde come una pagina che non esiste.
+
+1. **Registro degli accessi.** Esegui `db/migrations/0009_admin_access_log.sql` nell'SQL Editor di
+   Supabase. Non è facoltativo rispetto al pannello: la rotta scrive una riga di registro *prima*
+   di restituire i dati, e se non ci riesce **nega la lettura**. È ciò che rende vera la frase
+   dell'informativa secondo cui ogni lettura del titolare resta registrata.
+2. **Chi è l'amministratore.** Su Supabase, **Authentication → Users**, copia l'**UID** del tuo
+   utente (una stringa come `a1b2c3d4-…`, non l'email). Su Vercel aggiungi:
+
+   | Variabile | Ambienti | Note |
+   | --- | --- | --- |
+   | `ADMIN_USER_ID` | Production | l'UID di cui sopra — **mai** con prefisso `NEXT_PUBLIC_` |
+
+   Solo Production, di proposito: un'anteprima con quella variabile sarebbe un secondo indirizzo
+   da cui leggere il diario di tutti. Poi redeploy.
+
+Perché l'UID e non l'email: l'email di un account si può cambiare, l'UID no. Perché chi non è
+l'amministratore riceve 404 e non 403: un 403 confermerebbe che la rotta esiste.
+
+Per vedere chi ha guardato cosa, dalla dashboard Supabase:
+
+```sql
+select accessed_at, action, rows_returned, ip_address
+from admin_access_log
+order by accessed_at desc;
+```
 
 ## 6. Verificare che funzioni
 
@@ -197,6 +229,11 @@ E i due casi che **non** danno errore, ma non sono quello che ci si aspetta:
   tipicamente dalle anteprime.
 - **Nessun errore, nessun accesso, e `/account` dice che la sincronizzazione non è configurata.**
   Le variabili non c'erano al momento del build. Passo 5, poi redeploy.
+- **`/admin` dice «Questa pagina non è disponibile per il tuo account» anche a te.** Manca
+  `ADMIN_USER_ID`, oppure contiene l'email invece dell'UID, oppure il deploy è precedente alla
+  variabile. Passo 5b, poi redeploy.
+- **`/admin` dice «Registro degli accessi non disponibile».** La migrazione `0009` non è stata
+  applicata. Passo 5b, punto 1: il pannello riprende a funzionare subito, senza redeploy.
 
 ## Cosa resta fuori
 
