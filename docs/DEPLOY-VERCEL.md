@@ -171,6 +171,11 @@ order by accessed_at desc;
 
 Per togliere un amministratore: `delete from app_admins where user_id = '…';` — vale subito.
 
+**Come ci si arriva.** Il pannello non compare in nessun menu. All'amministratore, collegato, la
+pagina **Account** mostra una sezione «Amministrazione» con il collegamento: la pagina chiede a
+`/api/admin/me`, che risponde sì solo a chi è in `app_admins` e a tutti gli altri lo stesso 404 di
+una rotta inesistente. In alternativa si scrive `/admin` nella barra dell'indirizzo.
+
 ## 6. Verificare che funzioni
 
 1. Aprire [`/account`](https://funghihunters.vercel.app/account) sul sito pubblicato. Se dice

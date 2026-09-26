@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import { useAuth } from '@/lib/auth/context'
 import { createDiaryRepository, toExport } from '@/lib/diary/store'
@@ -394,6 +394,9 @@ function SignedInPanel({
         </div>
       </section>
 
+      {/* `key`: con un altro account la verifica riparte da capo, invece di ereditare la risposta. */}
+      <AdminLink key={email ?? 'account'} />
+
       <section className="rounded-xl border border-edge bg-surface-1 p-3">
         <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
           I tuoi dati
@@ -464,6 +467,63 @@ function SignedInPanel({
         </p>
       )}
     </div>
+  )
+}
+
+/**
+ * Il collegamento al pannello amministratore, visibile solo al titolare.
+ *
+ * Il pannello non compare in nessun menu, apposta: a chiunque altro deve sembrare che non esista.
+ * Ma al titolare serviva un modo per arrivarci che non fosse ricordarsi l'indirizzo. Qui la pagina
+ * chiede a `/api/admin/me` e mostra la sezione solo se la risposta è sì; per tutti gli altri la
+ * rotta risponde 404 e questo componente non disegna niente — nemmeno uno spazio vuoto.
+ *
+ * Mostrare il collegamento non apre niente: `/admin` rifà comunque tutte le verifiche sul server.
+ */
+function AdminLink() {
+  const [isAdmin, setIsAdmin] = useState(false)
+
+  useEffect(() => {
+    const client = getBrowserClient()
+    if (client === null) return
+    let cancelled = false
+    // Catena di `.then()`, non un aggiornamento diretto: lo stato cambia solo a risposta arrivata.
+    void client.auth
+      .getSession()
+      .then(({ data }) =>
+        data.session === null
+          ? null
+          : fetch('/api/admin/me', { headers: { Authorization: `Bearer ${data.session.access_token}` } }),
+      )
+      .then((response) => {
+        if (!cancelled && response?.ok === true) setIsAdmin(true)
+      })
+      .catch(() => {
+        // Nessun collegamento: il pannello resta raggiungibile scrivendo l'indirizzo.
+      })
+    return () => { cancelled = true }
+  }, [])
+
+  if (!isAdmin) return null
+
+  return (
+    <section className="rounded-xl border border-accent/30 bg-accent/5 p-3">
+      <h2 className="text-xs font-semibold uppercase tracking-wide text-ink-faint">
+        Amministrazione
+      </h2>
+      <p className="mt-1.5 text-xs leading-snug text-ink-dim">
+        Visibile solo a te. Il diario di tutti gli utenti, con le statistiche e l&apos;esportazione;
+        ogni apertura resta registrata.
+      </p>
+      <Link
+        href="/admin"
+        className="mt-2.5 flex min-h-11 items-center justify-center rounded-lg border border-accent/40
+                   bg-accent/15 text-sm font-medium text-ink transition-colors hover:bg-accent/25
+                   focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+      >
+        Apri il pannello amministratore
+      </Link>
+    </section>
   )
 }
 
