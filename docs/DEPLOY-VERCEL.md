@@ -130,33 +130,46 @@ Per lo sviluppo locale le stesse tre variabili vanno in `.env.local` — vedi `.
 ## 5b. Pannello amministratore (facoltativo)
 
 `/admin` mostra al titolare tutte le uscite sincronizzate, di tutti gli utenti, note comprese, con
-le statistiche di calibrazione e l'export CSV. È **chiuso finché non lo apri tu**: senza i due
-passi qui sotto risponde come una pagina che non esiste.
+le statistiche di calibrazione e l'export CSV. È **chiuso finché non lo apri tu**: per chiunque
+altro risponde come una pagina che non esiste.
 
-1. **Registro degli accessi.** Esegui `db/migrations/0009_admin_access_log.sql` nell'SQL Editor di
-   Supabase. Non è facoltativo rispetto al pannello: la rotta scrive una riga di registro *prima*
-   di restituire i dati, e se non ci riesce **nega la lettura**. È ciò che rende vera la frase
-   dell'informativa secondo cui ogni lettura del titolare resta registrata.
-2. **Chi è l'amministratore.** Su Supabase, **Authentication → Users**, copia l'**UID** del tuo
-   utente (una stringa come `a1b2c3d4-…`, non l'email). Su Vercel aggiungi:
+Si attiva con un solo passo, nell'SQL Editor di Supabase, **senza toccare Vercel e senza deploy**:
 
-   | Variabile | Ambienti | Note |
-   | --- | --- | --- |
-   | `ADMIN_USER_ID` | Production | l'UID di cui sopra — **mai** con prefisso `NEXT_PUBLIC_` |
+1. esegui `db/migrations/0009_admin_access_log.sql`;
+2. subito dopo, nella stessa finestra, la riga che dice chi è l'amministratore:
 
-   Solo Production, di proposito: un'anteprima con quella variabile sarebbe un secondo indirizzo
-   da cui leggere il diario di tutti. Poi redeploy.
+   ```sql
+   insert into app_admins (user_id)
+   select id from auth.users where email = '<indirizzo con cui accedi a FungiCast>'
+   on conflict do nothing;
 
-Perché l'UID e non l'email: l'email di un account si può cambiare, l'UID no. Perché chi non è
-l'amministratore riceve 404 e non 403: un 403 confermerebbe che la rotta esiste.
+   select u.email, a.added_at from app_admins a join auth.users u on u.id = a.user_id;
+   ```
 
-Per vedere chi ha guardato cosa, dalla dashboard Supabase:
+   La seconda riga deve mostrare il tuo indirizzo. Se è vuota, l'email non corrisponde a un
+   account FungiCast: controlla con quale indirizzo accedi (con Google è quello dell'account
+   Google).
+
+L'indirizzo sta solo in quella riga eseguita a mano, mai nel repository: la migrazione finisce su
+GitHub, e l'email personale del titolare non deve finirci.
+
+**Perché una tabella e non una variabile d'ambiente.** La prima versione chiedeva `ADMIN_USER_ID`
+su Vercel: cercare il proprio UID su Supabase, copiarlo su Vercel, rifare il deploy. Tre posti per
+dire una cosa sola. Con la tabella è una riga, e vale subito. La sicurezza non cambia: la rotta
+verifica comunque il token con Supabase *prima* di guardare la tabella, e la tabella — come il
+registro — non si può né leggere né modificare dal browser (RLS senza policy, nessun grant).
+
+**Il registro.** La rotta scrive una riga in `admin_access_log` *prima* di restituire i dati, e se
+non ci riesce **nega la lettura**. È ciò che rende vera la frase dell'informativa secondo cui ogni
+lettura dal pannello resta registrata. Per vedere chi ha guardato cosa:
 
 ```sql
 select accessed_at, action, rows_returned, ip_address
 from admin_access_log
 order by accessed_at desc;
 ```
+
+Per togliere un amministratore: `delete from app_admins where user_id = '…';` — vale subito.
 
 ## 6. Verificare che funzioni
 
@@ -229,11 +242,11 @@ E i due casi che **non** danno errore, ma non sono quello che ci si aspetta:
   tipicamente dalle anteprime.
 - **Nessun errore, nessun accesso, e `/account` dice che la sincronizzazione non è configurata.**
   Le variabili non c'erano al momento del build. Passo 5, poi redeploy.
-- **`/admin` dice «Questa pagina non è disponibile per il tuo account» anche a te.** Manca
-  `ADMIN_USER_ID`, oppure contiene l'email invece dell'UID, oppure il deploy è precedente alla
-  variabile. Passo 5b, poi redeploy.
-- **`/admin` dice «Registro degli accessi non disponibile».** La migrazione `0009` non è stata
-  applicata. Passo 5b, punto 1: il pannello riprende a funzionare subito, senza redeploy.
+- **`/admin` dice «Questa pagina non è disponibile per il tuo account» anche a te.** Non c'è la
+  tua riga in `app_admins`, oppure la migrazione `0009` non è applicata, oppure manca
+  `SUPABASE_SERVICE_ROLE_KEY` su Vercel. Passo 5b: la query di controllo dice quale.
+- **`/admin` dice «Registro degli accessi non disponibile».** La tabella `admin_access_log` non
+  c'è: rieseguire `0009`. Il pannello riprende subito, senza deploy.
 
 ## Cosa resta fuori
 

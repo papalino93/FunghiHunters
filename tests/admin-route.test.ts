@@ -6,13 +6,14 @@
  * ne è il prerequisito. Se non si scrive, i dati non partono.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const ADMIN_ID = '11111111-1111-1111-1111-111111111111'
 
 const getUser = vi.fn()
 const insert = vi.fn()
 const readObservations = vi.fn()
+const adminRow = vi.fn()
 
 /*
  * Un client Supabase finto, ridotto alle due catene che la rotta usa davvero: la lettura delle
@@ -25,7 +26,9 @@ vi.mock('@/lib/supabase/admin', () => ({
     from: (table: string) =>
       table === 'admin_access_log'
         ? { insert }
-        : { select: () => ({ is: () => ({ order: () => ({ limit: readObservations }) }) }) },
+        : table === 'app_admins'
+          ? { select: () => ({ eq: () => ({ maybeSingle: adminRow }) }) }
+          : { select: () => ({ is: () => ({ order: () => ({ limit: readObservations }) }) }) },
   }),
 }))
 
@@ -47,13 +50,11 @@ function call(token = 'token-buono'): Promise<Response> {
 
 describe('rotta amministratore', () => {
   beforeEach(() => {
-    vi.stubEnv('ADMIN_USER_ID', ADMIN_ID)
     getUser.mockReset().mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
+    adminRow.mockReset().mockResolvedValue({ data: { user_id: ADMIN_ID }, error: null })
     insert.mockReset().mockResolvedValue({ error: null })
     readObservations.mockReset().mockResolvedValue({ data: [ROW], error: null })
   })
-
-  afterEach(() => { vi.unstubAllEnvs() })
 
   it('restituisce le uscite, note comprese, e registra la lettura', async () => {
     const response = await call()
@@ -77,6 +78,7 @@ describe('rotta amministratore', () => {
 
   it('a chi non è l\'amministratore risponde 404 e non legge il database', async () => {
     getUser.mockResolvedValue({ data: { user: { id: 'qualcun-altro' } }, error: null })
+    adminRow.mockResolvedValue({ data: null, error: null })
     const response = await call()
     expect(response.status).toBe(404)
     expect(readObservations).not.toHaveBeenCalled()

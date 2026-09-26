@@ -4,7 +4,7 @@
  * E' l'unica rotta del progetto che legge dati di utenti diversi da chi chiama, e per questo e'
  * anche l'unica con tre difese in fila:
  *
- * 1. `requireAdmin` verifica il token con Supabase e confronta l'uuid con `ADMIN_USER_ID`.
+ * 1. `requireAdmin` verifica il token con Supabase, poi cerca l'utente in `app_admins`.
  * 2. Qualunque esito negativo risponde **404**, identico a una rotta inesistente: chi non e'
  *    l'amministratore non scopre nemmeno che questo indirizzo esiste.
  * 3. Ogni lettura scrive prima una riga in `admin_access_log`, e se non ci riesce non restituisce
