@@ -26,6 +26,7 @@ import { ALGORITHM_V1, uncalibratedParams } from '@/lib/config/algorithm'
 import { addDays, today } from '@/lib/domain/time'
 import type { Station, Variable } from '@/lib/domain/types'
 import { annotate } from '@/lib/pipeline/ci-report'
+import { runBatches } from '@/lib/pipeline/batch-retry'
 import {
   buildForecastUrl,
   chunkPoints,
@@ -41,7 +42,7 @@ import { SNAPSHOT_SCHEMA_VERSION } from '@/lib/snapshot/types'
 import type { Snapshot, SnapshotSource, SnapshotZone } from '@/lib/snapshot/types'
 import { LICENSES } from '@/lib/sources/adapter'
 import { fetchJson } from '@/lib/sources/http'
-import { OPEN_METEO_FREE_LIMITS, RatePacer } from '@/lib/sources/open-meteo-rate'
+import { OPEN_METEO_FREE_LIMITS, RateBudgetExhausted, RatePacer } from '@/lib/sources/open-meteo-rate'
 import { isStationActive, parseSeries, parseStations, seriesUrl, stationsUrl } from '@/lib/sources/sir-archive'
 import type { StationSample } from '@/lib/spatial/interpolate'
 import type { ForestFile } from '@/../scripts/ingest-forest-italia'
@@ -52,6 +53,8 @@ import { keptIndexEntry, type ItaliaIndex } from '@/../scripts/build-snapshot-it
 const HISTORY_DAYS = 42
 const FORECAST_DAYS = 8
 const DISPLAY_PAST_DAYS = 14
+/** Comuni per richiesta a Open-Meteo, al massimo: vedi il commento sui lotti in `main`. */
+const MAX_POINTS_PER_BATCH = 60
 
 /**
  * Sotto questa quota di bosco attorno al punto un comune non diventa zona: pianura, citta',
@@ -182,55 +185,74 @@ async function main(): Promise<void> {
   }
   const observationsByDate = new Map<string, DailySamples>(byDate)
 
-  // Open-Meteo, a lotti dimensionati sul peso.
+  /*
+   * Open-Meteo, a lotti dimensionati sul peso ma non oltre `MAX_POINTS_PER_BATCH` comuni. Il
+   * 26/09/2026 i due lotti da ~170 comuni con 50 giorni di dati orari sono tornati troncati a meta'
+   * («timeoutReached») a tutti e tre i tentativi, e la Toscana e' rimasta al giorno prima: lotti
+   * piu' piccoli sono risposte piu' corte, e un lotto perso costa meno comuni. Il peso totale non
+   * cambia — Open-Meteo conta per localita', non per richiesta. I lotti falliti si riprovano una
+   * volta a fine giro, dopo oltre un minuto di pausa (`runBatches`).
+   */
   const weightPerPoint = forecastWeightPerPoint(HISTORY_DAYS, FORECAST_DAYS)
-  const perRequest = Math.max(1, Math.floor(OPEN_METEO_FREE_LIMITS.perMinute / weightPerPoint))
+  const perRequest = Math.max(
+    1,
+    Math.min(MAX_POINTS_PER_BATCH, Math.floor(OPEN_METEO_FREE_LIMITS.perMinute / weightPerPoint)),
+  )
   const pacer = new RatePacer({ maxWaitMs: 65 * 60_000, ledgerPath: process.env['OPEN_METEO_LEDGER'] })
   const computed: SnapshotZone[] = []
-  let modelFailures = 0
-  for (const chunk of chunkPoints(zones, perRequest)) {
-    let responses: OpenMeteoResponse[]
-    try {
-      await pacer.reserve(chunk.length * weightPerPoint)
-      responses = await fetchJson<OpenMeteoResponse[]>(buildForecastUrl(chunk, HISTORY_DAYS, FORECAST_DAYS), {
-        timeoutMs: 180_000,
-      })
-      if (!Array.isArray(responses) || responses.length !== chunk.length) throw new Error('risposte disallineate')
-    } catch (error) {
-      modelFailures += chunk.length
-      console.error(`  lotto Open-Meteo fallito: ${error instanceof Error ? error.message : String(error)}`)
-      continue
-    }
-    for (const [j, zone] of chunk.entries()) {
-      const response = responses[j]
-      if (response === undefined) continue
-      const measured = forest.get(zone.code)
-      const snapshotZone = buildZoneSnapshot({
-        zone: {
-          code: zone.code,
-          name: zone.name,
-          reference: zone.name,
-          province: zone.provinceAcronym,
-          latitude: zone.latitude,
-          longitude: zone.longitude,
-          elevationM: zone.elevationM,
-          forest: measured?.forest ?? [],
-          ...(measured === undefined ? {} : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
-          stationNotes: STATION_NOTE,
-        },
-        modelSeries: toModelSeries(response, todayIso),
-        observationsByDate,
-        todayIso,
-        displayPastDays: DISPLAY_PAST_DAYS,
-        forecastDays: FORECAST_DAYS,
-        municipality: zone.name,
-        nearbyMunicipalities: [],
-        stationByCode,
-      })
-      if (snapshotZone !== null) computed.push(snapshotZone)
-    }
-    console.log(`  ${computed.length} zone calcolate, ${Math.round(pacer.used)} chiamate pesate`)
-  }
+  const lost = await runBatches(
+    chunkPoints(zones, perRequest),
+    async (chunk, i, attempt) => {
+      let responses: OpenMeteoResponse[]
+      try {
+        await pacer.reserve(chunk.length * weightPerPoint)
+        responses = await fetchJson<OpenMeteoResponse[]>(buildForecastUrl(chunk, HISTORY_DAYS, FORECAST_DAYS), {
+          timeoutMs: 180_000,
+        })
+        if (!Array.isArray(responses) || responses.length !== chunk.length) throw new Error('risposte disallineate')
+      } catch (error) {
+        const when = attempt === 1 ? 'si riprova a fine giro' : 'perso'
+        console.error(`  lotto Open-Meteo ${i + 1} fallito, ${when}: ${error instanceof Error ? error.message : String(error)}`)
+        throw error
+      }
+      for (const [j, zone] of chunk.entries()) {
+        const response = responses[j]
+        if (response === undefined) continue
+        const measured = forest.get(zone.code)
+        const snapshotZone = buildZoneSnapshot({
+          zone: {
+            code: zone.code,
+            name: zone.name,
+            reference: zone.name,
+            province: zone.provinceAcronym,
+            latitude: zone.latitude,
+            longitude: zone.longitude,
+            elevationM: zone.elevationM,
+            forest: measured?.forest ?? [],
+            ...(measured === undefined ? {} : { forestFraction: measured.forestFraction, forestShares: measured.shares }),
+            stationNotes: STATION_NOTE,
+          },
+          modelSeries: toModelSeries(response, todayIso),
+          observationsByDate,
+          todayIso,
+          displayPastDays: DISPLAY_PAST_DAYS,
+          forecastDays: FORECAST_DAYS,
+          municipality: zone.name,
+          nearbyMunicipalities: [],
+          stationByCode,
+        })
+        if (snapshotZone !== null) computed.push(snapshotZone)
+      }
+      console.log(`  ${computed.length} zone calcolate, ${Math.round(pacer.used)} chiamate pesate`)
+    },
+    {
+      isFatal: (error) => error instanceof RateBudgetExhausted,
+      onRetry: (count, delayMs) => {
+        console.log(`  ${count} lotti Open-Meteo falliti: nuovo tentativo fra ${delayMs / 1000} s`)
+      },
+    },
+  )
+  const modelFailures = lost.reduce((total, { chunk }) => total + chunk.length, 0)
 
   // Senza zone, o con meta' delle zone perse, si tiene il file di ieri.
   if (computed.length === 0 || computed.length < zones.length / 2) {

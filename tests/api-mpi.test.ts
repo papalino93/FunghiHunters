@@ -10,7 +10,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Snapshot, SnapshotZone } from '@/lib/snapshot/types'
-import { isModelOnly, toApiZone, zoneOnDate } from '@/lib/api/mpi'
+import { isCalendarDate, isModelOnly, toApiZone, zoneOnDate } from '@/lib/api/mpi'
 
 function zone(code: string, withStations: boolean): SnapshotZone {
   return {
@@ -99,6 +99,18 @@ async function get(query: string): Promise<{ status: number; body: Record<string
   return { status: response.status, body: (await response.json()) as Record<string, unknown> }
 }
 
+describe('isCalendarDate', () => {
+  it('accetta solo giorni che esistono, scritti AAAA-MM-GG', () => {
+    expect(isCalendarDate('2026-09-26')).toBe(true)
+    expect(isCalendarDate('2028-02-29')).toBe(true)
+    expect(isCalendarDate('2026-02-29')).toBe(false)
+    expect(isCalendarDate('2026-02-30')).toBe(false)
+    expect(isCalendarDate('2026-13-01')).toBe(false)
+    expect(isCalendarDate('26-09-2026')).toBe(false)
+    expect(isCalendarDate('2026-09-26T00:00')).toBe(false)
+  })
+})
+
 describe('rotta /api/v1/mpi', () => {
   beforeEach(() => { vi.clearAllMocks() })
 
@@ -144,6 +156,28 @@ describe('rotta /api/v1/mpi', () => {
     const { status, body } = await get('?region=all&date=2026-09-22')
     expect(status).toBe(400)
     expect(String(body['error'])).toContain('?region=toscana&date=2026-09-22')
+  })
+
+  it('una data che non esiste risponde 400, prima di leggere qualunque file', async () => {
+    for (const bad of ['2026-02-30', 'ieri', '2026-9-1', '']) {
+      const { status, body } = await get(`?region=toscana&date=${bad}`)
+      expect(status).toBe(400)
+      expect(String(body['error'])).toContain('AAAA-MM-GG')
+    }
+    expect((await get('?date=2026-13-01')).status).toBe(400)
+  })
+
+  it('un giorno vero fuori dalla serie resta una risposta valida, con i punteggi a null', async () => {
+    const { status, body } = await get('?region=toscana&date=2099-01-01')
+    expect(status).toBe(200)
+    expect((body['zones'] as Array<Record<string, unknown>>)[0]).toMatchObject({ mpi: null })
+  })
+
+  it('la regione si riconosce anche in maiuscolo o con spazi', async () => {
+    const { status, body } = await get('?region=%20TOSCANA%20')
+    expect(status).toBe(200)
+    expect(body['region']).toBe('toscana')
+    expect((await get('?region=ALL')).body['region']).toBe('all')
   })
 
   it('una regione sconosciuta risponde 404 con l\'elenco di quelle valide', async () => {
