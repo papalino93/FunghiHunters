@@ -1,16 +1,19 @@
 import {
+  CAP_GRADIENT,
   MARK_COLORS,
   MARK_CORNER,
-  MARK_SHAPES,
+  MARK_MUSHROOM,
+  MARK_SCENE,
   MARK_VIEWBOX,
+  type MarkLayer,
 } from '@/lib/brand/mark'
 
 export interface BrandMarkProps {
   /** Lato in pixel. */
   readonly size: number
   /**
-   * Con il quadrato verde di fondo (le icone) o senza (il benvenuto, dove il segno sta su una
-   * scena già sua).
+   * Con il quadrato arancio di fondo, le foglie e l'ombra a terra (le icone), o il fungo da solo
+   * (il benvenuto, dove il segno sta su una scena già sua).
    */
   readonly withBackground?: boolean
   /**
@@ -23,7 +26,50 @@ export interface BrandMarkProps {
 }
 
 /**
- * Il segno di FungiCast in JSX: un porcino che è anche un segnaposto.
+ * Un livello come elemento SVG. Una funzione e non un componente, di proposito: Satori
+ * serializza l'`<svg>` così com'è e non risolve i componenti annidati, che sparirebbero dalle
+ * icone e dall'anteprima di condivisione.
+ */
+function layerElement(layer: MarkLayer, capFill: string, key: number) {
+  switch (layer.kind) {
+    case 'fill':
+      return (
+        <path
+          key={key}
+          d={layer.d}
+          fill={layer.fill === CAP_GRADIENT ? capFill : layer.fill}
+          opacity={layer.opacity}
+        />
+      )
+    case 'stroke':
+      return (
+        <path
+          key={key}
+          d={layer.d}
+          stroke={layer.stroke}
+          strokeWidth={layer.width}
+          strokeLinecap="round"
+          fill="none"
+          opacity={layer.opacity}
+        />
+      )
+    case 'ellipse':
+      return (
+        <ellipse
+          key={key}
+          cx={layer.cx}
+          cy={layer.cy}
+          rx={layer.rx}
+          ry={layer.ry}
+          fill={layer.fill}
+          opacity={layer.opacity}
+        />
+      )
+  }
+}
+
+/**
+ * Il segno di FungiCast in JSX: un porcino d'autunno.
  *
  * Nessun hook e nessuno stato, di proposito: gira nei componenti client, in quelli server e dentro
  * `next/og`, che disegna le icone e l'anteprima di condivisione con Satori. Le forme e i colori
@@ -36,7 +82,8 @@ export function BrandMark({
   idPrefix = 'fcm',
 }: BrandMarkProps) {
   const c = MARK_COLORS
-  const s = MARK_SHAPES
+  const capFill = `url(#${idPrefix}-cap)`
+  const layers = withBackground ? [...MARK_SCENE, ...MARK_MUSHROOM] : MARK_MUSHROOM
   return (
     <svg width={size} height={size} viewBox={MARK_VIEWBOX} aria-hidden="true">
       <defs>
@@ -54,24 +101,7 @@ export function BrandMark({
       {withBackground && (
         <rect width="340" height="340" rx={rounded ? MARK_CORNER : 0} fill={`url(#${idPrefix}-bg)`} />
       )}
-      <ellipse
-        cx={s.shadow.cx}
-        cy={s.shadow.cy}
-        rx={s.shadow.rx}
-        ry={s.shadow.ry}
-        fill={c.shadow}
-        opacity={0.6}
-      />
-      <path d={s.stem} fill={c.stem} />
-      <path d={s.cap} fill={`url(#${idPrefix}-cap)`} />
-      <path
-        d={s.highlight}
-        stroke={c.highlight}
-        strokeWidth={12}
-        strokeLinecap="round"
-        fill="none"
-        opacity={0.5}
-      />
+      {layers.map((layer, i) => layerElement(layer, capFill, i))}
     </svg>
   )
 }
