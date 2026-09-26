@@ -6,23 +6,26 @@
  * di `requireAdmin` ha il suo test, e in particolare quelli che devono dire *no*.
  */
 
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { bandStats, computeStats, toCsv, type StatRow } from '@/lib/admin/stats'
 
 const ADMIN_ID = '11111111-1111-1111-1111-111111111111'
 const OTHER_ID = '22222222-2222-2222-2222-222222222222'
 
-// Il client Supabase finto: risponde all'unica chiamata che la guardia fa, `auth.getUser`.
+// Il client Supabase finto: la verifica del token e la riga in `app_admins`.
 const getUser = vi.fn()
+const adminRow = vi.fn()
+let configured = true
 vi.mock('@/lib/supabase/admin', () => ({
-  isSupabaseAdminConfigured: () =>
-    (process.env['NEXT_PUBLIC_SUPABASE_URL'] ?? '') !== '' &&
-    (process.env['SUPABASE_SERVICE_ROLE_KEY'] ?? '') !== '',
-  getAdminClient: () => ({ auth: { getUser } }),
+  isSupabaseAdminConfigured: () => configured,
+  getAdminClient: () => ({
+    auth: { getUser },
+    from: () => ({ select: () => ({ eq: () => ({ maybeSingle: adminRow }) }) }),
+  }),
 }))
 
-const { bearerToken, isAdminConfigured, requireAdmin } = await import('@/lib/admin/guard')
+const { bearerToken, requireAdmin } = await import('@/lib/admin/guard')
 
 function request(authorization?: string): Request {
   return new Request('https://example.test/api/admin/observations', {
@@ -32,32 +35,29 @@ function request(authorization?: string): Request {
 
 describe('guardia amministratore', () => {
   beforeEach(() => {
-    vi.stubEnv('NEXT_PUBLIC_SUPABASE_URL', 'https://progetto.supabase.co')
-    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', 'chiave-di-servizio')
-    vi.stubEnv('ADMIN_USER_ID', ADMIN_ID)
-    getUser.mockReset()
+    configured = true
+    getUser.mockReset().mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
+    // Di default nessuna riga: essere autenticati non basta, serve stare in `app_admins`.
+    adminRow.mockReset().mockResolvedValue({ data: null, error: null })
   })
 
-  afterEach(() => {
-    vi.unstubAllEnvs()
-  })
-
-  it('fa entrare l\'amministratore con un token valido', async () => {
-    getUser.mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
+  it('fa entrare chi ha un token valido e una riga in app_admins', async () => {
+    adminRow.mockResolvedValue({ data: { user_id: ADMIN_ID }, error: null })
     const check = await requireAdmin(request('Bearer token-buono'))
     expect(check).toEqual({ ok: true, adminUserId: ADMIN_ID })
     // Il token va validato da Supabase, non decodificato qui: un JWT si legge senza chiave.
     expect(getUser).toHaveBeenCalledWith('token-buono')
   })
 
-  it('respinge un utente autenticato che non è l\'amministratore', async () => {
+  it('respinge un utente autenticato che non è in app_admins', async () => {
     getUser.mockResolvedValue({ data: { user: { id: OTHER_ID } }, error: null })
     expect(await requireAdmin(request('Bearer token-altrui'))).toEqual({ ok: false, reason: 'not-admin' })
   })
 
-  it('respinge un token che Supabase non riconosce', async () => {
+  it('respinge un token che Supabase non riconosce, senza guardare app_admins', async () => {
     getUser.mockResolvedValue({ data: { user: null }, error: { message: 'invalid JWT' } })
     expect(await requireAdmin(request('Bearer falso'))).toEqual({ ok: false, reason: 'bad-token' })
+    expect(adminRow).not.toHaveBeenCalled()
   })
 
   it('respinge una richiesta senza token, senza nemmeno chiedere a Supabase', async () => {
@@ -65,25 +65,16 @@ describe('guardia amministratore', () => {
     expect(getUser).not.toHaveBeenCalled()
   })
 
-  it('senza ADMIN_USER_ID nega tutto, anche a un token valido', async () => {
-    // Il caso di un deploy nuovo o di una variabile scritta male: lo stato sicuro è «chiuso».
-    vi.stubEnv('ADMIN_USER_ID', '')
-    getUser.mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
-    expect(isAdminConfigured()).toBe(false)
+  it('senza la tabella app_admins (migrazione non applicata) nega tutto', async () => {
+    // Lo stato sicuro è «chiuso»: un errore del database non deve mai voler dire «passa pure».
+    adminRow.mockResolvedValue({ data: null, error: { message: 'relation "app_admins" does not exist' } })
+    expect(await requireAdmin(request('Bearer token-buono'))).toEqual({ ok: false, reason: 'not-configured' })
+  })
+
+  it('senza la service role key nega tutto, prima di qualunque chiamata', async () => {
+    configured = false
     expect(await requireAdmin(request('Bearer token-buono'))).toEqual({ ok: false, reason: 'not-configured' })
     expect(getUser).not.toHaveBeenCalled()
-  })
-
-  it('senza la service role key nega tutto', async () => {
-    vi.stubEnv('SUPABASE_SERVICE_ROLE_KEY', '')
-    expect(await requireAdmin(request('Bearer token-buono'))).toEqual({ ok: false, reason: 'not-configured' })
-  })
-
-  it('un id vuoto nel token non coincide con un ADMIN_USER_ID vuoto', async () => {
-    // Il confronto `'' === ''` sarebbe vero: la guardia deve fermarsi prima, su «non configurato».
-    vi.stubEnv('ADMIN_USER_ID', '')
-    getUser.mockResolvedValue({ data: { user: { id: '' } }, error: null })
-    expect((await requireAdmin(request('Bearer x'))).ok).toBe(false)
   })
 
   it('legge il token solo dallo schema Bearer', () => {

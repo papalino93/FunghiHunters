@@ -1,4 +1,7 @@
--- FungiCast - registro degli accessi amministratore
+-- FungiCast - amministratore e registro degli accessi
+--
+-- Due tabelle, entrambe irraggiungibili dal browser: chi e' l'amministratore (`app_admins`) e
+-- cosa ha letto (`admin_access_log`).
 --
 -- PERCHE' ESISTE
 --
@@ -51,3 +54,35 @@ alter table admin_access_log enable row level security;
 -- e perche' un `grant` concesso per sbaglio altrove viene comunque revocato rieseguendo questo
 -- file.
 revoke all on admin_access_log from anon, authenticated;
+
+-- ============================================================================================
+-- CHI E' L'AMMINISTRATORE
+-- ============================================================================================
+--
+-- Una tabella e non una variabile d'ambiente su Vercel. La prima versione di questo pannello
+-- chiedeva `ADMIN_USER_ID` fra le impostazioni di Vercel: voleva dire cercare il proprio UID
+-- nella dashboard di Supabase, copiarlo nella dashboard di Vercel, e rifare il deploy - tre posti
+-- diversi per dire una cosa sola. Qui basta questa migrazione, eseguita dove si eseguono gia'
+-- tutte le altre, e l'effetto e' immediato: nessun deploy.
+--
+-- La sicurezza non cambia. Sapere chi e' l'amministratore non da' nessun potere: la rotta
+-- verifica comunque il token con Supabase prima di guardare questa tabella. E la tabella stessa
+-- non si puo' ne' leggere ne' modificare dal browser - stessa regola del registro qui sopra:
+-- RLS senza policy, nessun grant. Per diventare amministratore bisogna gia' avere accesso al
+-- database, cioe' esserlo.
+--
+-- L'amministratore NON viene inserito qui: questo file finisce su GitHub, e l'indirizzo con cui
+-- il titolare accede non deve finirci. L'inserimento e' una riga a parte, eseguita una volta
+-- sola nell'SQL Editor:
+--
+--   insert into app_admins (user_id)
+--   select id from auth.users where email = '<indirizzo con cui accedi a FungiCast>'
+--   on conflict do nothing;
+
+create table if not exists app_admins (
+  user_id uuid primary key references auth.users (id) on delete cascade,
+  added_at timestamptz not null default now()
+);
+
+alter table app_admins enable row level security;
+revoke all on app_admins from anon, authenticated;
