@@ -8,6 +8,7 @@ import 'maplibre-gl/dist/maplibre-gl.css'
 
 import type { SnapshotZone } from '@/lib/snapshot/types'
 import { boundsOfZones } from '@/lib/ui/bounds'
+import { pickFullPins } from '@/lib/ui/declutter'
 import { confidenceOpacity, isLowConfidence, mpiColor, readableTextOn } from '@/lib/ui/scale'
 
 /**
@@ -72,6 +73,47 @@ function pinSvg(mpi: number, confidence: number, selected: boolean): string {
   ].join('')
 }
 
+/**
+ * Il pallino di una zona che a questo zoom non ha spazio per la goccia (vedi `pickFullPins`).
+ *
+ * Solo il colore del punteggio, senza numero: dice «qui c'è una zona, e più o meno com'è» senza
+ * coprire le gocce vicine. Il pulsante resta di 24 px per il dito; il pallino disegnato è 9.
+ */
+function dotSvg(mpi: number, selected: boolean): string {
+  const value = Math.min(100, Math.max(0, mpi))
+  return [
+    `<svg viewBox="0 0 ${DOT} ${DOT}" width="100%" height="100%" aria-hidden="true">`,
+    `<circle cx="${DOT / 2}" cy="${DOT / 2}" r="4.5" fill="${mpiColor(value)}"`,
+    ` stroke="rgba(255,255,255,${selected ? 0.95 : 0.4})" stroke-width="1.25" />`,
+    `</svg>`,
+  ].join('')
+}
+
+/** Lato del pulsante del pallino, in px. */
+const DOT = 24
+
+/**
+ * Il riquadro che una goccia rivendica sullo schermo. Un po' più stretto del disegno: due gocce
+ * che si sfiorano ai bordi arrotondati restano leggibili, e così a zoom medio ne entrano di più.
+ */
+const PIN_BOX = { width: 40, height: 52 } as const
+
+/**
+ * Sotto questo zoom (una regione intera sullo schermo) le zone sotto `LOW_SCORE` restano pallino
+ * anche dove ci sarebbe posto: le gocce sono per i posti in cui andare. Avvicinandosi tornano.
+ */
+const LOCAL_ZOOM = 9.5
+const LOW_SCORE = 15
+
+/**
+ * Margine dell'inquadratura per i pannelli sopra la mappa. Sul telefono l'intestazione e la
+ * classifica occupano circa 270 px in alto: con 150 la zona migliore finiva sotto l'intestazione.
+ */
+function fitPadding(): { top: number; bottom: number; left: number; right: number } {
+  const narrow = typeof window !== 'undefined' && window.innerWidth < 640
+  return { top: narrow ? 270 : 150, bottom: 150, left: 16, right: 16 }
+}
+
 export interface MapViewProps {
   readonly zones: readonly SnapshotZone[]
   /** Punteggio da mostrare, per zona, nel giorno selezionato. */
@@ -133,7 +175,7 @@ export function MapView({
       style: STYLES[theme] as unknown as StyleSpecification | string,
       bounds: boundsRef.current,
       // Il margine tiene conto dei pannelli sovrapposti: intestazione in alto, cursore in basso.
-      fitBoundsOptions: { padding: { top: 150, bottom: 150, left: 16, right: 16 } },
+      fitBoundsOptions: { padding: fitPadding() },
       attributionControl: { compact: true },
       // Il pitch confonde su una mappa di dati: la teniamo piatta.
       pitchWithRotate: false,
@@ -206,7 +248,6 @@ export function MapView({
 
     for (const zone of zones) {
       const score = scores[zone.code] ?? { mpi: zone.mpi, confidence: zone.confidence }
-      const selected = zone.code === selectedCode
       const element = document.createElement('button')
       element.type = 'button'
       // Il nome accessibile comincia con il testo che si vede sulla goccia («64/100»): chi usa
@@ -222,20 +263,7 @@ export function MapView({
       element.className =
         'block cursor-pointer border-0 bg-transparent p-0 transition-transform duration-150 ' +
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl'
-      const scale = selected ? 1.18 : 1
-      element.style.width = `${PIN.width * scale}px`
-      element.style.height = `${PIN.height * scale}px`
       element.style.opacity = String(confidenceOpacity(score.confidence))
-      // L'ombra segue la sagoma della goccia: un `box-shadow` disegnerebbe un rettangolo.
-      element.style.filter = selected
-        ? 'drop-shadow(0 8px 18px rgba(0,0,0,0.55))'
-        : 'drop-shadow(0 4px 10px rgba(0,0,0,0.45))'
-      /*
-       * `innerHTML` con una stringa costruita qui dentro: gli unici valori interpolati sono
-       * numeri gia' passati per `toFixed`, il nome della zona resta fuori dal markup e viaggia
-       * solo per `setAttribute`/`title`, che non interpretano HTML.
-       */
-      element.innerHTML = pinSvg(score.mpi, score.confidence, selected)
 
       element.addEventListener('click', (event) => {
         event.stopPropagation()
@@ -246,6 +274,67 @@ export function MapView({
         .setLngLat([zone.longitude, zone.latitude])
         .addTo(map)
       zoneMarkers.current.set(zone.code, marker)
+    }
+
+    /*
+     * Goccia o pallino, a seconda dello spazio libero allo zoom corrente (vedi `pickFullPins`).
+     * Si ricalcola a fine movimento, non a ogni fotogramma: durante lo zoom le gocce restano come
+     * sono, e si risistemano appena la mappa si ferma. `shape` evita di riscrivere il markup di
+     * un segnaposto che non cambia forma.
+     */
+    const shape = new Map<string, 'pin' | 'dot'>()
+    const declutter = (): void => {
+      const points = zones.map((zone) => {
+        const at = map.project([zone.longitude, zone.latitude])
+        return { code: zone.code, x: at.x, y: at.y, priority: scores[zone.code]?.mpi ?? zone.mpi }
+      })
+      const full = pickFullPins(
+        points,
+        PIN_BOX,
+        new Set(selectedCode === null ? [] : [selectedCode]),
+        map.getZoom() < LOCAL_ZOOM ? LOW_SCORE : Number.NEGATIVE_INFINITY,
+      )
+      for (const zone of zones) {
+        const marker = zoneMarkers.current.get(zone.code)
+        if (marker === undefined) continue
+        const next = full.has(zone.code) ? 'pin' : 'dot'
+        if (shape.get(zone.code) === next) continue
+        shape.set(zone.code, next)
+        const element = marker.getElement()
+        const score = scores[zone.code] ?? { mpi: zone.mpi, confidence: zone.confidence }
+        const selected = zone.code === selectedCode
+        /*
+         * `innerHTML` con una stringa costruita qui dentro: gli unici valori interpolati sono
+         * numeri gia' passati per `toFixed`, il nome della zona resta fuori dal markup e viaggia
+         * solo per `setAttribute`/`title`, che non interpretano HTML.
+         */
+        if (next === 'pin') {
+          const scale = selected ? 1.18 : 1
+          element.style.width = `${PIN.width * scale}px`
+          element.style.height = `${PIN.height * scale}px`
+          // L'ombra segue la sagoma della goccia: un `box-shadow` disegnerebbe un rettangolo.
+          element.style.filter = selected
+            ? 'drop-shadow(0 8px 18px rgba(0,0,0,0.55))'
+            : 'drop-shadow(0 4px 10px rgba(0,0,0,0.45))'
+          // Le gocce sopra i pallini: un pallino non deve mai coprire il numero di una goccia.
+          element.style.zIndex = selected ? '3' : '2'
+          element.innerHTML = pinSvg(score.mpi, score.confidence, selected)
+          marker.setOffset([0, 0])
+        } else {
+          element.style.width = `${DOT}px`
+          element.style.height = `${DOT}px`
+          element.style.filter = 'drop-shadow(0 1px 3px rgba(0,0,0,0.5))'
+          element.style.zIndex = '1'
+          element.innerHTML = dotSvg(score.mpi, selected)
+          // Il marker è ancorato in basso, come la punta della goccia: il pallino va centrato sul punto.
+          marker.setOffset([0, DOT / 2])
+        }
+      }
+    }
+    declutter()
+    map.on('moveend', declutter)
+    return () => {
+      map.off('moveend', declutter)
     }
   }, [zones, scores, selectedCode])
 
@@ -295,10 +384,7 @@ export function MapView({
       fittedRef.current = true
       return
     }
-    map.fitBounds(bounds, {
-      padding: { top: 150, bottom: 150, left: 16, right: 16 },
-      animate: false,
-    })
+    map.fitBounds(bounds, { padding: fitPadding(), animate: false })
   }, [bounds])
 
   // Centra sulla zona scelta, lasciando spazio al pannello inferiore.
