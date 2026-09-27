@@ -11,6 +11,7 @@ import { today as localToday } from '@/lib/domain/time'
 import { effectiveToday } from '@/lib/snapshot/freshness'
 import type { RegionChoice } from '@/lib/region/preference'
 import { DEFAULT_REGION_SLUG } from '@/lib/region/preference'
+import { MapSearch } from '@/components/MapSearch'
 import { RegionPicker } from '@/components/RegionPicker'
 import { TimeSlider } from '@/components/TimeSlider'
 import { ZoneSheet } from '@/components/ZoneSheet'
@@ -111,6 +112,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
   }
   const [showStations, setShowStations] = useState(false)
   const [showLegend, setShowLegend] = useState(false)
+  const [searching, setSearching] = useState(false)
 
   const scores = useMemo(() => {
     const out: Record<string, { mpi: number; confidence: number }> = {}
@@ -129,6 +131,11 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
       [...snapshot.zones].sort(
         (a, b) => (scores[b.code]?.mpi ?? 0) - (scores[a.code]?.mpi ?? 0),
       ),
+    [snapshot.zones, scores],
+  )
+
+  const searchable = useMemo(
+    () => snapshot.zones.map((z) => ({ code: z.code, name: z.name, score: scores[z.code]?.mpi ?? z.mpi })),
     [snapshot.zones, scores],
   )
 
@@ -171,7 +178,22 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
        * significava tre pannelli sovrapposti nello stesso schermo — il controllo primario deve
        * essere uno solo per volta.
        */}
-      {selectedZone === null && (
+      {selectedZone === null && searching && (
+        <div className="pointer-events-none absolute inset-x-0 top-0 z-20 p-3 pr-16">
+          <MapSearch
+            zones={searchable}
+            regionName={regionName}
+            regionSlug={regionSlug}
+            onPick={(code) => {
+              setSearching(false)
+              setSelectedCode(code)
+            }}
+            onClose={() => { setSearching(false) }}
+          />
+        </div>
+      )}
+
+      {selectedZone === null && !searching && (
         <>
           {/*
             * Intestazione e classifica in una sola colonna, non due blocchi con un `top` fisso
@@ -200,24 +222,44 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
                 * Cambiare regione da qui è navigazione, non una nuova preferenza: `remember`
                 * resta falso apposta, così guardare il Trentino non sposta la regione di casa.
                 */}
-              {regionChoices !== undefined && regionSlug !== undefined && (
-                <div className="mt-2">
-                  <RegionPicker
-                    current={regionSlug}
-                    choices={regionChoices}
-                    label="Regione"
-                    remember={false}
-                    hrefFor={(slug) => `/mappa?regione=${encodeURIComponent(slug)}`}
-                  />
-                </div>
-              )}
+              <div className="mt-2 flex items-center gap-2">
+                {regionChoices !== undefined && regionSlug !== undefined && (
+                  <div className="min-w-0 flex-1">
+                    <RegionPicker
+                      current={regionSlug}
+                      choices={regionChoices}
+                      label="Regione"
+                      remember={false}
+                      hrefFor={(slug) => `/mappa?regione=${encodeURIComponent(slug)}`}
+                    />
+                  </div>
+                )}
+                {/*
+                  * Con 226 zone in Toscana e 1.404 in Italia il proprio comune non si trova a
+                  * occhio: la ricerca apre un campo al posto dell'intestazione, sopra la mappa.
+                  */}
+                <button
+                  type="button"
+                  onClick={() => { setSearching(true) }}
+                  className="flex min-h-11 shrink-0 items-center gap-1.5 rounded-lg border border-edge
+                             bg-surface-2 px-3 text-sm text-ink transition-colors hover:bg-surface-3
+                             focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+                    <circle cx="7" cy="7" r="4.75" fill="none" stroke="currentColor" strokeWidth="1.8" />
+                    <path d="M10.5 10.5L14 14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+                  </svg>
+                  Cerca
+                </button>
+              </div>
             </div>
           </header>
 
           {/* Classifica compatta: risponde a "dove conviene andare" senza aprire nulla. */}
           <div className="overflow-x-auto pb-1">
             <ul className="pointer-events-auto flex gap-1.5">
-              {ranked.map((zone) => {
+              {/* Le prime dodici: la classifica dice dove andare, per un comune preciso c'è «Cerca». */}
+              {ranked.slice(0, 12).map((zone) => {
                 const score = scores[zone.code]?.mpi ?? 0
                 const active = zone.code === selectedCode
                 return (
@@ -290,6 +332,11 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
             <p className="mt-2 text-xs leading-snug text-ink-dim">
               Il numero dentro ogni segnaposto è questo indice, da 0 a 100: non è un conteggio di
               funghi né di zone. L&apos;anello attorno al numero si riempie in proporzione.
+            </p>
+            <p className="mt-2 text-xs leading-snug text-ink-dim">
+              I <span className="text-ink">pallini</span> sono zone che a questo zoom non hanno
+              spazio per il numero, o che sono sotto 15: avvicinati, toccale, oppure usa{' '}
+              <span className="text-ink">Cerca</span>.
             </p>
             <p className="mt-2 text-xs leading-snug text-ink-dim">
               Il contorno <span className="text-ink">tratteggiato</span> e il riempimento più
