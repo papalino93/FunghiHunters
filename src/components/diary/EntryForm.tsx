@@ -1,9 +1,10 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { today as localToday } from '@/lib/domain/time'
 import { lastZoneOr } from '@/lib/zones/lastViewed'
+import { FAR_ZONE_KM, zonesByDistance } from '@/lib/zones/nearest'
 
 import type { Snapshot } from '@/lib/snapshot/types'
 import {
@@ -87,8 +88,19 @@ export function EntryForm({
     latitude: number
     longitude: number
   } | null>(null)
+  /** La zona scelta dal GPS e la sua distanza, finché l'utente non ne sceglie un'altra a mano. */
+  const [autoZone, setAutoZone] = useState<{ code: string; km: number } | null>(null)
 
   const zone = snapshot.zones.find((z) => z.code === zoneCode)
+
+  // Con la posizione, le zone in ordine di distanza: la più vicina in cima, le altre a seguire.
+  const zonesNearby = useMemo(
+    () =>
+      capturedPosition === null
+        ? null
+        : zonesByDistance(snapshot.zones, capturedPosition.latitude, capturedPosition.longitude),
+    [snapshot.zones, capturedPosition],
+  )
 
   /*
    * Alfabetico per nome, non l'ordine di arrivo dello snapshot (per punteggio del giorno). Scelto
@@ -115,8 +127,19 @@ export function EntryForm({
     setGpsState('asking')
     navigator.geolocation.getCurrentPosition(
       (result) => {
-        setCapturedPosition({ latitude: result.coords.latitude, longitude: result.coords.longitude })
+        const position = { latitude: result.coords.latitude, longitude: result.coords.longitude }
+        setCapturedPosition(position)
         setGpsState('idle')
+        /*
+         * Il «Dove» si compila da solo con la zona conosciuta più vicina: chi registra un'uscita
+         * col GPS a San Casciano non deve cercare la sua zona in un elenco che comprende anche il
+         * Monte Amiata. Resta modificabile, e le altre sono in ordine di distanza.
+         */
+        const [nearest] = zonesByDistance(snapshot.zones, position.latitude, position.longitude)
+        if (nearest !== undefined) {
+          setZoneCode(nearest.zone.code)
+          setAutoZone({ code: nearest.zone.code, km: nearest.km })
+        }
       },
       (error) => {
         setGpsState(
@@ -130,6 +153,28 @@ export function EntryForm({
       { timeout: 10_000, maximumAge: 300_000 },
     )
   }
+
+  /*
+   * Se il permesso di posizione è già stato dato (in un'uscita precedente, o per i punti fissi),
+   * la si prende da sola all'apertura del modulo: si registra sul posto, e un tocco in meno conta.
+   * Senza permesso non si chiede niente finché l'utente non tocca il pulsante: una richiesta di
+   * sistema all'apertura, senza aver capito a cosa serve, verrebbe rifiutata per riflesso.
+   */
+  useEffect(() => {
+    if (typeof navigator === 'undefined' || navigator.permissions === undefined) return
+    let cancelled = false
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then((status) => {
+        if (!cancelled && status.state === 'granted') requestLocation()
+      })
+      .catch(() => {
+        // Safari vecchi non conoscono la voce «geolocation»: resta il pulsante.
+      })
+    return () => { cancelled = true }
+    // Solo all'apertura: `requestLocation` cambia a ogni render ma fa sempre la stessa cosa.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const toggleTree = (species: TreeSpecies): void => {
     setTrees((current) =>
@@ -190,20 +235,101 @@ export function EntryForm({
           />
         </Field>
 
+        <fieldset>
+          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
+            Posizione del punto trovato
+          </legend>
+          {capturedPosition !== null ? (
+            <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-2.5 py-2">
+              <p className="text-xs leading-snug text-ink-dim">
+                Posizione GPS salvata: {capturedPosition.latitude.toFixed(5)},{' '}
+                {capturedPosition.longitude.toFixed(5)}
+                <span className="mt-0.5 block text-xs text-ink-faint">
+                  Basterà questa per ritrovare il punto in futuro.
+                </span>
+              </p>
+              <button
+                type="button"
+                onClick={() => {
+                  setCapturedPosition(null)
+                  setAutoZone(null)
+                }}
+                className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-medium text-ink-dim
+                           transition-colors hover:text-ink focus:outline-none
+                           focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Rimuovi
+              </button>
+            </div>
+          ) : (
+            <>
+              <button
+                type="button"
+                onClick={requestLocation}
+                disabled={gpsState === 'asking'}
+                className="min-h-11 w-full rounded-lg border border-accent/40 bg-accent/15 px-3
+                           text-sm font-medium text-ink transition-colors hover:bg-accent/25
+                           disabled:opacity-60 focus:outline-none focus-visible:ring-2
+                           focus-visible:ring-accent"
+              >
+                {gpsState === 'asking' ? 'Attendo la posizione…' : 'Usa la mia posizione'}
+              </button>
+              {gpsState === 'denied' && (
+                <p className="mt-1.5 text-xs leading-snug text-warn">
+                  Permesso negato. Senza, si salva il punto di riferimento della zona, non il posto
+                  esatto in cui hai cercato.
+                </p>
+              )}
+              {gpsState === 'unavailable' && (
+                <p className="mt-1.5 text-xs leading-snug text-warn">
+                  Posizione non disponibile qui. Si salva il punto di riferimento della zona invece
+                  del posto esatto.
+                </p>
+              )}
+              {gpsState === 'timeout' && (
+                <p className="mt-1.5 text-xs leading-snug text-warn">
+                  Il GPS non ha risposto in tempo. Puoi riprovare, o proseguire con il punto di
+                  riferimento della zona.
+                </p>
+              )}
+              <p className="mt-1.5 text-xs leading-snug text-ink-faint">
+                Senza posizione GPS si salva solo il riferimento generico della zona: utile per la
+                calibrazione, ma non per ritrovare il punto esatto.
+              </p>
+            </>
+          )}
+        </fieldset>
+
         <Field label="Dove" htmlFor="entry-zone">
           <select
             id="entry-zone"
             value={zoneCode}
-            onChange={(e) => { setZoneCode(e.target.value) }}
+            onChange={(e) => {
+              setZoneCode(e.target.value)
+              setAutoZone(null)
+            }}
             className="min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
                        text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
-            {zonesAlphabetical.map((z) => (
-              <option key={z.code} value={z.code}>
-                {z.name} — {z.reference}
-              </option>
-            ))}
+            {zonesNearby === null
+              ? zonesAlphabetical.map((z) => (
+                  <option key={z.code} value={z.code}>
+                    {z.name} — {z.reference}
+                  </option>
+                ))
+              : zonesNearby.map(({ zone: z, km }) => (
+                  <option key={z.code} value={z.code}>
+                    {z.name} — {formatKm(km)}
+                  </option>
+                ))}
           </select>
+          {autoZone !== null && autoZone.code === zoneCode && (
+            <p className={`mt-1.5 text-xs leading-snug ${autoZone.km > FAR_ZONE_KM ? 'text-warn' : 'text-ink-faint'}`}>
+              {autoZone.km > FAR_ZONE_KM
+                ? `La zona più vicina che conosciamo è a ${formatKm(autoZone.km)}: se sei fuori dalla tua regione di riferimento, cambiala in Account per avere le zone di lì.`
+                : `Scelta dalla tua posizione: è la zona più vicina, a ${formatKm(autoZone.km)}. Puoi cambiarla.`}
+            </p>
+          )}
         </Field>
 
         <fieldset>
@@ -281,67 +407,6 @@ export function EntryForm({
           quattro ore sì. Facoltativi entrambi.
         </p>
 
-        <fieldset>
-          <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
-            Posizione del punto trovato
-          </legend>
-          {capturedPosition !== null ? (
-            <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-2.5 py-2">
-              <p className="text-xs leading-snug text-ink-dim">
-                Posizione GPS salvata: {capturedPosition.latitude.toFixed(5)},{' '}
-                {capturedPosition.longitude.toFixed(5)}
-                <span className="mt-0.5 block text-xs text-ink-faint">
-                  Basterà questa per ritrovare il punto in futuro.
-                </span>
-              </p>
-              <button
-                type="button"
-                onClick={() => { setCapturedPosition(null) }}
-                className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-medium text-ink-dim
-                           transition-colors hover:text-ink focus:outline-none
-                           focus-visible:ring-2 focus-visible:ring-accent"
-              >
-                Rimuovi
-              </button>
-            </div>
-          ) : (
-            <>
-              <button
-                type="button"
-                onClick={requestLocation}
-                disabled={gpsState === 'asking'}
-                className="min-h-11 w-full rounded-lg border border-accent/40 bg-accent/15 px-3
-                           text-sm font-medium text-ink transition-colors hover:bg-accent/25
-                           disabled:opacity-60 focus:outline-none focus-visible:ring-2
-                           focus-visible:ring-accent"
-              >
-                {gpsState === 'asking' ? 'Attendo la posizione…' : 'Usa la mia posizione'}
-              </button>
-              {gpsState === 'denied' && (
-                <p className="mt-1.5 text-xs leading-snug text-warn">
-                  Permesso negato. Senza, si salva il punto di riferimento della zona, non il posto
-                  esatto in cui hai cercato.
-                </p>
-              )}
-              {gpsState === 'unavailable' && (
-                <p className="mt-1.5 text-xs leading-snug text-warn">
-                  Posizione non disponibile qui. Si salva il punto di riferimento della zona invece
-                  del posto esatto.
-                </p>
-              )}
-              {gpsState === 'timeout' && (
-                <p className="mt-1.5 text-xs leading-snug text-warn">
-                  Il GPS non ha risposto in tempo. Puoi riprovare, o proseguire con il punto di
-                  riferimento della zona.
-                </p>
-              )}
-              <p className="mt-1.5 text-xs leading-snug text-ink-faint">
-                Senza posizione GPS si salva solo il riferimento generico della zona: utile per la
-                calibrazione, ma non per ritrovare il punto esatto.
-              </p>
-            </>
-          )}
-        </fieldset>
 
         <Field label="Quota indicativa" htmlFor="entry-elevation" optional>
           <input
@@ -522,4 +587,10 @@ function Field({
       {children}
     </div>
   )
+}
+
+/** «800 m», «3 km», «42 km»: sotto il chilometro i metri, sopra niente decimali inutili. */
+function formatKm(km: number): string {
+  if (km < 1) return `${String(Math.round(km * 10) * 100)} m`
+  return `${String(Math.round(km))} km`
 }
