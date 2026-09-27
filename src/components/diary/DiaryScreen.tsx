@@ -379,9 +379,13 @@ function EntryRow({
               backgroundColor: mpiBandColor(entry.mpiAtEntry),
               color: mpiBandInk(entry.mpiAtEntry),
             }}
-            title="Punteggio previsto quel giorno"
+            title="Indice previsto quel giorno per quella zona, da 0 a 100"
           >
-            <span className="tabular text-sm font-semibold">{entry.mpiAtEntry.toFixed(0)}</span>
+            {/* «/100» anche qui: da solo, «27» non diceva cosa fosse. */}
+            <span className="flex flex-col items-center leading-none">
+              <span className="tabular text-sm font-semibold">{entry.mpiAtEntry.toFixed(0)}</span>
+              <span className="mt-0.5 text-[10px] font-medium opacity-70">/100</span>
+            </span>
           </div>
         ) : (
           <div className="grid h-11 w-11 shrink-0 place-items-center rounded-lg bg-surface-2 text-ink-faint">
@@ -395,7 +399,8 @@ function EntryRow({
           </p>
           <p className="mt-0.5 text-xs text-ink-dim">
             trovati: <strong className="text-ink">{ABUNDANCE_LABELS[entry.abundance]}</strong>
-            {entry.elevationM !== null && <> · {entry.elevationM} m</>}
+            {/* «quota» davanti: «1 m» da solo si leggeva come un minuto. */}
+            {entry.elevationM !== null && <> · quota {entry.elevationM} m</>}
             {entry.durationMinutes !== null && <> · {entry.durationMinutes} min</>}
             {entry.searchers !== null && (
               <> · {entry.searchers} {entry.searchers === 1 ? 'persona' : 'persone'}</>
@@ -458,8 +463,9 @@ function EntryRow({
         )}
       </div>
 
-      <div className="mt-2.5">
+      <div className="mt-2">
         <WaypointsPanel
+          compact
           entryId={entry.id}
           scope="outing"
           title="Punti di questa uscita"

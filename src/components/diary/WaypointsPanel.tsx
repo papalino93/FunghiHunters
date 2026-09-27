@@ -124,6 +124,13 @@ export interface WaypointsPanelProps {
   readonly emptyText: string
   /** Quali categorie proporre: un'uscita passata non ha bisogno di "Partenza", i punti fissi sì. */
   readonly kinds?: readonly WaypointKind[]
+  /**
+   * Chiuso, un pulsante piccolo invece di un riquadro con titolo e descrizione. Serve dentro ogni
+   * uscita del diario: tre uscite con tre riquadri «Punti di questa uscita» identici sembravano
+   * titoli di sezione, non un comando, e non si capiva cosa si dovesse fare. Da chiuso dice
+   * quanti punti ci sono, o «Aggiungi un punto» se non ce n'è nessuno.
+   */
+  readonly compact?: boolean
 }
 
 /**
@@ -141,6 +148,7 @@ export function WaypointsPanel({
   defaultOpen = false,
   emptyText,
   kinds = ['car', 'access', 'reference', 'departure'],
+  compact = false,
 }: WaypointsPanelProps) {
   const hydrated = useIsHydrated()
   const repo: WaypointRepository | null = useMemo(
@@ -165,7 +173,8 @@ export function WaypointsPanel({
   }, [repo, entryId])
 
   useEffect(() => {
-    if (!open || repo === null) return
+    // Il pulsante compatto dice quanti punti ci sono già da chiuso: li legge subito.
+    if ((!open && !compact) || repo === null) return
     let cancelled = false
     // `.then()/.catch()` inline, non tramite `reload()`: passare per una funzione richiamata
     // indirettamente impedisce al linter di verificare che l'aggiornamento di stato sia
@@ -182,7 +191,7 @@ export function WaypointsPanel({
         setError(err instanceof Error ? err.message : 'Non riesco a leggere i punti salvati.')
       })
     return () => { cancelled = true }
-  }, [open, repo, entryId])
+  }, [open, compact, repo, entryId])
 
   const save = async (): Promise<void> => {
     if (repo === null) return
@@ -251,41 +260,74 @@ export function WaypointsPanel({
     }
   }
 
+  const count = points?.length ?? 0
   return (
-    <section className="rounded-xl border border-edge bg-surface-1 p-3">
-      <button
-        type="button"
-        onClick={() => { setOpen((v) => !v) }}
-        aria-expanded={open}
-        className="flex min-h-11 w-full items-center justify-between text-left focus:outline-none
-                   focus-visible:ring-2 focus-visible:ring-accent"
-      >
-        <span className="min-w-0">
-          <span className="flex items-center gap-1.5">
-            <ScopeIcon scope={scope} />
-            <span className="text-sm font-semibold text-ink">{title}</span>
-            <span
-              className={`rounded px-1.5 py-0.5 text-xs font-medium ${
-                scope === 'fixed'
-                  ? 'bg-accent/15 text-accent'
-                  : 'bg-surface-3 text-ink-dim'
-              }`}
-            >
-              {SCOPE_BADGE[scope]}
-            </span>
-          </span>
-          <span className="mt-0.5 block text-xs leading-snug text-ink-faint">{description}</span>
-        </span>
-        <svg
-          width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"
-          className={`shrink-0 text-ink-faint transition-transform ${open ? 'rotate-180' : ''}`}
+    <section className={compact ? 'border-t border-edge pt-1' : 'rounded-xl border border-edge bg-surface-1 p-3'}>
+      {compact ? (
+        <button
+          type="button"
+          onClick={() => { setOpen((v) => !v) }}
+          aria-expanded={open}
+          className="flex min-h-11 w-full items-center gap-1.5 text-left text-xs font-medium
+                     text-ink-dim transition-colors hover:text-ink focus:outline-none
+                     focus-visible:ring-2 focus-visible:ring-accent"
         >
-          <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
-        </svg>
-      </button>
+          <ScopeIcon scope={scope} />
+          <span className="min-w-0 flex-1">
+            {open
+              ? 'Punti di quest\u2019uscita'
+              : count === 0
+                ? 'Aggiungi un punto: auto, accesso al bosco, un bivio'
+                : `${String(count)} ${count === 1 ? 'punto salvato' : 'punti salvati'} in quest\u2019uscita`}
+          </span>
+          <svg
+            width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"
+            className={`shrink-0 text-ink-faint transition-transform ${open ? 'rotate-180' : ''}`}
+          >
+            <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => { setOpen((v) => !v) }}
+          aria-expanded={open}
+          className="flex min-h-11 w-full items-center justify-between text-left focus:outline-none
+                     focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          <span className="min-w-0">
+            <span className="flex items-center gap-1.5">
+              <ScopeIcon scope={scope} />
+              <span className="text-sm font-semibold text-ink">{title}</span>
+              <span
+                className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+                  scope === 'fixed'
+                    ? 'bg-accent/15 text-accent'
+                    : 'bg-surface-3 text-ink-dim'
+                }`}
+              >
+                {SCOPE_BADGE[scope]}
+              </span>
+            </span>
+            <span className="mt-0.5 block text-xs leading-snug text-ink-faint">{description}</span>
+          </span>
+          <svg
+            width="12" height="12" viewBox="0 0 16 16" aria-hidden="true"
+            className={`shrink-0 text-ink-faint transition-transform ${open ? 'rotate-180' : ''}`}
+          >
+            <path d="M3 6l5 5 5-5" stroke="currentColor" strokeWidth="1.6" fill="none" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
+      )}
 
       {open && (
-        <div className="mt-3">
+        <div className={compact ? 'mt-1 pb-1' : 'mt-3'}>
+          {compact && (
+            <p className="mb-2.5 text-xs leading-snug text-ink-faint">
+              Scegli che punto è e tocca «Salva qui»: si salva la posizione di adesso, per ritrovare
+              l&apos;auto o un bivio. Vale solo per quest&apos;uscita.
+            </p>
+          )}
           {error !== null && (
             <p className="mb-2 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-warn">
               {error}
