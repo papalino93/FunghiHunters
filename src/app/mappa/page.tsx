@@ -3,6 +3,7 @@ import { Suspense } from 'react'
 import { AppShell } from '@/components/AppShell'
 import { requestedRegion } from '@/lib/region/request'
 import { pageMetadata } from '@/lib/seo/metadata'
+import { toListSnapshot } from '@/lib/snapshot/list-view'
 import { loadMapRegion } from '@/lib/snapshot/load-reference'
 
 export const metadata = pageMetadata({
@@ -34,8 +35,12 @@ export default async function MappaPage({
   // far diventare dinamica l'intera pagina.
   return (
     <Suspense fallback={<div className="h-full w-full bg-surface-0" />}>
+      {/*
+        * La versione leggera, come la home: il dettaglio di una zona (fattori, stazioni, meteo
+        * giorno per giorno) lo scarica la scheda quando la si apre, da `/api/zona`.
+        */}
       <AppShell
-        snapshot={region.snapshot}
+        snapshot={toListSnapshot(region.snapshot)}
         regionName={region.name}
         regionSlug={region.slug}
         regionChoices={region.choices}

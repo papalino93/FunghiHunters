@@ -79,6 +79,12 @@ export function useDiarySync(repo: DiaryRepository | null): DiarySyncState {
     readLocal(LAST_SYNCED_USER_KEY),
   )
   const running = useRef(false)
+  /**
+   * Una richiesta arrivata mentre un giro era già in corso (l'utente salva mentre la rete sta
+   * ancora rispondendo). Prima veniva scartata: la modifica restava non inviata fino al login o
+   * alla modifica successiva, con il bollino che diceva «Sincronizzato».
+   */
+  const pending = useRef(false)
   const prevSignedIn = useRef(false)
 
   /*
@@ -96,7 +102,11 @@ export function useDiarySync(repo: DiaryRepository | null): DiarySyncState {
 
   const sync = useCallback(
     async (options?: { readonly force?: boolean }): Promise<void> => {
-      if (repo === null || auth.status !== 'signed-in' || running.current) return
+      if (repo === null || auth.status !== 'signed-in') return
+      if (running.current) {
+        pending.current = true
+        return
+      }
       if (accountMismatch && options?.force !== true) return
       const client = getBrowserClient()
       if (client === null) return
@@ -120,6 +130,25 @@ export function useDiarySync(repo: DiaryRepository | null): DiarySyncState {
         setStatus('error')
         setError(outcome.error)
       }
+      /*
+       * Il giro in coda riparte subito, con il cursore appena scritto: è quello che `sync` avrebbe
+       * letto se la richiesta fosse arrivata un attimo dopo. Si rilancia a mano con `runSync` e non
+       * con `sync`, perché `sync` qui è ancora la versione con il `lastSyncedAt` di prima.
+       */
+      if (pending.current && outcome.status === 'synced') {
+        pending.current = false
+        running.current = true
+        const again = await runSync(repo, backend, outcome.syncedAt ?? lastSyncedAt)
+        running.current = false
+        if (again.status === 'synced' && again.syncedAt !== null) {
+          setLastSyncedAt(again.syncedAt)
+          writeLocal(LAST_SYNCED_KEY, again.syncedAt)
+        } else if (again.status !== 'synced') {
+          setStatus('error')
+          setError(again.error)
+        }
+      }
+      pending.current = false
     },
     [repo, auth.status, auth.user, lastSyncedAt, accountMismatch],
   )

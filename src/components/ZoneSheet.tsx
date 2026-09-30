@@ -24,6 +24,12 @@ import { withAccents } from '@/lib/ui/accents'
 
 export interface ZoneSheetProps {
   readonly zone: SnapshotZone
+  /**
+   * Il dettaglio (fattori, stazioni, meteo giorno per giorno) arriva a parte, da `/api/zona`:
+   * finché non c'è, la scheda mostra nome e punteggio e dice che sta caricando. Assente = pronto.
+   */
+  readonly detail?: 'ready' | 'loading' | 'error' | 'stale'
+  readonly onRetryDetail?: () => void
   readonly todayDate: string
   readonly selectedDate: string
   readonly onClose: () => void
@@ -47,6 +53,8 @@ const TABS: ReadonlyArray<{ id: Tab; label: string }> = [
 
 export function ZoneSheet({
   zone,
+  detail = 'ready',
+  onRetryDetail,
   todayDate,
   selectedDate,
   onClose,
@@ -217,13 +225,16 @@ export function ZoneSheet({
         aria-labelledby={`zona-tab-${tab}`}
         className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto px-4 py-3"
       >
-        {tab === 'sintesi' && (
+        {detail !== 'ready' && (
+          <DetailPending state={detail} onRetry={onRetryDetail} />
+        )}
+        {detail === 'ready' && tab === 'sintesi' && (
           <Summary zone={zone} todayDate={todayDate} selectedDate={selectedDate} />
         )}
-        {tab === 'meteo' && <Weather zone={zone} selectedDate={selectedDate} />}
-        {tab === 'dove' && <Where zone={zone} />}
-        {tab === 'perche' && <Why zone={zone} />}
-        {tab === 'dati' && (
+        {detail === 'ready' && tab === 'meteo' && <Weather zone={zone} selectedDate={selectedDate} />}
+        {detail === 'ready' && tab === 'dove' && <Where zone={zone} />}
+        {detail === 'ready' && tab === 'perche' && <Why zone={zone} />}
+        {detail === 'ready' && tab === 'dati' && (
           <DataProvenance
             zone={zone}
             showStations={showStations}
@@ -737,4 +748,43 @@ const LIMITING_FACTOR_SHORT: Readonly<Record<string, string>> = {
 
 function shorten(factor: string): string {
   return LIMITING_FACTOR_SHORT[factor] ?? factor
+}
+
+function DetailPending({
+  state,
+  onRetry,
+}: {
+  state: 'loading' | 'error' | 'stale'
+  onRetry?: () => void
+}) {
+  if (state === 'loading') {
+    return (
+      <div aria-busy="true" className="space-y-2">
+        <p className="text-sm text-ink-dim">Carico il dettaglio della zona…</p>
+        <div className="h-3 w-3/4 animate-pulse rounded bg-surface-2" />
+        <div className="h-3 w-1/2 animate-pulse rounded bg-surface-2" />
+      </div>
+    )
+  }
+  return (
+    <div className="space-y-2 text-sm leading-snug text-ink-dim">
+      <p>
+        {state === 'stale'
+          ? 'Nel frattempo è arrivato il calcolo nuovo: ricarica la pagina per vedere i dati di oggi.'
+          : 'Il dettaglio di questa zona non si è caricato. Senza rete si vede solo per le zone già aperte.'}
+      </p>
+      <button
+        type="button"
+        onClick={() => {
+          if (state === 'stale') window.location.reload()
+          else onRetry?.()
+        }}
+        className="min-h-11 rounded-lg border border-edge bg-surface-2 px-3 text-sm font-medium text-ink
+                   transition-colors hover:bg-surface-3 focus:outline-none focus-visible:ring-2
+                   focus-visible:ring-accent"
+      >
+        {state === 'stale' ? 'Ricarica' : 'Riprova'}
+      </button>
+    </div>
+  )
 }

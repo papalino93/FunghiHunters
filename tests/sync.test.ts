@@ -10,7 +10,7 @@ import { describe, expect, it } from 'vitest'
 
 import { InMemoryDiaryRepository, materialise } from '@/lib/diary/store'
 import type { DiaryEntry } from '@/lib/diary/types'
-import { runSync } from '@/lib/sync/engine'
+import { PULL_OVERLAP_MS, runSync } from '@/lib/sync/engine'
 import type { SyncBackend } from '@/lib/sync/types'
 
 function draft(overrides: Partial<Parameters<InMemoryDiaryRepository['add']>[0]> = {}) {
@@ -241,10 +241,10 @@ describe('modifica concorrente durante un giro di sync', () => {
 
     const first = await runSync(repo, backend, null)
     expect(first.status).toBe('synced')
-    // La modifica concorrente non è stata inviata in questo giro: non poteva esserlo, il push
-    // usa l'istantanea presa all'inizio.
-    expect(backend.rows.get(entry.id)?.notes).not.toBe('modificata mentre il giro era in corso')
+    // Il locale si rilegge dopo il pull: la modifica concorrente parte già in questo giro.
+    expect(backend.rows.get(entry.id)?.notes).toBe('modificata mentre il giro era in corso')
 
+    // E il giro successivo la riprende comunque (è più recente del cursore): niente si perde.
     const second = await runSync(repo, backend, first.syncedAt)
     expect(second.pushed).toBe(1)
     expect(backend.rows.get(entry.id)?.notes).toBe('modificata mentre il giro era in corso')
@@ -276,5 +276,40 @@ describe('errori', () => {
 
     expect(outcome.status).toBe('error')
     expect(await repo.listAll()).toHaveLength(1) // il tombstone resta: si riprova al prossimo giro
+  })
+})
+
+describe('rilettura dopo il pull e orologi sbagliati', () => {
+  it('una modifica salvata mentre il pull è in volo non viene sovrascritta dal server', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    const backend = new FakeBackend()
+    // Il server ha una versione più recente di quella letta a inizio giro...
+    backend.rows.set(entry.id, { ...entry, notes: 'dal server', updatedAt: new Date(Date.now() + 30_000).toISOString() })
+    // ...ma durante il pull l'utente salva una modifica ancora più recente.
+    const mine = { ...entry, notes: 'la mia', updatedAt: new Date(Date.now() + 60_000).toISOString() }
+    const originalPull = backend.pull.bind(backend)
+    backend.pull = async (since) => {
+      const rows = await originalPull(since)
+      await repo.upsertRaw(mine)
+      return rows
+    }
+    await runSync(repo, backend, entry.updatedAt)
+    expect((await repo.list())[0]?.notes).toBe('la mia')
+    expect(backend.rows.get(entry.id)?.notes).toBe('la mia')
+  })
+
+  it('chiede al server anche l’ultimo giorno già visto', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const backend = new FakeBackend()
+    let asked: string | null = 'mai'
+    const originalPull = backend.pull.bind(backend)
+    backend.pull = async (since) => {
+      asked = since
+      return originalPull(since)
+    }
+    const last = '2026-09-30T10:00:00.000Z'
+    await runSync(repo, backend, last)
+    expect(asked).toBe(new Date(Date.parse(last) - PULL_OVERLAP_MS).toISOString())
   })
 })

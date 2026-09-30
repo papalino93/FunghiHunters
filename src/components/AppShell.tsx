@@ -7,7 +7,7 @@ import { useSearchParams } from 'next/navigation'
 
 import { rememberLastZonePlace } from '@/lib/zones/lastViewed'
 
-import type { Snapshot } from '@/lib/snapshot/types'
+import type { Snapshot, SnapshotZone } from '@/lib/snapshot/types'
 import { today as localToday } from '@/lib/domain/time'
 import { effectiveToday } from '@/lib/snapshot/freshness'
 import type { RegionChoice } from '@/lib/region/preference'
@@ -145,7 +145,55 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
     [snapshot.zones, scores],
   )
 
-  const selectedZone = snapshot.zones.find((z) => z.code === selectedCode) ?? null
+  /*
+   * Il dettaglio della zona aperta arriva a parte (`/api/zona`): la pagina porta la versione
+   * leggera di tutte le zone, e fattori, stazioni e meteo giorno per giorno servono solo a quella
+   * che si apre. Si tiene quello già scaricato, così riaprire una zona è istantaneo.
+   */
+  const [details, setDetails] = useState<ReadonlyMap<string, SnapshotZone>>(() => new Map())
+  const [detailFailures, setDetailFailures] = useState<ReadonlyMap<string, 'error' | 'stale'>>(() => new Map())
+  useEffect(() => {
+    if (selectedCode === null || details.has(selectedCode) || detailFailures.has(selectedCode)) return
+    const code = selectedCode
+    const controller = new AbortController()
+    const params = new URLSearchParams({ regione: regionSlug ?? DEFAULT_REGION_SLUG, codice: code })
+    fetch(`/api/zona?${params.toString()}`, { signal: controller.signal })
+      .then(async (response) => {
+        if (!response.ok) throw new Error(String(response.status))
+        const body = (await response.json()) as { referenceDate?: string; zone?: SnapshotZone }
+        if (body.zone === undefined) throw new Error('vuota')
+        // Dati più nuovi della pagina (calcolo del giorno arrivato nel frattempo): mescolarli
+        // darebbe due punteggi diversi nella stessa scheda. Meglio dirlo e far ricaricare.
+        if (body.referenceDate !== snapshot.referenceDate) {
+          setDetailFailures((prev) => new Map(prev).set(code, 'stale'))
+          return
+        }
+        const zone = body.zone
+        setDetails((prev) => new Map(prev).set(code, zone))
+      })
+      .catch((error: unknown) => {
+        if (error instanceof DOMException && error.name === 'AbortError') return
+        setDetailFailures((prev) => new Map(prev).set(code, 'error'))
+      })
+    return () => controller.abort()
+  }, [selectedCode, details, detailFailures, regionSlug, snapshot.referenceDate])
+
+  const listZone = snapshot.zones.find((z) => z.code === selectedCode) ?? null
+  const selectedZone = (selectedCode === null ? undefined : details.get(selectedCode)) ?? listZone
+  const detailStatus: 'ready' | 'loading' | 'error' | 'stale' =
+    selectedCode === null
+      ? 'ready'
+      : details.has(selectedCode)
+        ? 'ready'
+        : (detailFailures.get(selectedCode) ?? 'loading')
+  // Sulla mappa le stazioni della zona aperta vengono dal dettaglio: la versione leggera ne ha una.
+  const mapZones = useMemo(
+    () =>
+      selectedCode !== null && details.has(selectedCode)
+        ? snapshot.zones.map((z) => details.get(z.code) ?? z)
+        : snapshot.zones,
+    [snapshot.zones, details, selectedCode],
+  )
   // La zona aperta diventa quella proposta dal diario (vedi `lib/zones/lastViewed.ts`).
   useEffect(() => {
     if (selectedZone !== null) {
@@ -170,7 +218,7 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
   return (
     <section className="relative h-full w-full overflow-hidden bg-surface-0">
       <MapView
-        zones={snapshot.zones}
+        zones={mapZones}
         scores={scores}
         selectedCode={selectedCode}
         onSelect={setSelectedCode}
@@ -395,6 +443,16 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
             />
             <ZoneSheet
               zone={selectedZone}
+              detail={detailStatus}
+              onRetryDetail={() => {
+                if (selectedCode === null) return
+                const code = selectedCode
+                setDetailFailures((prev) => {
+                  const next = new Map(prev)
+                  next.delete(code)
+                  return next
+                })
+              }}
               todayDate={todayDate}
               selectedDate={selectedDate}
               onClose={() => { setSelectedCode(null) }}
