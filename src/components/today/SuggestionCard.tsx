@@ -77,7 +77,8 @@ export function SuggestionCard({
           </h3>
           {/* Accanto al nome: «Mugello» a 900 m e «Borgo San Lorenzo» a 294 m sono posti diversi. */}
           {zoneDetail(zone) !== null && (
-            <span className="min-w-0 truncate text-xs text-ink-faint">{zoneDetail(zone)}</span>
+            /* Si accorcia prima lui del nome: «Monte A…» non si legge, «Abbadia San…» sì. */
+            <span className="min-w-0 shrink-[10] truncate text-xs text-ink-faint">{zoneDetail(zone)}</span>
           )}
           {following && (
             <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-xs font-medium text-accent">

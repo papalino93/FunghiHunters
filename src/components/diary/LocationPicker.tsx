@@ -58,6 +58,11 @@ export function LocationPicker({
   /** Il nome scritto nel campo da una scelta, non dalla tastiera: non va cercato di nuovo. */
   const pickedQuery = useRef<string | null>(null)
 
+  const centerRef = useRef(center)
+  useEffect(() => {
+    centerRef.current = center
+  }, [center])
+
   // Letti una volta alla creazione della mappa: dopo, a spostarla pensano la ricerca e i tocchi.
   const startRef = useRef({ initial, center })
 
@@ -119,11 +124,16 @@ export function LocationPicker({
     const timer = window.setTimeout(() => {
       setSearching(true)
       setSearchError(null)
-      const near = markerRef.current?.getLngLat() ?? mapRef.current?.getCenter() ?? null
+      /*
+       * Per avvicinare i risultati basta la zona, arrotondata a un decimale (circa 10 km). Mai il
+       * segnaposto: può essere il punto esatto dove si è trovato, e finirebbe a un servizio
+       * esterno e nei log, qualunque precisione l'utente abbia scelto per salvarlo.
+       */
+      const near = centerRef.current
       const params = new URLSearchParams({ q })
       if (near !== null) {
-        params.set('lat', near.lat.toFixed(3))
-        params.set('lon', near.lng.toFixed(3))
+        params.set('lat', near.latitude.toFixed(1))
+        params.set('lon', near.longitude.toFixed(1))
       }
       fetch(`/api/luoghi?${params.toString()}`, { signal: controller.signal })
         .then(async (response) => {
@@ -234,7 +244,7 @@ export function LocationPicker({
       )}
       <p className="text-xs leading-snug text-ink-faint">
         Tocca la mappa o trascina il segnaposto per metterlo nel punto esatto. I risultati vengono da
-        OpenStreetMap.
+        OpenStreetMap: al servizio arriva solo la parola cercata e la zona, non il punto.
       </p>
     </div>
   )

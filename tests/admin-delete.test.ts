@@ -5,6 +5,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 const ADMIN_ID = '11111111-1111-1111-1111-111111111111'
+const U1 = 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'
+const U2 = 'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb'
 const getUser = vi.fn()
 const insert = vi.fn()
 const adminRow = vi.fn()
@@ -56,7 +58,7 @@ beforeEach(() => {
 describe('DELETE /api/admin/observations', () => {
   it('chi non è amministratore riceve 404 e non tocca niente', async () => {
     adminRow.mockResolvedValue({ data: null, error: null })
-    const response = await DELETE(request({ items: [{ userId: 'u1', id: 'e1' }] }))
+    const response = await DELETE(request({ items: [{ userId: U1, id: 'e1' }] }))
     expect(response.status).toBe(404)
     expect(insert).not.toHaveBeenCalled()
     expect(updates).toHaveLength(0)
@@ -64,28 +66,31 @@ describe('DELETE /api/admin/observations', () => {
 
   it('senza registro non elimina niente', async () => {
     insert.mockResolvedValue({ error: { message: 'tabella assente' } })
-    const response = await DELETE(request({ items: [{ userId: 'u1', id: 'e1' }] }))
+    const response = await DELETE(request({ items: [{ userId: U1, id: 'e1' }] }))
     expect(response.status).toBe(503)
     expect(updates).toHaveLength(0)
   })
 
   it('marca le uscite come eliminate, raggruppate per utente, e lo registra', async () => {
     const response = await DELETE(
-      request({ items: [{ userId: 'u1', id: 'e1' }, { userId: 'u1', id: 'e2' }, { userId: 'u2', id: 'e9' }] }),
+      request({ items: [{ userId: U1, id: 'e1' }, { userId: U1, id: 'e2' }, { userId: U2, id: 'e9' }] }),
     )
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ deleted: 3 })
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ action: 'observations.delete', rows_returned: 3 }))
-    expect(updates.map((u) => [u.userId, u.ids])).toEqual([['u1', ['e1', 'e2']], ['u2', ['e9']]])
+    expect(updates.map((u) => [u.userId, u.ids])).toEqual([[U1, ['e1', 'e2']], [U2, ['e9']]])
     const patch = updates[0]?.patch ?? {}
     expect(typeof patch['deleted_at']).toBe('string')
     expect(patch['deleted_at']).toBe(patch['updated_at'])
+    // Note e coordinate non restano sul server.
+    expect(patch).toMatchObject({ notes: null, geom_exact: null, geom_public: null })
   })
 
   it('rifiuta richieste vuote o malformate', async () => {
     expect((await DELETE(request({ items: [] }))).status).toBe(400)
-    expect((await DELETE(request({ items: [{ userId: 'u1' }] }))).status).toBe(400)
+    expect((await DELETE(request({ items: [{ userId: U1 }] }))).status).toBe(400)
     expect((await DELETE(request('niente'))).status).toBe(400)
+    expect((await DELETE(request({ items: [{ userId: 'non-un-uuid', id: 'e1' }] }))).status).toBe(400)
     expect(updates).toHaveLength(0)
   })
 })

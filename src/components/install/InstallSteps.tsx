@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 
 import type { InstallPlatform } from '@/lib/pwa/platform'
+import { SITE_URL } from '@/lib/seo/metadata'
 
 /**
  * I passi per mettere FungiCast nella schermata Home, browser per browser.
@@ -13,6 +14,9 @@ import type { InstallPlatform } from '@/lib/pwa/platform'
  * per questo si nomina anche l'alternativa, e le icone disegnate aiutano a trovarle anche quando
  * la scritta cambia.
  */
+
+/** L'indirizzo del sito come si scrive a mano, senza «https://»: segue un eventuale dominio proprio. */
+const SITE_HOST = SITE_URL.replace(/^https?:\/\//, '').replace(/\/$/, '')
 
 const glyph = 'inline-block h-[1.15em] w-[1.15em] -translate-y-px align-middle'
 
@@ -166,7 +170,8 @@ const STEPS: Readonly<Record<InstallPlatform, readonly ReactNode[]>> = {
   ],
   'android-chrome': [
     <>
-      Tocca il menu <Tap icon={<KebabGlyph />}>altro</Tap>: i tre puntini in alto a destra.
+      Tocca il menu <Tap icon={<KebabGlyph />}>altro</Tap>: i tre puntini in alto a destra (in
+      basso a destra, se hai spostato la barra dell&apos;indirizzo in fondo).
     </>,
     <>
       Tocca <Tap icon={<AddToHomeGlyph />}>Installa app</Tap> (su alcuni telefoni si chiama{' '}
@@ -221,7 +226,7 @@ const STEPS: Readonly<Record<InstallPlatform, readonly ReactNode[]>> = {
   desktop: [
     <>
       L&apos;app è pensata per il telefono: apri{' '}
-      <strong className="text-ink">funghihunters.vercel.app</strong> dal browser del telefono e
+      <strong className="text-ink">{SITE_HOST}</strong> dal browser del telefono e
       segui i passi per iPhone o Android.
     </>,
   ],
@@ -310,8 +315,9 @@ export function IosHelp({ open = false }: { open?: boolean }) {
       a: (
         <>
           È normale la prima volta: l&apos;app installata non vede l&apos;accesso fatto in Safari. Vai
-          in <strong className="text-ink">Account</strong> e rifai l&apos;accesso una volta, con
-          Google o con l&apos;email: le uscite sincronizzate tornano tutte.
+          in <strong className="text-ink">Account</strong> e rifai l&apos;accesso una volta con{' '}
+          <strong className="text-ink">Continua con Google</strong>: le uscite sincronizzate tornano
+          tutte. Il link via email no: su iPhone si apre sempre in Safari, non nell&apos;app.
         </>
       ),
     },
@@ -371,7 +377,7 @@ export function IosMockups() {
   const ring = 'ring-2 ring-accent ring-offset-1 ring-offset-surface-2'
   return (
     <div className="grid grid-cols-3 gap-2" aria-hidden="true">
-      <Phone caption="1 · Condividi">
+      <Phone caption="1 · Condividi (iOS 26: dentro ···)">
         <div className="flex-1 space-y-1 p-1.5">
           <div className="h-1.5 w-3/4 rounded bg-edge" />
           <div className="h-1.5 w-1/2 rounded bg-edge" />

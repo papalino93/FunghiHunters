@@ -17,6 +17,7 @@ describe('quota accanto al nome della zona', () => {
     expect(referenceText('Montemignaio', 'MONTEMIGNAIO')).toBeNull()
     expect(referenceText('Pratovecchio Stia', 'Stia')).toBeNull()
     expect(referenceText('Monte Amiata', 'Abbadia San Salvatore')).toBe('Abbadia San Salvatore')
+    expect(referenceText('Vico', 'Vicopisano')).toBe('Vicopisano')
   })
 
   it('senza quota, solo quello che c’è', () => {

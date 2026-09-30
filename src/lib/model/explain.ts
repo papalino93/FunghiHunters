@@ -116,8 +116,11 @@ export function explainScore(
           ? `; il terreno partiva secco, quindi il fabbisogno sale a ` +
             `${(config.water.referenceMm.value + features.water.initialDeficitMm).toFixed(0)} mm`
           : '') +
-        (c.water > c.waterBalance + 0.005
-          ? `; conta di più la pioggia intensa di ${c.trigger.daysSinceEvent ?? '?'} giorni fa, ` +
+        // Solo quando l'innesco pesa davvero: con la rampa della 1.7.0 anche 12 mm di cinque
+        // giorni fa danno un sollievo minimo, e chiamarli «pioggia intensa nei giorni della
+        // fruttificazione» diceva due cose false.
+        (c.water > c.waterBalance + 0.005 && c.trigger.closeness >= 0.3
+          ? `; conta di più la pioggia di ${c.trigger.daysSinceEvent ?? '?'} giorni fa, ` +
             `nei giorni in cui ci si aspetta la fruttificazione`
           : ''),
       ...provenanceOf(config.water.windowDays),
@@ -148,7 +151,7 @@ export function explainScore(
     },
     {
       key: 'trigger',
-      label: 'Innesco da pioggia intensa',
+      label: 'Innesco dalla pioggia',
       contribution: result.mpi - withoutTrigger,
       value: c.trigger.detail,
       ...provenanceOf(config.trigger.lagDays),

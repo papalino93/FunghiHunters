@@ -228,7 +228,8 @@ function SignInPanel() {
         <p className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs leading-snug text-ink">
           <strong className="font-semibold">Non vedi il tuo account?</strong> Su iPhone l&apos;app
           installata non vede l&apos;accesso fatto in Safari: rifallo qui una volta, e le uscite
-          sincronizzate tornano tutte.
+          sincronizzate tornano tutte. Usa <strong className="font-semibold">Continua con Google</strong>:
+          il link via email su iPhone si apre sempre in Safari, e l&apos;app resterebbe scollegata.
         </p>
       )}
       <button

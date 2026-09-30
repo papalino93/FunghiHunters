@@ -766,3 +766,12 @@ describe('modificare un’uscita', () => {
     expect((updated?.updatedAt ?? '') > entry.updatedAt).toBe(true)
   })
 })
+
+describe('modifica: togliere un valore', () => {
+  it('togliere la quota la toglie davvero', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add({ ...draft(), elevationM: 900 })
+    const updated = await repo.update(entry.id, { elevationM: null })
+    expect(updated?.elevationM).toBeNull()
+  })
+})

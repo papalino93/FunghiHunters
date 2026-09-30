@@ -55,7 +55,10 @@ export function MethodScreen({
             Un giorno con almeno {c.trigger.intenseEventMm.value} mm fa salire il punteggio, con il
             massimo circa {c.trigger.lagDays.value} giorni dopo: è il ritardo misurato sul Monte
             Amiata. In quei giorni il terreno che si asciuga non azzera più il punteggio (dalla
-            versione 1.5.0).
+            versione 1.5.0). Dalla 1.7.0 conta anche una pioggia più debole, in proporzione: per
+            niente sotto i {c.trigger.intenseEventMm.value - (c.trigger.rampMm?.value ?? 0)} mm, per
+            intero da {c.trigger.intenseEventMm.value} in su. Così mezzo millimetro in più o in meno
+            su un pluviometro non sposta più il punteggio di decine di punti.
           </Factor>
           <Factor title="Temperatura">
             La media degli ultimi {c.thermal.airWindowDays.value} giorni, confrontata con quella in

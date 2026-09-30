@@ -111,9 +111,10 @@ export function parsePhotonSearch(payload: unknown): FoundPlace[] {
 export function photonSearchUrl(query: string, near?: { latitude: number; longitude: number }): string {
   const params = new URLSearchParams({ q: query.trim(), limit: '8', bbox: ITALY_BBOX })
   // Vicino alla zona scelta prima: «San Zanobi» a Scandicci prima di quello di Firenze centro.
+  // Un decimale (circa 10 km) anche qui, qualunque cosa arrivi: al servizio basta la zona.
   if (near !== undefined) {
-    params.set('lat', near.latitude.toFixed(3))
-    params.set('lon', near.longitude.toFixed(3))
+    params.set('lat', near.latitude.toFixed(1))
+    params.set('lon', near.longitude.toFixed(1))
   }
   return `${SEARCH_URL}?${params.toString()}`
 }

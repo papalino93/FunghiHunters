@@ -44,16 +44,37 @@ export function backtestCell(elevationM: number): CellContext {
  * una modifica» spalmando `ALGORITHM_V1`; dalla 1.6.0 `ALGORITHM_V1` contiene già due di quelle
  * modifiche, e i risultati pubblicati in `docs/VALIDAZIONE.md` non sarebbero più riproducibili.
  */
+/** Un valore di `trigger.rampMm` per le varianti, con la sua nota (non quella di `waterRelief`). */
+function rampParam(value: number): Param {
+  return {
+    value,
+    provenance: 'calibrate',
+    note: 'Variante del banco di prova: rampa dell\'innesco sotto i 20 mm (0 = soglia secca).',
+  } as Param
+}
+
 export const CONFIG_V15: AlgorithmConfig = {
   ...ALGORITHM_V1,
   version: 'backtest-1.5.0',
   // La 1.5.0 aveva la soglia secca: senza questa riga erediterebbe la rampa della 1.7.0.
-  trigger: { ...ALGORITHM_V1.trigger, rampMm: { ...ALGORITHM_V1.trigger.waterRelief, value: 0 } },
+  trigger: { ...ALGORITHM_V1.trigger, rampMm: rampParam(0) },
   thermal: { ...ALGORITHM_V1.thermal, optAutumnC: withValue(ALGORITHM_V1.thermal.optAutumnC, 13) },
   phenology: {
     ...ALGORITHM_V1.phenology,
     lowElevationAutumnWeight: withValue(ALGORITHM_V1.phenology.lowElevationAutumnWeight, 0),
   },
+}
+
+/**
+ * La 1.6.1 congelata: la produzione fino al 30/09/2026, con la soglia secca dei 20 mm. È la base
+ * delle varianti (j) e (k), misurate su quella versione: appoggiarle su `ALGORITHM_V1` avrebbe
+ * cambiato i loro numeri a ogni versione nuova, e quelli pubblicati in `docs/VALIDAZIONE.md` non si
+ * sarebbero più potuti rifare.
+ */
+export const CONFIG_V161: AlgorithmConfig = {
+  ...ALGORITHM_V1,
+  version: 'backtest-1.6.1',
+  trigger: { ...ALGORITHM_V1.trigger, rampMm: rampParam(0) },
 }
 
 /** (a) Equivalente 1.4: senza il sollievo idrico dopo pioggia intensa introdotto nella 1.5. */
@@ -197,11 +218,11 @@ export function configWarmLow(
   lowSigmaWarmC: number | null,
 ): AlgorithmConfig {
   const share = lowElevationShare(elevationM)
-  const t = ALGORITHM_V1.thermal
+  const t = CONFIG_V161.thermal
   const opt = lowOptAutumnC === null ? t.optAutumnC.value : t.optAutumnC.value + (lowOptAutumnC - t.optAutumnC.value) * share
   const sigma = lowSigmaWarmC === null ? t.sigmaWarmC.value : t.sigmaWarmC.value + (lowSigmaWarmC - t.sigmaWarmC.value) * share
   return {
-    ...ALGORITHM_V1,
+    ...CONFIG_V161,
     version: `backtest-caldo-basso-${String(lowOptAutumnC)}-${String(lowSigmaWarmC)}`,
     thermal: { ...t, optAutumnC: withValue(t.optAutumnC, opt), sigmaWarmC: withValue(t.sigmaWarmC, sigma) },
   }
@@ -213,11 +234,11 @@ export function configWarmLow(
  * pesa di più invece dell'ultimo oltre soglia: serve a separare i due cambiamenti.
  */
 export function configTriggerRamp(rampMm: number): AlgorithmConfig {
-  const t = ALGORITHM_V1.trigger
+  const t = CONFIG_V161.trigger
   return {
-    ...ALGORITHM_V1,
+    ...CONFIG_V161,
     version: `backtest-innesco-rampa-${String(rampMm)}`,
-    trigger: { ...t, rampMm: { ...t.waterRelief, value: rampMm } },
+    trigger: { ...t, rampMm: rampParam(rampMm) },
   }
 }
 
@@ -249,9 +270,9 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
       '(quota stagionale 760-840 m)',
     score: (input) =>
       scoreWith(
-        ALGORITHM_V1,
+        CONFIG_V15,
         input,
-        seasonalElevation(input.elevationM, ALGORITHM_V1, MAX_ELEVATION_WEIGHT, MIN_ELEVATION_WEIGHT),
+        seasonalElevation(input.elevationM, CONFIG_V15, MAX_ELEVATION_WEIGHT, MIN_ELEVATION_WEIGHT),
       ),
   },
   {
@@ -305,45 +326,51 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   },
   {
     key: 'p-ottimo-basso-17',
-    label: '(j1) produzione + ottimo autunnale 17 °C in basso',
+    label: '(j1) 1.6.1 + ottimo autunnale 17 °C in basso',
     change: 'thermal.optAutumnC 15 -> 17 sotto 700 m, sfumato fino a 900 m',
     score: (input) => scoreWith(configWarmLow(input.elevationM, 17, null), input),
   },
   {
     key: 'p-ottimo-basso-19',
-    label: '(j2) produzione + ottimo autunnale 19 °C in basso',
+    label: '(j2) 1.6.1 + ottimo autunnale 19 °C in basso',
     change: 'thermal.optAutumnC 15 -> 19 sotto 700 m, sfumato fino a 900 m',
     score: (input) => scoreWith(configWarmLow(input.elevationM, 19, null), input),
   },
   {
     key: 'p-caldo-basso-10',
-    label: '(j3) produzione + caldo tollerato in basso',
+    label: '(j3) 1.6.1 + caldo tollerato in basso',
     change: 'thermal.sigmaWarmC 7.5 -> 10 sotto 700 m, sfumato fino a 900 m',
     score: (input) => scoreWith(configWarmLow(input.elevationM, null, 10), input),
   },
   {
     key: 'p-ottimo17-caldo10',
-    label: '(j4) produzione + ottimo 17 °C e caldo tollerato in basso',
+    label: '(j4) 1.6.1 + ottimo 17 °C e caldo tollerato in basso',
     change: 'optAutumnC 17 e sigmaWarmC 10 sotto 700 m, sfumati fino a 900 m',
     score: (input) => scoreWith(configWarmLow(input.elevationM, 17, 10), input),
   },
   {
     key: 'p-innesco-max',
-    label: '(k0) produzione + innesco dal giorno che pesa di più',
+    label: '(k0) 1.6.1 + innesco dal giorno che pesa di più',
     change: 'soglia secca 20 mm, ma vale il giorno migliore e non l’ultimo (rampMm = 0,01)',
     score: (input) => scoreWith(configTriggerRamp(0.01), input),
   },
   {
     key: 'p-innesco-rampa-5',
-    label: '(k1) produzione + innesco graduale 15-20 mm',
+    label: '(k1) 1.6.1 + innesco graduale 15-20 mm',
     change: 'trigger.rampMm = 5',
     score: (input) => scoreWith(configTriggerRamp(5), input),
   },
   {
     key: 'p-innesco-rampa-10',
-    label: '(k2) produzione + innesco graduale 10-20 mm',
+    label: '(k2) 1.6.1 + innesco graduale 10-20 mm',
     change: 'trigger.rampMm = 10',
     score: (input) => scoreWith(configTriggerRamp(10), input),
+  },
+  {
+    key: 'v161',
+    label: '(p161) 1.6.1 congelata',
+    change: 'soglia secca dei 20 mm (CONFIG_V161): la produzione fino al 30/09/2026',
+    score: (input) => scoreWith(CONFIG_V161, input),
   },
   {
     key: 'produzione',

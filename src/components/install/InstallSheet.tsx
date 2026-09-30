@@ -34,7 +34,27 @@ function isSnoozed(): boolean {
   return snoozedUntil() > Date.now()
 }
 
+/**
+ * Chiusa in questa visita, anche se lo storage non lo può ricordare (Safari con i cookie
+ * bloccati, le finestre dentro Facebook o Instagram): senza, là la finestra tornava ogni 12
+ * secondi, senza modo di fermarla.
+ */
+let dismissedThisVisit = false
+
+/** Qualcuno sta scrivendo (il diario, la ricerca del meteo): non gli si porta via la tastiera. */
+function isTyping(): boolean {
+  const el = document.activeElement
+  if (el === null) return false
+  return el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement || el instanceof HTMLSelectElement
+}
+
+/** iOS prima della 15.4 non conosce `<dialog>`: lì resta la barra in fondo, che basta. */
+function supportsDialog(): boolean {
+  return typeof HTMLDialogElement !== 'undefined' && 'showModal' in HTMLDialogElement.prototype
+}
+
 function snooze(ms: number): void {
+  dismissedThisVisit = true
   try {
     localStorage.setItem(SNOOZE_KEY, String(Date.now() + ms))
   } catch {
@@ -61,16 +81,30 @@ export function InstallSheet() {
   const [open, setOpen] = useState(false)
   const skipped = SKIP_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
   const eligible = useMemo(
-    () => state.ready && !state.installed && isMobilePlatform(state.platform) && !isSnoozed(),
+    () =>
+      state.ready &&
+      !state.installed &&
+      isMobilePlatform(state.platform) &&
+      supportsDialog() &&
+      !dismissedThisVisit &&
+      !isSnoozed(),
     [state.ready, state.installed, state.platform],
   )
 
   useEffect(() => {
     if (!eligible || skipped || open) return
-    const timer = window.setTimeout(() => {
-      // Ricontrollato allo scadere: nel frattempo può averla chiusa in un'altra scheda.
-      if (!isSnoozed()) setOpen(true)
-    }, DELAY_MS)
+    let timer = 0
+    const check = (): void => {
+      // Ricontrollato allo scadere: nel frattempo può averla chiusa, anche in un'altra scheda.
+      if (dismissedThisVisit || isSnoozed()) return
+      // Chi sta scrivendo si ritroverebbe senza tastiera: si riprova fra un po'.
+      if (isTyping()) {
+        timer = window.setTimeout(check, DELAY_MS)
+        return
+      }
+      setOpen(true)
+    }
+    timer = window.setTimeout(check, DELAY_MS)
     return () => window.clearTimeout(timer)
   }, [eligible, skipped, open])
 
@@ -84,7 +118,8 @@ export function InstallSheet() {
       try {
         el.showModal()
       } catch {
-        el.setAttribute('open', '')
+          // Non dovrebbe succedere (`supportsDialog`): se succede, la finestra resta chiusa.
+        return
       }
       // `showModal` mette il fuoco sul primo elemento toccabile, che sta a metà delle istruzioni, e
       // ci scorre: si partirebbe dal passo 4. Il fuoco va sul titolo, e la finestra dall'inizio.
@@ -99,12 +134,14 @@ export function InstallSheet() {
     setOpen(false)
   }
 
-  if (!state.ready || !isMobilePlatform(state.platform)) return null
+  if (!state.ready || !isMobilePlatform(state.platform) || !supportsDialog()) return null
 
   return (
     <dialog
       ref={dialog}
       aria-labelledby="installa-titolo"
+      // Chiusa dal browser per altre vie: lo stato segue, invece di restare «aperta» a vuoto.
+      onClose={() => { if (open) close(SNOOZE_MS) }}
       onCancel={(e) => {
         e.preventDefault()
         close(SNOOZE_MS)

@@ -23,7 +23,7 @@ export function InstallForYou({ compact = false, onInstalled }: { compact?: bool
     return (
       <p className="rounded-xl border border-accent/40 bg-accent/10 px-3 py-3 text-sm leading-snug text-ink">
         <strong className="font-semibold">Fatto: FungiCast è installata.</strong>{' '}
-        {state.installed
+        {state.standalone
           ? 'La stai già usando come app, dall’icona nella schermata Home.'
           : 'Trovi l’icona nella schermata Home o fra le app: da adesso aprila da lì.'}
       </p>

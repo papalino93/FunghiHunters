@@ -28,9 +28,11 @@ function comparable(value: string): string {
  */
 export function referenceText(name: string, reference: string | null | undefined): string | null {
   if (reference === null || reference === undefined || reference.trim() === '') return null
-  const a = comparable(name)
-  const b = comparable(reference)
-  if (a === b || a.includes(b) || b.includes(a)) return null
+  // Per parole intere: «Stia» è già in «Pratovecchio Stia», ma «Vicopisano» non è in «Vico».
+  const a = new Set(comparable(name).split(' '))
+  const b = new Set(comparable(reference).split(' '))
+  const within = (x: Set<string>, y: Set<string>): boolean => [...x].every((w) => y.has(w))
+  if (within(a, b) || within(b, a)) return null
   return reference.trim()
 }
 
