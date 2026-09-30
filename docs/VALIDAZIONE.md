@@ -317,3 +317,28 @@ verificare: in settembre anche i giorni di controllo cadono in piena stagione (i
 casi è intrinsecamente minimo), e i ritrovamenti GBIF di settembre sono i più influenzati da quando
 la gente va nel bosco. Le osservazioni puntuali (Roveta, Chiesanuova) restano in
 `docs/EVIDENZA-MODELLO.md`: servono le uscite del diario, con le assenze, per andare oltre.
+
+## 13. L'innesco graduale: varianti (k), 30/09/2026
+
+Il 30/09 Montemignaio (1.053 m) segnava 95 e il Pratomagno, alla stessa quota a 12 km, 23. La
+differenza veniva tutta dall'innesco: il 17/09 il pluviometro di Vallombrosa aveva misurato 47,1 mm,
+quello di Trappola 19,5, mezzo millimetro sotto la soglia R20 che valeva tutto o niente. In Toscana,
+quel giorno, 52 coppie di zone a meno di 12 km e 250 m di dislivello differivano di oltre 40 punti,
+tutte per lo stesso motivo (per esempio Badia Tedalda 83 e Sestino 6, a 9 km).
+
+Varianti sul modello in produzione (1.6.1): (k0) soglia secca ma vale il giorno che pesa di più fra
+intensità e distanza dal picco, non l'ultimo oltre soglia; (k1) rampa 15-20 mm; (k2) rampa 10-20 mm.
+
+| Variante | AUC | AUC appaiata | Brier | Media MPI dei casi |
+|---|---|---|---|---|
+| (p) produzione 1.6.1 | 0,755 | 0,771 | 0,1720 | 33,8 |
+| (k0) giorno migliore, soglia secca | 0,755 | 0,768 | 0,1720 | 35,4 |
+| (k1) rampa 15-20 mm | 0,755 | 0,765 | 0,1712 | 37,5 |
+| (k2) rampa 10-20 mm | 0,755 | 0,766 | **0,1711** | 38,7 |
+
+**Decisione: (k2) in produzione, versione 1.7.0.** Qui il criterio non è guadagnare
+discriminazione ma togliere un artefatto: salti di 70 punti fra pluviometri vicini non sono un'ipotesi
+da validare, sono un difetto visibile. La rampa non cambia l'AUC, migliora un poco il Brier e alza i
+punteggi dei ritrovamenti veri; l'AUC appaiata scende di mezzo punto (0,766 contro 0,771), dentro
+l'intervallo di confidenza, e lo si dice. Da verificare con le uscite del diario, assenze comprese.
+Sul campo, il 30/09: a Montemignaio (95) si trova, confermato dal titolare del progetto.

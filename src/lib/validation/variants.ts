@@ -47,6 +47,8 @@ export function backtestCell(elevationM: number): CellContext {
 export const CONFIG_V15: AlgorithmConfig = {
   ...ALGORITHM_V1,
   version: 'backtest-1.5.0',
+  // La 1.5.0 aveva la soglia secca: senza questa riga erediterebbe la rampa della 1.7.0.
+  trigger: { ...ALGORITHM_V1.trigger, rampMm: { ...ALGORITHM_V1.trigger.waterRelief, value: 0 } },
   thermal: { ...ALGORITHM_V1.thermal, optAutumnC: withValue(ALGORITHM_V1.thermal.optAutumnC, 13) },
   phenology: {
     ...ALGORITHM_V1.phenology,

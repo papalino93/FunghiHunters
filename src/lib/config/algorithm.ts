@@ -650,6 +650,12 @@ export interface AlgorithmConfig {
  */
 export const ALGORITHM_V1: AlgorithmConfig = {
   /*
+   * 1.7.0 (30/09/2026): l'innesco da pioggia intensa diventa graduale (`trigger.rampMm`). Con la
+   * soglia secca dei 20 mm, il 30/09 in Toscana 52 coppie di zone vicine differivano di oltre 40
+   * punti per mezzo millimetro di pioggia: Trappola 19,5 mm (Pratomagno, 23) contro Vallombrosa
+   * 47,1 mm (Montemignaio, 95). Banco di prova: AUC invariata (0,755), Brier da 0,1720 a 0,1711.
+   * Vedi `docs/VALIDAZIONE.md`, sezione 13.
+   *
    * 1.6.1 (25/09/2026): nessun parametro cambia; cambia il dato di pioggia delle zone senza
    * stazioni, ora media fra Open-Meteo e ICON-2I (`blendRain` in `pipeline/open-meteo-series.ts`),
    * validata su 132 pluviometri SIR in `docs/validazione/pioggia-modelli.md`.
@@ -661,7 +667,7 @@ export const ALGORITHM_V1: AlgorithmConfig = {
    * 1.5.0 (24/09/2026): la pioggia intensa di due settimane prima non viene piu' annullata dal
    * terreno che nel frattempo si e' asciugato. Motivo e dato: `trigger.waterRelief`.
    */
-  version: '1.6.1-porcino',
+  version: '1.7.0-porcino',
 
   water: {
     windowDays: sourced(
@@ -795,6 +801,13 @@ export const ALGORITHM_V1: AlgorithmConfig = {
       0.8,
       'Tarato sul Mugello, 23-24 settembre 2026 (porcini abbondanti con 12/100 del modello 1.4.0): ' +
         'nella finestra dopo una pioggia intensa l\'acqua non azzera piu\' il punteggio.',
+    ),
+    rampMm: calibrate(
+      10,
+      'Un giorno di pioggia conta per intero da 20 mm, niente sotto 10 mm, in proporzione in mezzo. ' +
+        'La soglia R20 della fonte resta il punto in cui l\'evento conta tutto; la rampa toglie il ' +
+        'salto di mezzo millimetro fra pluviometri vicini. Banco di prova 30/09/2026: AUC invariata, ' +
+        'Brier migliore (docs/VALIDAZIONE.md, sezione 13).',
     ),
   },
 

@@ -696,7 +696,7 @@ describe('innesco da pioggia intensa', () => {
     const result = computeMpi({ features, cell: AUTUMN_CELL })
     expect(features.daysSinceIntenseEvent).toBeNull()
     expect(result.components.trigger.factor).toBe(1)
-    expect(result.components.trigger.detail).toContain('nessuna pioggia oltre 20 mm')
+    expect(result.components.trigger.detail).toContain('nessuna pioggia oltre 10 mm')
   })
 
   it('la soglia di evento intenso viene dalla fonte, non da noi', () => {
