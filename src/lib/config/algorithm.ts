@@ -423,6 +423,16 @@ export interface TriggerConfig {
    * nota della versione 1.5.0.
    */
   readonly waterRelief: Param
+  /**
+   * Ampiezza della rampa sotto la soglia, in mm (facoltativa: assente o 0 = soglia secca).
+   *
+   * Con la soglia secca 19,5 mm non contavano niente e 20 mm contavano tutto: su pluviometri a
+   * pochi chilometri l'uno dall'altro bastava mezzo millimetro per 70 punti di differenza (vedi
+   * `docs/VALIDAZIONE.md`, sezione 13). Con la rampa un giorno conta per intero da
+   * `intenseEventMm` in su, per niente sotto `intenseEventMm - rampMm`, e in proporzione in
+   * mezzo; l'innesco è quello del giorno che, fra intensità e distanza dal picco, pesa di più.
+   */
+  readonly rampMm?: Param
 }
 
 // ============================================================================

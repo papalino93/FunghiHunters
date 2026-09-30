@@ -185,6 +185,8 @@ export function computeTrigger(
   config: AlgorithmConfig,
 ): TriggerResult {
   const t = config.trigger
+  const ramp = t.rampMm?.value ?? 0
+  if (ramp > 0 && features.triggerRain !== undefined) return gradedTrigger(features.triggerRain, config)
   const days = features.daysSinceIntenseEvent
   if (days === null) {
     return {
@@ -202,6 +204,58 @@ export function computeTrigger(
     detail:
       `ultima pioggia intensa ${days} giorni fa; il massimo atteso è al giorno ` +
       `${t.lagDays.value.toFixed(0)}`,
+  }
+}
+
+/**
+ * Quanto conta un giorno di pioggia per l'innesco: 1 da `intenseEventMm` in su, 0 sotto
+ * `intenseEventMm - rampMm`, in proporzione in mezzo.
+ */
+export function triggerRainWeight(mm: number, thresholdMm: number, rampMm: number): number {
+  if (rampMm <= 0) return mm >= thresholdMm ? 1 : 0
+  return clamp((mm - (thresholdMm - rampMm)) / rampMm, 0, 1)
+}
+
+/**
+ * L'innesco con la rampa: vale il giorno che pesa di più fra intensità e distanza dal picco.
+ *
+ * Non «l'ultimo giorno oltre soglia»: con la rampa un temporale di 11 mm ieri scalzerebbe i
+ * 47 mm di dodici giorni fa, proprio nel giorno in cui quelli contano.
+ */
+function gradedTrigger(
+  rain: readonly { readonly daysAgo: number; readonly mm: number }[],
+  config: AlgorithmConfig,
+): TriggerResult {
+  const t = config.trigger
+  const ramp = t.rampMm?.value ?? 0
+  let best = 0
+  let bestDay: { daysAgo: number; mm: number } | null = null
+  for (const day of rain) {
+    const weight = triggerRainWeight(day.mm, t.intenseEventMm.value, ramp)
+    if (weight <= 0) continue
+    const value = weight * gaussian(day.daysAgo, t.lagDays.value, t.lagSigmaDays.value)
+    if (value > best || bestDay === null) {
+      best = value
+      bestDay = day
+    }
+  }
+  if (bestDay === null) {
+    return {
+      factor: 1,
+      closeness: 0,
+      daysSinceEvent: null,
+      detail: `nessuna pioggia oltre ${(t.intenseEventMm.value - ramp).toFixed(0)} mm in un giorno nella finestra`,
+    }
+  }
+  const partial = bestDay.mm < t.intenseEventMm.value
+  return {
+    factor: 1 + t.weight.value * best,
+    closeness: best,
+    daysSinceEvent: bestDay.daysAgo,
+    detail:
+      `pioggia di ${bestDay.mm.toFixed(0)} mm ${bestDay.daysAgo} giorni fa` +
+      (partial ? ` (sotto i ${t.intenseEventMm.value.toFixed(0)} mm conta in parte)` : '') +
+      `; il massimo atteso è al giorno ${t.lagDays.value.toFixed(0)}`,
   }
 }
 

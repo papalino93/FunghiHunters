@@ -98,6 +98,12 @@ export interface CellFeatures {
   readonly maxThermalRise: number | null
   /** Giorni trascorsi dall'ultimo evento di pioggia intensa. `null` se non ce n'e' stato. */
   readonly daysSinceIntenseEvent: number | null
+  /**
+   * I giorni della finestra idrica con una pioggia che può contare per l'innesco graduale
+   * (almeno `intenseEventMm - rampMm`), con quanti giorni fa e quanti mm. Facoltativo: chi
+   * costruisce le feature a mano (i test) può ometterlo, e l'innesco resta a soglia secca.
+   */
+  readonly triggerRain?: readonly { readonly daysAgo: number; readonly mm: number }[]
   readonly lastEvent: RainEvent | null
   readonly events: readonly RainEvent[]
   /** Provenienza dominante dei dati usati, per il confidence. */
@@ -305,6 +311,11 @@ export function buildFeatures(
       last.date,
       config.trigger.intenseEventMm.value,
     ),
+    triggerRain: triggerRainOf(
+      days.slice(-waterWindow),
+      last.date,
+      config.trigger.intenseEventMm.value - (config.trigger.rampMm?.value ?? 0),
+    ),
     lastEvent: lastEventOf(days, last.date, waterWindow),
     events: detectRainEvents(days.slice(-waterWindow), last.date),
     provenanceMix,
@@ -327,6 +338,20 @@ export function daysSinceIntenseEvent(
     if (day.precipitationMm !== null && day.precipitationMm >= thresholdMm) latest = day.date
   }
   return latest === null ? null : daysApart(latest, referenceDate)
+}
+
+function triggerRainOf(
+  days: readonly DailyWeather[],
+  referenceDate: string,
+  minMm: number,
+): { daysAgo: number; mm: number }[] {
+  const out: { daysAgo: number; mm: number }[] = []
+  for (const day of days) {
+    if (day.precipitationMm !== null && day.precipitationMm > 0 && day.precipitationMm >= minMm) {
+      out.push({ daysAgo: daysApart(day.date, referenceDate), mm: day.precipitationMm })
+    }
+  }
+  return out
 }
 
 function lastEventOf(
