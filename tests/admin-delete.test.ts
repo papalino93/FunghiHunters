@@ -11,6 +11,8 @@ const getUser = vi.fn()
 const insert = vi.fn()
 const adminRow = vi.fn()
 const updates: Array<{ patch: Record<string, unknown>; userId: string; ids: string[] }> = []
+/** `updated_at` già sul server, per utente/id: di norma l'ora del telefono che l'ha scritta. */
+const stored = new Map<string, string>()
 
 vi.mock('@/lib/supabase/admin', () => ({
   isSupabaseAdminConfigured: () => true,
@@ -22,13 +24,25 @@ vi.mock('@/lib/supabase/admin', () => ({
         : table === 'app_admins'
           ? { select: () => ({ eq: () => ({ maybeSingle: adminRow }) }) }
           : {
-              update: (patch: Record<string, unknown>) => ({
+              // Lettura dell'ultima modifica di ogni riga: select → eq(user) → in(ids) → is(deleted).
+              select: () => ({
                 eq: (_col: string, userId: string) => ({
                   in: (_c: string, ids: string[]) => ({
+                    is: async () => ({
+                      data: ids.map((id) => ({ client_id: id, updated_at: stored.get(`${userId}/${id}`) ?? null })),
+                      error: null,
+                    }),
+                  }),
+                }),
+              }),
+              // Marca riga per riga: update → eq(user) → eq(id) → is(deleted) → select.
+              update: (patch: Record<string, unknown>) => ({
+                eq: (_col: string, userId: string) => ({
+                  eq: (_c: string, id: string) => ({
                     is: () => ({
                       select: async () => {
-                        updates.push({ patch, userId, ids })
-                        return { data: ids.map((id) => ({ client_id: id })), error: null }
+                        updates.push({ patch, userId, ids: [id] })
+                        return { data: [{ client_id: id }], error: null }
                       },
                     }),
                   }),
@@ -50,6 +64,7 @@ function request(body: unknown, token = 'token-valido'): Request {
 
 beforeEach(() => {
   updates.length = 0
+  stored.clear()
   getUser.mockReset().mockResolvedValue({ data: { user: { id: ADMIN_ID } }, error: null })
   adminRow.mockReset().mockResolvedValue({ data: { user_id: ADMIN_ID }, error: null })
   insert.mockReset().mockResolvedValue({ error: null })
@@ -78,12 +93,21 @@ describe('DELETE /api/admin/observations', () => {
     expect(response.status).toBe(200)
     expect(await response.json()).toEqual({ deleted: 3 })
     expect(insert).toHaveBeenCalledWith(expect.objectContaining({ action: 'observations.delete', rows_returned: 3 }))
-    expect(updates.map((u) => [u.userId, u.ids])).toEqual([[U1, ['e1', 'e2']], [U2, ['e9']]])
+    expect(updates.map((u) => [u.userId, u.ids])).toEqual([[U1, ['e1']], [U1, ['e2']], [U2, ['e9']]])
     const patch = updates[0]?.patch ?? {}
     expect(typeof patch['deleted_at']).toBe('string')
     expect(patch['deleted_at']).toBe(patch['updated_at'])
     // Note e coordinate non restano sul server.
     expect(patch).toMatchObject({ notes: null, geom_exact: null, geom_public: null })
+  })
+
+  it('con l’orologio del telefono avanti, la cancellazione resta comunque la più recente', async () => {
+    const future = new Date(Date.now() + 10 * 60_000).toISOString()
+    stored.set(`${U1}/e1`, future)
+    await DELETE(request({ items: [{ userId: U1, id: 'e1' }] }))
+    const at = String(updates[0]?.patch['updated_at'])
+    expect(at > future).toBe(true)
+    expect(Date.parse(at) - Date.parse(future)).toBe(1)
   })
 
   it('rifiuta richieste vuote o malformate', async () => {

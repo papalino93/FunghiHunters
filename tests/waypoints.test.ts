@@ -169,3 +169,17 @@ describe('compatibilità con i punti salvati prima delle quattro categorie', () 
     expect(normaliseWaypoint({ id: 'x', kind: 'boh', latitude: 44, longitude: 10 })?.kind).toBe('reference')
   })
 })
+
+describe('punti rimasti senza uscita', () => {
+  it('toglie i punti delle uscite sparite, e mai i punti fissi', async () => {
+    const { InMemoryWaypointRepository, pruneOrphanWaypoints } = await import('@/lib/waypoints/store')
+    const repo = new InMemoryWaypointRepository()
+    await repo.add({ entryId: null, kind: 'departure', label: 'casa', latitude: 43.7, longitude: 11.2 })
+    await repo.add({ entryId: 'viva', kind: 'car', label: 'auto', latitude: 43.7, longitude: 11.2 })
+    await repo.add({ entryId: 'cancellata', kind: 'car', label: 'auto', latitude: 43.7, longitude: 11.2 })
+    const removed = await pruneOrphanWaypoints(repo, new Set(['viva']))
+    expect(removed).toBe(1)
+    const left = await repo.list()
+    expect(left.map((p) => p.entryId).sort()).toEqual([null, 'viva'].sort())
+  })
+})

@@ -13,7 +13,11 @@ import {
   type DiaryRepository,
 } from '@/lib/diary/store'
 import { calibrate } from '@/lib/diary/calibration'
-import { createWaypointRepository, type WaypointRepository } from '@/lib/waypoints/store'
+import {
+  createWaypointRepository,
+  pruneOrphanWaypoints,
+  type WaypointRepository,
+} from '@/lib/waypoints/store'
 import { EntryForm } from '@/components/diary/EntryForm'
 import { CalibrationPanel } from '@/components/diary/CalibrationPanel'
 import { WaypointsPanel } from '@/components/diary/WaypointsPanel'
@@ -85,6 +89,28 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       await reload()
     }
   }, [reload, auth.status, diarySync])
+
+  /*
+   * Dopo ogni sincronizzazione, i punti delle uscite cancellate altrove (pannello, altro
+   * telefono): vedi `pruneOrphanWaypoints`. Solo con una lettura del diario riuscita, e con il
+   * diario completo (`listAll`, tombstone compresi, poi filtrati): mai su un elenco vuoto per
+   * errore.
+   */
+  useEffect(() => {
+    if (repo === null || waypointRepo === null || diarySync.status !== 'synced') return
+    let cancelled = false
+    void repo
+      .listAll()
+      .then(async (all) => {
+        if (cancelled) return
+        const live = new Set(all.filter((e) => e.deletedAt === null).map((e) => e.id))
+        await pruneOrphanWaypoints(waypointRepo, live)
+      })
+      .catch(() => {
+        // Diario illeggibile: meglio punti in più che punti persi.
+      })
+    return () => { cancelled = true }
+  }, [repo, waypointRepo, diarySync.status, entries])
 
   useEffect(() => {
     if (repo === null) return

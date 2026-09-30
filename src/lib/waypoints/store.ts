@@ -102,3 +102,27 @@ export function createWaypointRepository(): WaypointRepository {
   }
   return new InMemoryWaypointRepository()
 }
+
+/**
+ * Toglie i punti rimasti legati a un'uscita che nel diario non c'è più.
+ *
+ * Succede quando l'uscita viene cancellata altrove — dal pannello dell'amministratore o da un
+ * altro telefono — e arriva qui con la sincronizzazione: il diario la toglie, ma i punti restano
+ * solo su questo dispositivo e nessuno li avrebbe mai cancellati. Da questo telefono invece la
+ * cancellazione li toglie già insieme all'uscita (`removeAllFor` in `DiaryScreen`).
+ *
+ * `liveEntryIds` deve essere l'elenco completo delle uscite vive, letto senza errori: chi chiama
+ * non la usa se la lettura del diario è fallita, altrimenti un archivio che non si apre farebbe
+ * sparire tutti i punti. I punti fissi (senza `entryId`) non si toccano mai.
+ */
+export async function pruneOrphanWaypoints(
+  repo: WaypointRepository,
+  liveEntryIds: ReadonlySet<string>,
+): Promise<number> {
+  const orphans = new Set<string>()
+  for (const point of await repo.list()) {
+    if (point.entryId !== null && !liveEntryIds.has(point.entryId)) orphans.add(point.entryId)
+  }
+  for (const entryId of orphans) await repo.removeAllFor(entryId)
+  return orphans.size
+}

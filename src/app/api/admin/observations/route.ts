@@ -207,29 +207,51 @@ export async function DELETE(request: Request): Promise<NextResponse> {
   const byUser = new Map<string, string[]>()
   for (const item of items) byUser.set(item.userId, [...(byUser.get(item.userId) ?? []), item.id])
 
-  // Stesso formato delle date scritte dai telefoni: la sincronizzazione le confronta.
-  const now = new Date().toISOString()
+  /*
+   * L'ora della cancellazione, riga per riga: la più tarda fra adesso e l'ultima modifica della
+   * riga più un millisecondo. Il telefono confronta questa data con la sua copia, che porta l'ora
+   * del *suo* orologio: con un orologio avanti di qualche minuto, «adesso» del server sarebbe più
+   * vecchio della copia, il telefono la terrebbe viva e non la rimanderebbe nemmeno su — cancellata
+   * qui, viva lì. Stesso formato delle date scritte dai telefoni (`toISOString`).
+   */
+  const now = Date.now()
   let deleted = 0
   for (const [userId, ids] of byUser) {
-    const { data, error } = await admin
+    const { data: current, error: readError } = await admin
       .from('user_observations')
-      /*
-       * Note e coordinate si tolgono subito: l'informativa dice che l'uscita sparisce, e una
-       * marca di cancellazione non ha bisogno di sapere dov'era né cosa diceva. Il telefono,
-       * ricevuta la marca, cancella la sua copia comunque.
-       */
-      .update({ deleted_at: now, updated_at: now, notes: null, geom_exact: null, geom_public: null })
+      .select('client_id, updated_at')
       .eq('user_id', userId)
       .in('client_id', ids)
       .is('deleted_at', null)
-      .select('client_id')
-    if (error !== null) {
+    if (readError !== null) {
       return NextResponse.json(
-        { error: `Eliminazione interrotta: ${error.message}`, deleted },
+        { error: `Eliminazione interrotta: ${readError.message}`, deleted },
         { status: 500, headers: NO_STORE },
       )
     }
-    deleted += (data ?? []).length
+    for (const row of (current ?? []) as Array<{ client_id: string; updated_at: string | null }>) {
+      const last = row.updated_at === null ? Number.NaN : Date.parse(row.updated_at)
+      const at = new Date(Number.isFinite(last) ? Math.max(now, last + 1) : now).toISOString()
+      const { data, error } = await admin
+        .from('user_observations')
+        /*
+         * Note e coordinate si tolgono subito: l'informativa dice che l'uscita sparisce, e una
+         * marca di cancellazione non ha bisogno di sapere dov'era né cosa diceva. Il telefono,
+         * ricevuta la marca, cancella la sua copia comunque.
+         */
+        .update({ deleted_at: at, updated_at: at, notes: null, geom_exact: null, geom_public: null })
+        .eq('user_id', userId)
+        .eq('client_id', row.client_id)
+        .is('deleted_at', null)
+        .select('client_id')
+      if (error !== null) {
+        return NextResponse.json(
+          { error: `Eliminazione interrotta: ${error.message}`, deleted },
+          { status: 500, headers: NO_STORE },
+        )
+      }
+      deleted += (data ?? []).length
+    }
   }
 
   return NextResponse.json({ deleted }, { headers: NO_STORE })

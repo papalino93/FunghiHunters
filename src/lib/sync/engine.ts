@@ -23,6 +23,24 @@
 import type { SyncBackend, SyncableEntity, SyncOutcome } from '@/lib/sync/types'
 
 /**
+ * Quanto indietro, oltre l'ultimo giro buono, si richiede comunque al server.
+ *
+ * Il cursore `lastSyncedAt` è l'ora del telefono, i timestamp di una cancellazione fatta dal
+ * pannello sono l'ora del server: con l'orologio del telefono avanti di qualche minuto, una
+ * cancellazione arrivata subito dopo un giro restava per sempre «prima del cursore» e non veniva
+ * mai scaricata. Riprendere un giorno in più non costa niente — le voci già viste perdono il
+ * confronto (`remoteWins` richiede un timestamp strettamente più recente) — e copre qualunque
+ * orologio sbagliato di meno di 24 ore.
+ */
+export const PULL_OVERLAP_MS = 24 * 60 * 60 * 1000
+
+function pullCursor(lastSyncedAt: string | null): string | null {
+  if (lastSyncedAt === null) return null
+  const at = Date.parse(lastSyncedAt)
+  return Number.isFinite(at) ? new Date(at - PULL_OVERLAP_MS).toISOString() : lastSyncedAt
+}
+
+/**
  * Cio' che il motore chiede a un repository, a prescindere da cosa stia sincronizzando.
  *
  * Sottoinsieme di `DiaryRepository`: quest'ultimo la implementa gia' di fatto (stessa forma dei
@@ -67,7 +85,19 @@ export async function runSync<T extends SyncableEntity>(
       ).map((e) => [e.id, e.updatedAt] as const),
     )
 
-    const remote = await backend.pull(lastSyncedAt)
+    const remote = await backend.pull(pullCursor(lastSyncedAt))
+
+    /*
+     * Riletto dopo il pull: mentre la rete rispondeva l'utente può aver salvato una modifica. Il
+     * confronto con la copia letta a inizio giro la darebbe per vecchia, e la versione del server
+     * la sovrascriverebbe in silenzio. Da qui in poi vale la copia attuale; una modifica fatta
+     * ancora dopo ha comunque un `updatedAt` successivo a `startedAt`, e parte al giro dopo.
+     */
+    const localNow = await repo.listAll()
+    for (const entry of localNow) {
+      if (lastSyncedAt === null || entry.updatedAt > lastSyncedAt) candidates.set(entry.id, entry.updatedAt)
+    }
+
     let pulled = 0
     // Solo i tombstone remoti davvero applicati in locale (`remoteWins`), non ogni tombstone che
     // compare nella risposta grezza di `pull`: quest'ultima può contenere anche una voce che ha
@@ -76,7 +106,7 @@ export async function runSync<T extends SyncableEntity>(
     // vanificando la garanzia di questo file ("non si perde mai una modifica in silenzio").
     const appliedRemoteTombstones: string[] = []
     for (const remoteEntry of remote) {
-      const localEntry = localBefore.find((e) => e.id === remoteEntry.id)
+      const localEntry = localNow.find((e) => e.id === remoteEntry.id)
       const remoteWins = localEntry === undefined || remoteEntry.updatedAt > localEntry.updatedAt
       if (remoteWins) {
         await repo.upsertRaw(remoteEntry)
@@ -86,7 +116,7 @@ export async function runSync<T extends SyncableEntity>(
       }
     }
 
-    const toPush = localBefore.filter((e) => candidates.has(e.id))
+    const toPush = localNow.filter((e) => candidates.has(e.id))
     if (toPush.length > 0) await backend.push(toPush)
 
     /*

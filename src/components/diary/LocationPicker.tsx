@@ -137,6 +137,11 @@ export function LocationPicker({
       }
       fetch(`/api/luoghi?${params.toString()}`, { signal: controller.signal })
         .then(async (response) => {
+          if (response.status === 429) {
+            setSearchError('Troppe ricerche in poco tempo: riprova fra un minuto, o tocca la mappa nel punto giusto.')
+            setResults(null)
+            return
+          }
           if (!response.ok) throw new Error('ricerca')
           const body = (await response.json()) as { results?: FoundPlace[] }
           setResults(body.results ?? [])
