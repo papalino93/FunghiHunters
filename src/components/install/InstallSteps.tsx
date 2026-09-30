@@ -306,6 +306,16 @@ export function IosHelp({ open = false }: { open?: boolean }) {
       ),
     },
     {
+      q: 'Nell’app non risulto collegato al mio account',
+      a: (
+        <>
+          È normale la prima volta: l&apos;app installata non vede l&apos;accesso fatto in Safari. Vai
+          in <strong className="text-ink">Account</strong> e rifai l&apos;accesso una volta, con
+          Google o con l&apos;email: le uscite sincronizzate tornano tutte.
+        </>
+      ),
+    },
+    {
       q: 'Non trova la mia posizione',
       a: (
         <>

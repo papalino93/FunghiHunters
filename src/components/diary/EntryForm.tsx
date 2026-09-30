@@ -21,6 +21,7 @@ import {
   isValidSearchers,
   type Abundance,
   type DiaryDraft,
+  type DiaryEntry,
   type PrivacyLevel,
   type TreeSpecies,
 } from '@/lib/diary/types'
@@ -57,29 +58,47 @@ type GpsState = 'idle' | 'asking' | 'denied' | 'unavailable' | 'timeout'
  */
 export function EntryForm({
   snapshot,
+  initial,
   onCancel,
   onSave,
 }: {
   snapshot: Snapshot
+  /**
+   * La voce da modificare. Senza, il modulo registra un'uscita nuova.
+   *
+   * In modifica la posizione salvata non si tocca da sola (niente GPS all'apertura: si corregge
+   * a casa, non sul posto) e il punteggio congelato resta quello del giorno, a meno che non si
+   * corregga proprio il giorno o la zona — vedi `mergePatch` in `lib/diary/store.ts`.
+   */
+  initial?: DiaryEntry
   onCancel: () => void
   onSave: (draft: DiaryDraft) => Promise<void>
 }) {
   const auth = useAuth()
+  const editing = initial !== undefined
   // Oggi vero, non la data dello snapshot (un'uscita di oggi con lo snapshot di ieri non deve
   // risultare nel futuro); e la zona guardata per ultima,
   // non la prima del file. Il modulo si monta solo dopo un tocco, quindi leggere lo storage qui
   // non crea differenze fra server e browser.
-  const [date, setDate] = useState(() => localToday())
+  const [date, setDate] = useState(() => initial?.date ?? localToday())
   const [zoneCode, setZoneCode] = useState(() =>
+    initial?.zoneCode ??
     lastZoneOr(snapshot.zones.map((z) => z.code), snapshot.zones[0]?.code ?? ''),
   )
-  const [abundance, setAbundance] = useState<Abundance | null>(null)
-  const [elevation, setElevation] = useState('')
-  const [duration, setDuration] = useState('')
-  const [searchers, setSearchers] = useState('')
-  const [notes, setNotes] = useState('')
-  const [privacy, setPrivacy] = useState<PrivacyLevel>('area')
-  const [trees, setTrees] = useState<TreeSpecies[]>([])
+  const [abundance, setAbundance] = useState<Abundance | null>(initial?.abundance ?? null)
+  const [elevation, setElevation] = useState(initial?.elevationM == null ? '' : String(initial.elevationM))
+  const [duration, setDuration] = useState(
+    initial?.durationMinutes == null ? '' : String(initial.durationMinutes),
+  )
+  const [searchers, setSearchers] = useState(initial?.searchers == null ? '' : String(initial.searchers))
+  const [notes, setNotes] = useState(initial?.notes ?? '')
+  const [privacy, setPrivacy] = useState<PrivacyLevel>(initial?.privacy ?? 'area')
+  const [trees, setTrees] = useState<TreeSpecies[]>(() => [...(initial?.trees ?? [])])
+  /**
+   * In modifica: la posizione GPS già salvata si tiene finché non la togli o non la sostituisci.
+   * Chi corregge le note a casa non deve ritrovarsi l'uscita spostata sul divano.
+   */
+  const [keptGps, setKeptGps] = useState(initial?.positionSource === 'gps' && initial.latitude !== null)
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
 
@@ -91,7 +110,18 @@ export function EntryForm({
   /** La zona scelta dal GPS e la sua distanza, finché l'utente non ne sceglie un'altra a mano. */
   const [autoZone, setAutoZone] = useState<{ code: string; km: number } | null>(null)
 
-  const zone = snapshot.zones.find((z) => z.code === zoneCode)
+  /*
+   * La zona della voce può non esserci nello snapshot di oggi (un'uscita registrata con un'altra
+   * regione di riferimento): in modifica resta quella, con il suo nome, invece di diventare in
+   * silenzio la prima dell'elenco.
+   */
+  const initialZone =
+    initial !== undefined && !snapshot.zones.some((z) => z.code === initial.zoneCode)
+      ? { code: initial.zoneCode, name: initial.zoneName, latitude: initial.latitude, longitude: initial.longitude }
+      : null
+  const zone: { code: string; name: string; latitude: number | null; longitude: number | null; elevationM?: number } | undefined =
+    snapshot.zones.find((z) => z.code === zoneCode) ?? (initialZone?.code === zoneCode ? initialZone : undefined)
+  const pairChanged = editing && (date !== initial.date || zoneCode !== initial.zoneCode)
 
   // Con la posizione, le zone in ordine di distanza: la più vicina in cima, le altre a seguire.
   const zonesNearby = useMemo(
@@ -114,7 +144,7 @@ export function EntryForm({
   )
   // Il punteggio di quel giorno, se lo snapshot lo copre. Fuori finestra resta null, ed è
   // corretto: inventarlo renderebbe la calibrazione una finzione.
-  const point = zone?.series.find((p) => p.date === date)
+  const point = snapshot.zones.find((z) => z.code === zoneCode)?.series.find((p) => p.date === date)
 
   const durationValid = duration === '' || isValidDurationMinutes(Number(duration))
   const searchersValid = searchers === '' || isValidSearchers(Number(searchers))
@@ -136,7 +166,8 @@ export function EntryForm({
          * Monte Amiata. Resta modificabile, e le altre sono in ordine di distanza.
          */
         const [nearest] = zonesByDistance(snapshot.zones, position.latitude, position.longitude)
-        if (nearest !== undefined) {
+        // In modifica la zona non si cambia da sola: cambierebbe anche il punteggio congelato.
+        if (nearest !== undefined && !editing) {
           setZoneCode(nearest.zone.code)
           setAutoZone({ code: nearest.zone.code, km: nearest.km })
         }
@@ -161,6 +192,8 @@ export function EntryForm({
    * sistema all'apertura, senza aver capito a cosa serve, verrebbe rifiutata per riflesso.
    */
   useEffect(() => {
+    // In modifica mai: la posizione dell'uscita è quella di quel giorno, non quella di adesso.
+    if (editing) return
     if (typeof navigator === 'undefined' || navigator.permissions === undefined) return
     let cancelled = false
     navigator.permissions
@@ -187,6 +220,15 @@ export function EntryForm({
     if (abundance === null || zone === undefined || !durationValid || !searchersValid) return
     setSaving(true)
     setSaveError(null)
+    const useKept = capturedPosition === null && keptGps && initial !== undefined
+    const frozen =
+      editing && !pairChanged
+        ? {}
+        : {
+            mpiAtEntry: point?.mpi ?? null,
+            confidenceAtEntry: point?.confidence ?? null,
+            algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
+          }
     try {
       await onSave({
         date,
@@ -195,19 +237,17 @@ export function EntryForm({
         abundance,
         elevationM: elevation === '' ? null : Number(elevation),
         notes: notes.trim(),
-        latitude: capturedPosition?.latitude ?? zone.latitude,
-        longitude: capturedPosition?.longitude ?? zone.longitude,
+        latitude: capturedPosition?.latitude ?? (useKept ? initial.latitude : zone.latitude),
+        longitude: capturedPosition?.longitude ?? (useKept ? initial.longitude : zone.longitude),
         // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto
         // della zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello
         // onesto qui.
-        privacy: capturedPosition === null ? 'zone' : privacy,
-        positionSource: capturedPosition !== null ? 'gps' : 'zone',
+        privacy: capturedPosition !== null || useKept ? privacy : 'zone',
+        positionSource: capturedPosition !== null || useKept ? 'gps' : 'zone',
         trees,
         durationMinutes: duration === '' ? null : Number(duration),
         searchers: searchers === '' ? null : Number(searchers),
-        mpiAtEntry: point?.mpi ?? null,
-        confidenceAtEntry: point?.confidence ?? null,
-        algorithmVersionAtEntry: point === undefined ? null : snapshot.algorithmVersion,
+        ...frozen,
       })
     } catch (error) {
       // Prima restava tutto muto: il form tornava selezionabile e l'utente non sapeva se la voce
@@ -239,7 +279,42 @@ export function EntryForm({
           <legend className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-ink-faint">
             Posizione del punto trovato
           </legend>
-          {capturedPosition !== null ? (
+          {capturedPosition === null && keptGps && initial !== undefined ? (
+            <div className="space-y-2 rounded-lg bg-surface-2 px-2.5 py-2">
+              <p className="text-xs leading-snug text-ink-dim">
+                Resta la posizione GPS salvata quel giorno
+                {initial.latitude !== null && initial.longitude !== null && (
+                  <>
+                    : {initial.latitude.toFixed(initial.privacy === 'exact' ? 5 : 2)},{' '}
+                    {initial.longitude.toFixed(initial.privacy === 'exact' ? 5 : 2)}
+                  </>
+                )}
+                .
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={requestLocation}
+                  disabled={gpsState === 'asking'}
+                  className="min-h-11 flex-1 rounded-lg border border-edge bg-surface-1 px-2 text-xs
+                             font-medium text-ink transition-colors hover:bg-surface-3
+                             disabled:opacity-60 focus:outline-none focus-visible:ring-2
+                             focus-visible:ring-accent"
+                >
+                  {gpsState === 'asking' ? 'Attendo…' : 'Sostituisci con la posizione di adesso'}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => { setKeptGps(false) }}
+                  className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-medium text-ink-dim
+                             transition-colors hover:text-ink focus:outline-none
+                             focus-visible:ring-2 focus-visible:ring-accent"
+                >
+                  Rimuovi
+                </button>
+              </div>
+            </div>
+          ) : capturedPosition !== null ? (
             <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-2.5 py-2">
               <p className="text-xs leading-snug text-ink-dim">
                 Posizione GPS salvata: {capturedPosition.latitude.toFixed(5)},{' '}
@@ -311,6 +386,9 @@ export function EntryForm({
             className="min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
                        text-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
           >
+            {initialZone !== null && (
+              <option value={initialZone.code}>{initialZone.name}</option>
+            )}
             {zonesNearby === null
               ? zonesAlphabetical.map((z) => (
                   <option key={z.code} value={z.code}>
@@ -413,7 +491,7 @@ export function EntryForm({
             id="entry-elevation"
             type="number"
             inputMode="numeric"
-            placeholder={zone === undefined ? '' : String(zone.elevationM)}
+            placeholder={zone?.elevationM === undefined ? '' : String(zone.elevationM)}
             value={elevation}
             onChange={(e) => { setElevation(e.target.value) }}
             className="min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
@@ -469,7 +547,12 @@ export function EntryForm({
             {PRIVACY_LEVELS.map((level) => {
               // Senza posizione GPS reale, "esatte" e "area" arrotonderebbero comunque solo il
               // punto della zona: offrirli sarebbe promettere una precisione che non c'è.
-              const disabled = capturedPosition === null && level !== 'zone'
+              // Una posizione già arrotondata non torna precisa: in modifica si può solo
+              // arrotondare di più, non di meno.
+              const keptFloor = PRIVACY_LEVELS.indexOf(initial?.privacy ?? 'exact')
+              const disabled =
+                capturedPosition === null &&
+                (keptGps ? PRIVACY_LEVELS.indexOf(level) < keptFloor : level !== 'zone')
               const active = privacy === level && !disabled
               return (
                 <button
@@ -493,7 +576,9 @@ export function EntryForm({
             })}
           </div>
           <p className="mt-1.5 text-xs leading-snug text-ink-faint">
-            {capturedPosition === null
+            {capturedPosition === null && keptGps
+              ? 'Puoi solo arrotondarla di più: le coordinate tolte non si recuperano.'
+              : capturedPosition === null
               ? 'Acquisisci la posizione qui sopra per poter salvare più di "solo la zona".'
               : 'L’arrotondamento è definitivo: una volta salvata l’area, le coordinate precise non esistono più.'}
           </p>
@@ -501,7 +586,7 @@ export function EntryForm({
             * Disclosure esplicita richiesta: chi è connesso e sceglie "coordinate esatte" deve
             * saperlo prima di salvare, non scoprirlo dopo controllando Account.
             */}
-          {auth.status === 'signed-in' && privacy === 'exact' && capturedPosition !== null && (
+          {auth.status === 'signed-in' && privacy === 'exact' && (capturedPosition !== null || keptGps) && (
             <p className="mt-1.5 rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-dim">
               Sei connesso: queste coordinate esatte verranno sincronizzate nel tuo account cloud,
               non solo su questo dispositivo.
@@ -510,10 +595,28 @@ export function EntryForm({
         </fieldset>
 
         <p className="rounded-lg bg-surface-2 px-2.5 py-2 text-xs leading-snug text-ink-faint">
-          {point === undefined ? (
+          {editing && !pairChanged ? (
+            initial.mpiAtEntry !== null ? (
+              <>
+                Resta il punteggio previsto quel giorno:{' '}
+                <strong className="text-ink">{initial.mpiAtEntry.toFixed(0)}</strong>
+                {initial.algorithmVersionAtEntry !== null && <>, modello {initial.algorithmVersionAtEntry}</>}.
+                Cambia solo se correggi il giorno o la zona.
+              </>
+            ) : (
+              <>Questa uscita non ha un punteggio salvato: cambia solo se correggi il giorno o la zona.</>
+            )
+          ) : point === undefined ? (
             <>
-              Per questo giorno lo snapshot non ha un punteggio: la voce si salva comunque, ma non
-              potrà servire alla calibrazione.
+              {editing
+                ? 'Hai cambiato giorno o zona, e per questa coppia i dati di oggi non hanno un punteggio: la voce resterà senza, e non servirà alla calibrazione.'
+                : 'Per questo giorno lo snapshot non ha un punteggio: la voce si salva comunque, ma non potrà servire alla calibrazione.'}
+            </>
+          ) : editing ? (
+            <>
+              Hai cambiato giorno o zona: il punteggio salvato diventa quello di questa coppia,{' '}
+              <strong className="text-ink">{point.mpi.toFixed(0)}</strong>, modello{' '}
+              {snapshot.algorithmVersion}.
             </>
           ) : (
             <>
@@ -534,7 +637,7 @@ export function EntryForm({
                      disabled:opacity-40 focus:outline-none focus-visible:ring-2
                      focus-visible:ring-accent"
         >
-          {saving ? 'Salvo…' : 'Salva'}
+          {saving ? 'Salvo…' : editing ? 'Salva le modifiche' : 'Salva'}
         </button>
         <button
           type="button"
@@ -557,7 +660,7 @@ export function EntryForm({
           className="mt-2 rounded-lg border border-danger/30 bg-danger/10 px-2.5 py-2 text-xs
                      leading-snug text-danger"
         >
-          {saveError} La voce non è stata registrata: puoi riprovare.
+          {saveError} {editing ? 'Le modifiche non sono state salvate' : 'La voce non è stata registrata'}: puoi riprovare.
         </p>
       )}
     </form>

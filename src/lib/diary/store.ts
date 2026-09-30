@@ -71,6 +71,10 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
     privacy,
   )
 
+  const samePair =
+    existing !== undefined && existing.date === draft.date && existing.zoneCode === draft.zoneCode
+  const frozen = samePair ? existing : undefined
+
   return {
     id: existing?.id ?? makeId(),
     date: draft.date,
@@ -92,15 +96,38 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
       draft.durationMinutes !== undefined ? draft.durationMinutes : (existing?.durationMinutes ?? null),
     searchers: draft.searchers !== undefined ? draft.searchers : (existing?.searchers ?? null),
     // I campi congelati non si riscrivono mai in aggiornamento: descrivono il momento
-    // dell'inserimento, non lo stato attuale del modello.
-    mpiAtEntry: existing?.mpiAtEntry ?? draft.mpiAtEntry ?? null,
-    confidenceAtEntry: existing?.confidenceAtEntry ?? draft.confidenceAtEntry ?? null,
+    // dell'inserimento, non lo stato attuale del modello. Con un'eccezione sola: se la modifica
+    // corregge il giorno o la zona, il punteggio vecchio era quello di un'altra coppia
+    // (giorno, zona) e non descrive più l'uscita — vale quello che la modifica porta con sé.
+    mpiAtEntry: frozen !== undefined ? (frozen.mpiAtEntry ?? draft.mpiAtEntry ?? null) : (draft.mpiAtEntry ?? null),
+    confidenceAtEntry:
+      frozen !== undefined
+        ? (frozen.confidenceAtEntry ?? draft.confidenceAtEntry ?? null)
+        : (draft.confidenceAtEntry ?? null),
     algorithmVersionAtEntry:
-      existing?.algorithmVersionAtEntry ?? draft.algorithmVersionAtEntry ?? null,
+      frozen !== undefined
+        ? (frozen.algorithmVersionAtEntry ?? draft.algorithmVersionAtEntry ?? null)
+        : (draft.algorithmVersionAtEntry ?? null),
     createdAt: existing?.createdAt ?? nowIso(),
     updatedAt: nowIso(),
     deletedAt: existing?.deletedAt ?? null,
   }
+}
+
+/**
+ * La bozza con cui aggiornare una voce: la voce com'era, più le modifiche.
+ *
+ * Se le modifiche cambiano giorno o zona senza portare un punteggio nuovo, il vecchio non si
+ * trascina: descriveva un'altra coppia (giorno, zona), e lasciarlo farebbe dire alla calibrazione
+ * una cosa falsa. Meglio nessun punteggio che uno sbagliato.
+ */
+export function mergePatch(existing: DiaryEntry, patch: Partial<DiaryDraft>): DiaryDraft {
+  const merged: DiaryDraft = { ...existing, ...patch }
+  const pairChanged = merged.date !== existing.date || merged.zoneCode !== existing.zoneCode
+  if (pairChanged && !('mpiAtEntry' in patch)) {
+    return { ...merged, mpiAtEntry: null, confidenceAtEntry: null, algorithmVersionAtEntry: null }
+  }
+  return merged
 }
 
 /** Ordina dalla più recente, che è l'ordine in cui si guarda un diario. */
@@ -180,7 +207,7 @@ export class InMemoryDiaryRepository implements DiaryRepository {
   async update(id: string, patch: Partial<DiaryDraft>): Promise<DiaryEntry | null> {
     const existing = this.entries.get(id)
     if (existing === undefined || existing.deletedAt !== null) return null
-    const updated = materialise({ ...existing, ...patch }, existing)
+    const updated = materialise(mergePatch(existing, patch), existing)
     this.entries.set(id, updated)
     return updated
   }
@@ -246,7 +273,7 @@ export class IndexedDbDiaryRepository implements DiaryRepository {
     const existing = normaliseEntry(stored)
     if (existing.deletedAt !== null) return null
 
-    const updated = materialise({ ...existing, ...patch }, existing)
+    const updated = materialise(mergePatch(existing, patch), existing)
     const write = db.transaction(STORE, 'readwrite')
     await promisify(write.objectStore(STORE).put(updated) as IDBRequest<IDBValidKey>)
     return updated

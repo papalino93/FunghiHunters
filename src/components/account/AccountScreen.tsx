@@ -10,6 +10,8 @@ import { useDiarySync } from '@/lib/sync/useDiarySync'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { versionLabel } from '@/lib/ui/version'
 import { InstallCard } from '@/components/install/InstallCard'
+import { useInstallState } from '@/lib/pwa/install-store'
+import { isIosPlatform } from '@/lib/pwa/platform'
 import { RegionPicker } from '@/components/RegionPicker'
 import type { RegionChoice } from '@/lib/region/preference'
 
@@ -196,6 +198,7 @@ function Shell({
 
 function SignInPanel() {
   const auth = useAuth()
+  const install = useInstallState()
   const [email, setEmail] = useState('')
   const [sending, setSending] = useState(false)
   const [message, setMessage] = useState<string | null>(null)
@@ -217,6 +220,17 @@ function SignInPanel() {
 
   return (
     <div className="space-y-3">
+      {/*
+        * Su iPhone l'app aperta dall'icona ha una memoria sua: chi aveva fatto l'accesso in Safari
+        * qui risulta scollegato, e senza una parola sembra che l'account sia sparito.
+        */}
+      {install.ready && install.installed && isIosPlatform(install.platform) && (
+        <p className="rounded-lg border border-accent/30 bg-accent/10 px-3 py-2 text-xs leading-snug text-ink">
+          <strong className="font-semibold">Non vedi il tuo account?</strong> Su iPhone l&apos;app
+          installata non vede l&apos;accesso fatto in Safari: rifallo qui una volta, e le uscite
+          sincronizzate tornano tutte.
+        </p>
+      )}
       <button
         type="button"
         onClick={() => { void handleGoogle() }}
