@@ -1,6 +1,6 @@
 # Backtest GBIF — riepilogo generato
 
-Generato: 2026-09-25T08:49:01.035Z — seme 20260924, bootstrap 2000 replicati a grappoli (localita'-anno).
+Generato: 2026-09-30T08:52:57.303Z — seme 20260924, bootstrap 2000 replicati a grappoli (localita'-anno).
 
 GBIF: 907 record scaricati, 490 accettati, 437 dopo deduplica (stesso giorno entro 1 km), 413 localita'-anno. Scarti: {"obscured":292,"uncertainty-large":63,"uncertainty-missing":62}.
 Campione: 250 localita'-anno (strati: regione, allocazione uguale). Meteo disponibile per 250 (0 scaricate ora, 250 da cache, 0 fallite).
@@ -27,6 +27,9 @@ Brier di riferimento (sola prevalenza, LOYO): 0.193.
 | (j2) produzione + ottimo autunnale 19 °C in basso | thermal.optAutumnC 15 -> 19 sotto 700 m, sfumato fino a 900 m | 0.760 [0.727, 0.792] | 0.062 [0.043, 0.082] | 0.114 [0.071, 0.157] | 0.071 [0.031, 0.112] | 0.1721 | 0.106 |
 | (j3) produzione + caldo tollerato in basso | thermal.sigmaWarmC 7.5 -> 10 sotto 700 m, sfumato fino a 900 m | 0.755 [0.721, 0.788] | 0.058 [0.035, 0.082] | 0.109 [0.066, 0.153] | 0.067 [0.026, 0.108] | 0.1716 | 0.109 |
 | (j4) produzione + ottimo 17 °C e caldo tollerato in basso | optAutumnC 17 e sigmaWarmC 10 sotto 700 m, sfumati fino a 900 m | 0.759 [0.725, 0.792] | 0.062 [0.040, 0.084] | 0.113 [0.070, 0.157] | 0.071 [0.030, 0.111] | 0.1713 | 0.111 |
+| (k0) produzione + innesco dal giorno che pesa di più | soglia secca 20 mm, ma vale il giorno migliore e non l’ultimo (rampMm = 0,01) | 0.755 [0.721, 0.787] | 0.057 [0.034, 0.082] | 0.109 [0.065, 0.153] | 0.066 [0.024, 0.108] | 0.1720 | 0.107 |
+| (k1) produzione + innesco graduale 15-20 mm | trigger.rampMm = 5 | 0.755 [0.722, 0.788] | 0.058 [0.034, 0.083] | 0.109 [0.065, 0.154] | 0.067 [0.026, 0.108] | 0.1712 | 0.111 |
+| (k2) produzione + innesco graduale 10-20 mm | trigger.rampMm = 10 | 0.755 [0.720, 0.788] | 0.057 [0.034, 0.082] | 0.109 [0.065, 0.153] | 0.066 [0.026, 0.107] | 0.1711 | 0.111 |
 | (p) modello in produzione | ALGORITHM_V1 (1.6.1-porcino) | 0.755 [0.721, 0.788] | 0.058 [0.034, 0.082] | 0.109 [0.066, 0.154] | 0.067 [0.025, 0.108] | 0.1720 | 0.107 |
 | (f) nullo: calendario mensile | frazione dei casi degli altri anni nello stesso mese | 0.646 [0.600, 0.693] | -0.051 [-0.098, -0.003] | — | -0.042 [-0.060, -0.025] | 0.1807 | 0.062 |
 | (f2) nullo: calendario a nucleo | densita' dei giorni dell'anno dei casi degli altri anni, nucleo 10 giorni | 0.689 [0.646, 0.732] | -0.009 [-0.056, 0.038] | 0.042 [0.025, 0.060] | — | 0.1770 | 0.081 |
@@ -50,6 +53,9 @@ Brier di riferimento (sola prevalenza, LOYO): 0.193.
 | (j2) produzione + ottimo autunnale 19 °C in basso | 0.766 [0.726, 0.802] | 0.048 [0.021, 0.076] | 0.101 [0.053, 0.147] |
 | (j3) produzione + caldo tollerato in basso | 0.768 [0.731, 0.803] | 0.050 [0.019, 0.081] | 0.103 [0.055, 0.150] |
 | (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.766 [0.726, 0.802] | 0.047 [0.019, 0.076] | 0.100 [0.052, 0.147] |
+| (k0) produzione + innesco dal giorno che pesa di più | 0.768 [0.730, 0.804] | 0.050 [0.019, 0.082] | 0.103 [0.054, 0.149] |
+| (k1) produzione + innesco graduale 15-20 mm | 0.765 [0.725, 0.801] | 0.046 [0.014, 0.079] | 0.099 [0.051, 0.146] |
+| (k2) produzione + innesco graduale 10-20 mm | 0.766 [0.726, 0.802] | 0.047 [0.014, 0.080] | 0.100 [0.053, 0.148] |
 | (p) modello in produzione | 0.771 [0.733, 0.806] | 0.052 [0.021, 0.084] | 0.105 [0.057, 0.152] |
 | (f) nullo: calendario mensile | 0.665 [0.616, 0.713] | -0.053 [-0.106, 0.000] | — |
 | (f2) nullo: calendario a nucleo | 0.697 [0.652, 0.742] | -0.021 [-0.072, 0.031] | 0.032 [0.006, 0.056] |
@@ -75,6 +81,9 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (j2) produzione + ottimo autunnale 19 °C in basso | 0.796 | 0.756 | 0.736 | — | 0.678 | 0.707 | 0.838 | 0.571 | 0.730 | 0.810 |
 | (j3) produzione + caldo tollerato in basso | 0.787 | 0.753 | 0.736 | — | 0.678 | 0.705 | 0.838 | 0.563 | 0.731 | 0.821 |
 | (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.794 | 0.758 | 0.736 | — | 0.678 | 0.704 | 0.837 | 0.567 | 0.743 | 0.820 |
+| (k0) produzione + innesco dal giorno che pesa di più | 0.787 | 0.752 | 0.735 | — | 0.676 | 0.708 | 0.843 | 0.560 | 0.728 | 0.821 |
+| (k1) produzione + innesco graduale 15-20 mm | 0.785 | 0.753 | 0.735 | — | 0.676 | 0.699 | 0.838 | 0.567 | 0.726 | 0.829 |
+| (k2) produzione + innesco graduale 10-20 mm | 0.783 | 0.748 | 0.740 | — | 0.685 | 0.690 | 0.838 | 0.563 | 0.728 | 0.833 |
 | (p) modello in produzione | 0.786 | 0.753 | 0.736 | — | 0.678 | 0.707 | 0.842 | 0.562 | 0.729 | 0.820 |
 | (f) nullo: calendario mensile | 0.644 | 0.663 | 0.647 | — | — | — | — | — | — | — |
 | (f2) nullo: calendario a nucleo | 0.669 | 0.727 | 0.675 | — | 0.412 | 0.565 | 0.293 | 0.440 | 0.655 | 0.732 |
@@ -98,6 +107,9 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (j2) produzione + ottimo autunnale 19 °C in basso | 0.766 | 0.762 | 0.764 |
 | (j3) produzione + caldo tollerato in basso | 0.762 | 0.758 | 0.759 |
 | (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 0.765 | 0.761 | 0.763 |
+| (k0) produzione + innesco dal giorno che pesa di più | 0.761 | 0.757 | 0.758 |
+| (k1) produzione + innesco graduale 15-20 mm | 0.761 | 0.758 | 0.759 |
+| (k2) produzione + innesco graduale 10-20 mm | 0.761 | 0.758 | 0.759 |
 | (p) modello in produzione | 0.761 | 0.757 | 0.759 |
 | (f) nullo: calendario mensile | 0.664 | 0.644 | 0.654 |
 | (f2) nullo: calendario a nucleo | 0.706 | 0.685 | 0.699 |
@@ -121,6 +133,9 @@ Numerosita' (casi/controlli): <600 m: 85 casi / 231 controlli; 600-1200 m: 86 ca
 | (j2) produzione + ottimo autunnale 19 °C in basso | 91 (34%) | 55 (21%) | 34 (13%) | 38 (14%) | 46 (17%) | 33.0 |
 | (j3) produzione + caldo tollerato in basso | 83 (31%) | 56 (21%) | 29 (11%) | 42 (16%) | 54 (20%) | 34.3 |
 | (j4) produzione + ottimo 17 °C e caldo tollerato in basso | 86 (33%) | 55 (21%) | 33 (13%) | 39 (15%) | 51 (19%) | 34.3 |
+| (k0) produzione + innesco dal giorno che pesa di più | 84 (32%) | 55 (21%) | 30 (11%) | 38 (14%) | 57 (22%) | 35.4 |
+| (k1) produzione + innesco graduale 15-20 mm | 80 (30%) | 55 (21%) | 33 (13%) | 37 (14%) | 59 (22%) | 37.5 |
+| (k2) produzione + innesco graduale 10-20 mm | 74 (28%) | 60 (23%) | 32 (12%) | 37 (14%) | 61 (23%) | 38.7 |
 | (p) modello in produzione | 85 (32%) | 55 (21%) | 32 (12%) | 40 (15%) | 52 (20%) | 33.8 |
 
 ## Affidabilita' (decili, dopo calibrazione logistica LOYO)
