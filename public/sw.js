@@ -41,6 +41,8 @@ const SHELL = [
   '/',
   '/mappa',
   '/diario',
+  // La guida all'installazione: la finestra dell'invito ci rimanda, anche senza rete.
+  '/installa',
   OFFLINE_URL,
   '/manifest.webmanifest',
   '/icon.svg',

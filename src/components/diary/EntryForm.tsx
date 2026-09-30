@@ -2,7 +2,7 @@
 
 import { zoneLabel } from '@/lib/ui/zone-label'
 import dynamic from 'next/dynamic'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import type { PickedPoint } from '@/components/diary/LocationPicker'
 
@@ -124,6 +124,8 @@ export function EntryForm({
   const [pointFrom, setPointFrom] = useState<'gps' | 'map'>('gps')
   const [placeLabel, setPlaceLabel] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
+  /** Scelto a mano sulla mappa: un GPS che risponde dopo non deve sovrascriverlo. */
+  const pickedOnMap = useRef(false)
   /** La zona scelta dal GPS e la sua distanza, finché l'utente non ne sceglie un'altra a mano. */
   const [autoZone, setAutoZone] = useState<{ code: string; km: number } | null>(null)
 
@@ -166,7 +168,14 @@ export function EntryForm({
   const durationValid = duration === '' || isValidDurationMinutes(Number(duration))
   const searchersValid = searchers === '' || isValidSearchers(Number(searchers))
 
-  const requestLocation = (): void => {
+  /**
+   * `automatic` è la richiesta partita da sola all'apertura del modulo: se arriva dopo che il punto
+   * è stato scelto sulla mappa, non lo sovrascrive. Un tocco su «Usa la mia posizione» invece
+   * vince sempre (i pulsanti passano l'evento, che non è `true`).
+   */
+  const requestLocation = (automatic: unknown = false): void => {
+    const auto = automatic === true
+    if (!auto) pickedOnMap.current = false
     if (typeof navigator === 'undefined' || navigator.geolocation === undefined) {
       setGpsState('unavailable')
       return
@@ -174,6 +183,11 @@ export function EntryForm({
     setGpsState('asking')
     navigator.geolocation.getCurrentPosition(
       (result) => {
+        // Arrivato tardi, dopo che il punto è stato scelto sulla mappa: vince la scelta a mano.
+        if (auto && pickedOnMap.current) {
+          setGpsState('idle')
+          return
+        }
         const position = { latitude: result.coords.latitude, longitude: result.coords.longitude }
         setCapturedPosition(position)
         setPointFrom('gps')
@@ -218,7 +232,7 @@ export function EntryForm({
     navigator.permissions
       .query({ name: 'geolocation' })
       .then((status) => {
-        if (!cancelled && status.state === 'granted') requestLocation()
+        if (!cancelled && status.state === 'granted') requestLocation(true)
       })
       .catch(() => {
         // Safari vecchi non conoscono la voce «geolocation»: resta il pulsante.
@@ -234,6 +248,7 @@ export function EntryForm({
    * Come col GPS, in un'uscita nuova la zona diventa da sola quella più vicina.
    */
   const pickPoint = (point: PickedPoint): void => {
+    pickedOnMap.current = true
     const position = { latitude: point.latitude, longitude: point.longitude }
     setCapturedPosition(position)
     setPointFrom('map')
@@ -279,7 +294,14 @@ export function EntryForm({
         // Senza una posizione vera, "esatte"/"area" arrotonderebbero comunque solo il punto
         // della zona: promettere una precisione che non c'è. "Solo la zona" è l'unico livello
         // onesto qui.
-        privacy: capturedPosition !== null || useKept ? privacy : 'zone',
+        // Un punto tenuto da prima si può solo arrotondare di più: se nel frattempo si era scelto
+        // «esatte» per un punto nuovo poi tolto, vale il livello di partenza.
+        privacy:
+          capturedPosition !== null
+            ? privacy
+            : useKept
+              ? PRIVACY_LEVELS[Math.max(PRIVACY_LEVELS.indexOf(privacy), PRIVACY_LEVELS.indexOf(initial.privacy))] ?? initial.privacy
+              : 'zone',
         positionSource: capturedPosition !== null || useKept ? 'gps' : 'zone',
         trees,
         durationMinutes: duration === '' ? null : Number(duration),

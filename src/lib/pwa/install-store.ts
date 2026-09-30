@@ -27,8 +27,10 @@ export interface InstallState {
   readonly platform: InstallPlatform
   /** Aperto dentro Facebook, Instagram e simili, dove non si può installare niente. */
   readonly inApp: boolean
-  /** Già aperta come app, dall'icona: niente inviti. */
+  /** Già installata (aperta dall'icona, o appena installata da questa scheda): niente inviti. */
   readonly installed: boolean
+  /** Aperta proprio come app, dall'icona: non una scheda del browser. */
+  readonly standalone: boolean
   /** Il browser offre la sua finestra di installazione: basta un tocco. */
   readonly canPrompt: boolean
 }
@@ -38,6 +40,7 @@ const SERVER_STATE: InstallState = {
   platform: 'desktop',
   inApp: false,
   installed: false,
+  standalone: false,
   canPrompt: false,
 }
 
@@ -61,11 +64,13 @@ let cached: InstallState | null = null
 
 function getSnapshot(): InstallState {
   const w = win()
+  const standalone = isStandalone()
   const next: InstallState = {
     ready: true,
     platform: detectPlatform(navigator.userAgent, navigator.maxTouchPoints ?? 0),
     inApp: isInAppBrowser(navigator.userAgent),
-    installed: isStandalone() || w[INSTALLED_GLOBAL] === true,
+    installed: standalone || w[INSTALLED_GLOBAL] === true,
+    standalone,
     canPrompt: w[INSTALL_EVENT_GLOBAL] != null,
   }
   // Stessa identità se niente è cambiato: `useSyncExternalStore` lo richiede.
@@ -74,6 +79,7 @@ function getSnapshot(): InstallState {
     cached.platform === next.platform &&
     cached.inApp === next.inApp &&
     cached.installed === next.installed &&
+    cached.standalone === next.standalone &&
     cached.canPrompt === next.canPrompt
   ) {
     return cached

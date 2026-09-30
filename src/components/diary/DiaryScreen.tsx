@@ -224,7 +224,11 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
       ) : composing ? null : (
         <button
           type="button"
-          onClick={() => { setComposing(true) }}
+          onClick={() => {
+            // Un modulo alla volta: due aperti insieme avevano gli stessi id dei campi.
+            setEditingId(null)
+            setComposing(true)
+          }}
           className="min-h-12 w-full rounded-xl border border-accent/40 bg-accent/15 text-sm
                      font-semibold text-ink transition-colors hover:bg-accent/25
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"

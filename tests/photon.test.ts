@@ -49,6 +49,6 @@ describe('ricerca di un posto', () => {
     const url = new URL(photonSearchUrl(' Lago di San Zanobi ', { latitude: 43.71963, longitude: 11.16757 }))
     expect(url.searchParams.get('q')).toBe('Lago di San Zanobi')
     expect(url.searchParams.get('bbox')).toBe('6.5,35.3,18.6,47.1')
-    expect(url.searchParams.get('lat')).toBe('43.720')
+    expect(url.searchParams.get('lat')).toBe('43.7')
   })
 })

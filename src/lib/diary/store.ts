@@ -81,7 +81,8 @@ export function materialise(draft: DiaryDraft, existing?: DiaryEntry): DiaryEntr
     zoneCode: draft.zoneCode,
     zoneName: draft.zoneName,
     abundance: draft.abundance,
-    elevationM: draft.elevationM ?? existing?.elevationM ?? null,
+    // `!== undefined` come per la durata: in modifica «tolgo la quota» deve toglierla davvero.
+    elevationM: draft.elevationM !== undefined ? draft.elevationM : (existing?.elevationM ?? null),
     notes: draft.notes ?? existing?.notes ?? '',
     latitude: coords.latitude,
     longitude: coords.longitude,

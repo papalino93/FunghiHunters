@@ -138,6 +138,8 @@ export async function GET(request: Request): Promise<NextResponse> {
 /** Uscite eliminabili in una richiesta: abbastanza per ripulire una raffica di prove. */
 const MAX_DELETE = 200
 
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 interface DeleteItem {
   readonly userId: string
   readonly id: string
@@ -152,7 +154,9 @@ function parseDeleteBody(body: unknown): DeleteItem[] | null {
     if (typeof item !== 'object' || item === null) return null
     const { userId, id } = item as { userId?: unknown; id?: unknown }
     if (typeof userId !== 'string' || typeof id !== 'string' || userId === '' || id === '') return null
-    if (userId.length > 64 || id.length > 128) return null
+    // L'utente è un uuid di Supabase: un valore diverso farebbe fallire Postgres a metà giro,
+    // dopo aver già eliminato le uscite degli utenti precedenti.
+    if (!UUID.test(userId) || id.length > 128) return null
     out.push({ userId, id })
   }
   return out
@@ -209,7 +213,12 @@ export async function DELETE(request: Request): Promise<NextResponse> {
   for (const [userId, ids] of byUser) {
     const { data, error } = await admin
       .from('user_observations')
-      .update({ deleted_at: now, updated_at: now })
+      /*
+       * Note e coordinate si tolgono subito: l'informativa dice che l'uscita sparisce, e una
+       * marca di cancellazione non ha bisogno di sapere dov'era né cosa diceva. Il telefono,
+       * ricevuta la marca, cancella la sua copia comunque.
+       */
+      .update({ deleted_at: now, updated_at: now, notes: null, geom_exact: null, geom_public: null })
       .eq('user_id', userId)
       .in('client_id', ids)
       .is('deleted_at', null)

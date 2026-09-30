@@ -13,6 +13,7 @@
 
 import { formatValue } from '@/lib/ui/scale'
 import { ALGORITHM_V1 } from '@/lib/config/algorithm'
+import { gaussian, triggerRainWeight } from '@/lib/model/mpi'
 import type { SnapshotZone } from '@/lib/snapshot/types'
 import { mpiOn, type Suggestion } from '@/lib/recommend/rank'
 
@@ -207,10 +208,11 @@ function reasonFor(
    * si contraddiceva da solo.
    */
   if (tone === 'good' || tone === 'worth') {
-    const daysAgo = intenseRainDaysAgo(zone, date)
+    const trigger = triggerRainOf(zone, date)
     const cause =
-      daysAgo !== null && daysAgo >= 5 && daysAgo <= 20
-        ? `La pioggia forte di ${daysAgo} giorni fa cade nella finestra in cui il porcino di solito spunta.`
+      trigger !== null && trigger.daysAgo >= 5 && trigger.daysAgo <= 20
+        ? `La pioggia ${trigger.mm >= ALGORITHM_V1.trigger.intenseEventMm.value ? 'forte' : `di ${trigger.mm.toFixed(0)} mm`} ` +
+          `di ${trigger.daysAgo} giorni fa cade nella finestra in cui il porcino di solito spunta.`
         : `Pioggia e temperature degli ultimi giorni sono vicine a quelle in cui il porcino fruttifica.`
     const brake =
       limit?.startsWith('Temperatura') === true && tMean !== null && Math.abs(tMean - optimum) >= 2
@@ -254,18 +256,26 @@ function reasonFor(
 }
 
 /**
- * Giorni dall'ultimo giorno di pioggia intensa (soglia del modello, `trigger.intenseEventMm`) fino
- * al giorno scelto, dalla serie della zona. `null` se nella serie non ce n'è.
+ * Il giorno di pioggia che fa da innesco al giorno scelto, dalla serie della zona: lo stesso
+ * criterio del modello (`gradedTrigger` in `model/mpi.ts`, dalla 1.7.0), cioè il giorno che pesa
+ * di più fra quanta pioggia è caduta e quanto è vicino al picco atteso. Prima si prendeva
+ * l'ultimo giorno oltre 20 mm, e la frase poteva citare un giorno diverso da quello che contava.
+ * `null` se nessun giorno conta abbastanza (meno di un terzo del pieno).
  */
-function intenseRainDaysAgo(zone: SnapshotZone, date: string): number | null {
-  const threshold = ALGORITHM_V1.trigger.intenseEventMm.value
-  let latest: string | null = null
+function triggerRainOf(zone: SnapshotZone, date: string): { daysAgo: number; mm: number } | null {
+  const t = ALGORITHM_V1.trigger
+  const ramp = t.rampMm?.value ?? 0
+  let best: { daysAgo: number; mm: number; value: number } | null = null
   for (const point of zone.series) {
     if (point.date > date) break
-    if (point.rainMm !== null && point.rainMm !== undefined && point.rainMm >= threshold) latest = point.date
+    if (point.rainMm === null || point.rainMm === undefined) continue
+    const weight = triggerRainWeight(point.rainMm, t.intenseEventMm.value, ramp)
+    if (weight <= 0) continue
+    const daysAgo = Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${point.date}T00:00:00Z`)) / 86_400_000)
+    const value = weight * gaussian(daysAgo, t.lagDays.value, t.lagSigmaDays.value)
+    if (best === null || value > best.value) best = { daysAgo, mm: point.rainMm, value }
   }
-  if (latest === null) return null
-  return Math.round((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${latest}T00:00:00Z`)) / 86_400_000)
+  return best !== null && best.value >= 0.3 ? best : null
 }
 
 /**

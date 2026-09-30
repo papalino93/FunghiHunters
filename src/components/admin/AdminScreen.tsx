@@ -480,6 +480,10 @@ function ObservationsTable({
       onDeleted()
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Eliminazione non riuscita.')
+      // Un blocco può essere passato prima dell'errore: la tabella si rilegge comunque.
+      setSelected(new Set())
+      setConfirming(false)
+      onDeleted()
     } finally {
       setBusy(false)
     }
@@ -496,6 +500,8 @@ function ObservationsTable({
           value={userFilter}
           onChange={(e) => {
             setUserFilter(e.target.value)
+            // Si elimina solo quello che si vede: una selezione nascosta dal filtro no.
+            setSelected(new Set())
             setConfirming(false)
           }}
           className="min-h-11 rounded-lg border border-edge bg-surface-2 px-2 text-sm text-ink
