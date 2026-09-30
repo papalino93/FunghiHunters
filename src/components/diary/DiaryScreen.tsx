@@ -64,6 +64,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
   const [entries, setEntries] = useState<DiaryEntry[] | null>(null)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [composing, setComposing] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [message, setMessage] = useState<string | null>(null)
   const fileRef = useRef<HTMLInputElement>(null)
   const auth = useAuth()
@@ -243,9 +244,29 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
           <ul className="space-y-2">
             {entries.map((entry) => (
               <li key={entry.id}>
+                {editingId === entry.id && repo !== null ? (
+                  <EntryForm
+                    snapshot={snapshot}
+                    initial={entry}
+                    onCancel={() => { setEditingId(null) }}
+                    onSave={async (draft) => {
+                      const updated = await repo.update(entry.id, draft)
+                      // `null` vuol dire che nel frattempo la voce è stata cancellata (da un altro
+                      // dispositivo, via sincronizzazione): dirlo, invece di far finta di niente.
+                      if (updated === null) throw new Error('Questa uscita non esiste più.')
+                      await persistAndReload()
+                      setEditingId(null)
+                      setMessage('Modifiche salvate.')
+                    }}
+                  />
+                ) : (
                 <EntryRow
                   entry={entry}
                   zoneName={zoneNameFor(entry, snapshot)}
+                  onEdit={() => {
+                    setComposing(false)
+                    setEditingId(entry.id)
+                  }}
                   onDelete={async () => {
                     // A differenza di `onSave` (avvolto da `EntryForm.submit`, che ne cattura gli
                     // errori), questo `onClick` non ha nessun chiamante che lo faccia per lui: senza
@@ -265,6 +286,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
                     }
                   }}
                 />
+                )}
               </li>
             ))}
           </ul>
@@ -361,10 +383,12 @@ function zoneNameFor(entry: DiaryEntry, snapshot: Snapshot): string {
 function EntryRow({
   entry,
   zoneName,
+  onEdit,
   onDelete,
 }: {
   entry: DiaryEntry
   zoneName: string
+  onEdit: () => void
   onDelete: () => void
 }) {
   const [confirming, setConfirming] = useState(false)
@@ -448,6 +472,26 @@ function EntryRow({
             </button>
           </div>
         ) : (
+          <div className="flex shrink-0">
+          <button
+            type="button"
+            onClick={onEdit}
+            aria-label={`Modifica l'uscita del ${entry.date}`}
+            className="min-h-11 shrink-0 rounded-lg px-2 text-ink-faint transition-colors
+                       hover:text-ink focus:outline-none focus-visible:ring-2
+                       focus-visible:ring-accent"
+          >
+            <svg width="15" height="15" viewBox="0 0 16 16" aria-hidden="true">
+              <path
+                d="M10.8 2.7l2.5 2.5M3 13l.6-3.1 7.4-7.4a1 1 0 0 1 1.4 0l1.1 1.1a1 1 0 0 1 0 1.4L6.1 12.4 3 13Z"
+                stroke="currentColor"
+                strokeWidth="1.4"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
           <button
             type="button"
             onClick={() => { setConfirming(true) }}
@@ -460,6 +504,7 @@ function EntryRow({
               <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </button>
+          </div>
         )}
       </div>
 

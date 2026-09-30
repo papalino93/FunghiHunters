@@ -722,3 +722,47 @@ describe('voci salvate da versioni precedenti dell app', () => {
     expect(normaliseEntry(senzaTombstone).deletedAt).toBeNull()
   })
 })
+
+describe('modificare un’uscita', () => {
+  it('corregge i campi senza toccare il punteggio se giorno e zona restano quelli', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    const updated = await repo.update(entry.id, { ...draft(), abundance: 'many', notes: 'castagni', searchers: 3 })
+    expect(updated?.abundance).toBe('many')
+    expect(updated?.notes).toBe('castagni')
+    expect(updated?.searchers).toBe(3)
+    expect(updated?.mpiAtEntry).toBe(42)
+    expect(updated?.createdAt).toBe(entry.createdAt)
+  })
+
+  it('se si corregge il giorno o la zona, vale il punteggio della coppia nuova', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    const updated = await repo.update(entry.id, {
+      date: '2026-09-15',
+      mpiAtEntry: 30,
+      confidenceAtEntry: 60,
+      algorithmVersionAtEntry: '1.6.1-porcino',
+    })
+    expect(updated?.mpiAtEntry).toBe(30)
+    expect(updated?.confidenceAtEntry).toBe(60)
+    expect(updated?.algorithmVersionAtEntry).toBe('1.6.1-porcino')
+  })
+
+  it('senza un punteggio nuovo, cambiando zona il vecchio non si trascina', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    const updated = await repo.update(entry.id, { zoneCode: 'mugello', zoneName: 'Mugello' })
+    expect(updated?.zoneName).toBe('Mugello')
+    expect(updated?.mpiAtEntry).toBeNull()
+    expect(updated?.algorithmVersionAtEntry).toBeNull()
+  })
+
+  it('una modifica rende la voce più recente, così la sincronizzazione la manda', async () => {
+    const repo = new InMemoryDiaryRepository()
+    const entry = await repo.add(draft())
+    await new Promise((r) => setTimeout(r, 5))
+    const updated = await repo.update(entry.id, { notes: 'ricontrollata' })
+    expect((updated?.updatedAt ?? '') > entry.updatedAt).toBe(true)
+  })
+})
