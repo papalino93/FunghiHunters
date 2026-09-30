@@ -205,6 +205,20 @@ export function configWarmLow(
   }
 }
 
+/**
+ * (k) Produzione con l'innesco graduale: rampa di `rampMm` sotto i 20 mm (vedi
+ * `trigger.rampMm`). Con una rampa minima (0,01 mm) resta la soglia secca, ma conta il giorno che
+ * pesa di più invece dell'ultimo oltre soglia: serve a separare i due cambiamenti.
+ */
+export function configTriggerRamp(rampMm: number): AlgorithmConfig {
+  const t = ALGORITHM_V1.trigger
+  return {
+    ...ALGORITHM_V1,
+    version: `backtest-innesco-rampa-${String(rampMm)}`,
+    trigger: { ...t, rampMm: { ...t.waterRelief, value: rampMm } },
+  }
+}
+
 export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
   {
     key: 'v14',
@@ -310,6 +324,24 @@ export const WEATHER_VARIANTS: readonly WeatherVariant[] = [
     label: '(j4) produzione + ottimo 17 °C e caldo tollerato in basso',
     change: 'optAutumnC 17 e sigmaWarmC 10 sotto 700 m, sfumati fino a 900 m',
     score: (input) => scoreWith(configWarmLow(input.elevationM, 17, 10), input),
+  },
+  {
+    key: 'p-innesco-max',
+    label: '(k0) produzione + innesco dal giorno che pesa di più',
+    change: 'soglia secca 20 mm, ma vale il giorno migliore e non l’ultimo (rampMm = 0,01)',
+    score: (input) => scoreWith(configTriggerRamp(0.01), input),
+  },
+  {
+    key: 'p-innesco-rampa-5',
+    label: '(k1) produzione + innesco graduale 15-20 mm',
+    change: 'trigger.rampMm = 5',
+    score: (input) => scoreWith(configTriggerRamp(5), input),
+  },
+  {
+    key: 'p-innesco-rampa-10',
+    label: '(k2) produzione + innesco graduale 10-20 mm',
+    change: 'trigger.rampMm = 10',
+    score: (input) => scoreWith(configTriggerRamp(10), input),
   },
   {
     key: 'produzione',
