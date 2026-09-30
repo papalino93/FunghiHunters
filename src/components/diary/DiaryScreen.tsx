@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import type { Snapshot } from '@/lib/snapshot/types'
@@ -263,6 +264,7 @@ export function DiaryScreen({ snapshot }: { snapshot: Snapshot }) {
                 <EntryRow
                   entry={entry}
                   zoneName={zoneNameFor(entry, snapshot)}
+                  zoneElevationM={snapshot.zones.find((z) => z.code === entry.zoneCode)?.elevationM ?? null}
                   onEdit={() => {
                     setComposing(false)
                     setEditingId(entry.id)
@@ -383,11 +385,14 @@ function zoneNameFor(entry: DiaryEntry, snapshot: Snapshot): string {
 function EntryRow({
   entry,
   zoneName,
+  zoneElevationM,
   onEdit,
   onDelete,
 }: {
   entry: DiaryEntry
   zoneName: string
+  /** Quota della zona (non quella che hai scritto tu): «Vicchio · 376 m». */
+  zoneElevationM: number | null
   onEdit: () => void
   onDelete: () => void
 }) {
@@ -419,7 +424,11 @@ function EntryRow({
 
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium text-ink">
-            {zoneName} · <span className="text-ink-dim">{formatDate(entry.date)}</span>
+            {zoneName}
+            {elevationText(zoneElevationM) !== null && (
+              <span className="font-normal text-ink-faint"> ({elevationText(zoneElevationM)})</span>
+            )}{' '}
+            · <span className="text-ink-dim">{formatDate(entry.date)}</span>
           </p>
           <p className="mt-0.5 text-xs text-ink-dim">
             trovati: <strong className="text-ink">{ABUNDANCE_LABELS[entry.abundance]}</strong>

@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useState } from 'react'
 
 import type { ExcludedZone } from '@/lib/recommend/rank'
@@ -40,7 +41,8 @@ export function ExcludedZones({ excluded }: { excluded: readonly ExcludedZone[] 
         <ul className="space-y-1.5 border-t border-edge px-3 py-3 text-xs leading-snug text-ink-dim">
           {excluded.map(({ zone, reason }) => (
             <li key={zone.code}>
-              <span className="font-medium text-ink">{zone.name}</span>: {reason}
+              <span className="font-medium text-ink">{zone.name}</span>
+              {elevationText(zone.elevationM) !== null && <> ({elevationText(zone.elevationM)})</>}: {reason}
             </li>
           ))}
         </ul>

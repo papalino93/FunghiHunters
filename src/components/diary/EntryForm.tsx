@@ -1,5 +1,6 @@
 'use client'
 
+import { zoneLabel } from '@/lib/ui/zone-label'
 import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
 
@@ -479,12 +480,12 @@ export function EntryForm({
             {zonesNearby === null
               ? zonesAlphabetical.map((z) => (
                   <option key={z.code} value={z.code}>
-                    {z.name} — {z.reference}
+                    {zoneLabel(z)}
                   </option>
                 ))
               : zonesNearby.map(({ zone: z, km }) => (
                   <option key={z.code} value={z.code}>
-                    {z.name} — {formatKm(km)}
+                    {zoneLabel(z)} — {formatKm(km)}
                   </option>
                 ))}
           </select>

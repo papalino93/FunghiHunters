@@ -39,6 +39,43 @@ type Load =
   | { readonly state: 'error'; readonly message: string }
   | { readonly state: 'ready'; readonly data: Payload }
 
+/**
+ * Quota di ogni zona, dall'indice nazionale (tutte le 1.404, comprese le aree storiche). Le uscite
+ * salvano codice e nome, non la quota: qui serve per leggere «Mugello · 900 m» accanto a «Vicchio
+ * · 376 m». Un file pubblico, letto una volta; se non arriva, la tabella resta con i soli nomi.
+ */
+function useZoneElevations(): ReadonlyMap<string, number> {
+  const [map, setMap] = useState<ReadonlyMap<string, number>>(() => new Map())
+  useEffect(() => {
+    let cancelled = false
+    void fetch('/data/italia-index.json')
+      .then(async (response) => (response.ok ? ((await response.json()) as { zones?: unknown }) : null))
+      .then((body) => {
+        if (cancelled || body === null || !Array.isArray(body.zones)) return
+        const next = new Map<string, number>()
+        for (const z of body.zones as Array<{ code?: unknown; elevationM?: unknown }>) {
+          if (typeof z.code === 'string' && typeof z.elevationM === 'number') next.set(z.code, z.elevationM)
+        }
+        setMap(next)
+      })
+      .catch(() => {
+        // Solo un dettaglio in più: senza, i nomi bastano.
+      })
+    return () => { cancelled = true }
+  }, [])
+  return map
+}
+
+function zoneCell(
+  code: string | null,
+  name: string | null,
+  elevations: ReadonlyMap<string, number>,
+): string {
+  const base = name ?? code ?? '—'
+  const elevation = code === null ? undefined : elevations.get(code)
+  return elevation === undefined ? base : `${base} · ${String(Math.round(elevation))} m`
+}
+
 /** Accorcia l'uuid per la tabella: le prime otto cifre bastano a distinguere gli utenti a occhio. */
 function shortId(id: string): string {
   return id.slice(0, 8)
@@ -105,6 +142,7 @@ async function readAdminData(): Promise<Load> {
  */
 export function AdminScreen() {
   const auth = useAuth()
+  const elevations = useZoneElevations()
   const [fetched, setFetched] = useState<Load>({ state: 'loading' })
   /** Cambia a ogni «Riprova»: è ciò che fa ripartire l'effetto di lettura. */
   const [attempt, setAttempt] = useState(0)
@@ -187,10 +225,11 @@ export function AdminScreen() {
      * previsto ed esito in Excel è una formula, non una tabella di conversione da costruire.
      */
     const csv = toCsv(
-      ['utente', 'id', 'data', 'zona', 'nome_zona', 'esito', 'esito_rango', 'quota_m',
+      ['utente', 'id', 'data', 'zona', 'nome_zona', 'quota_zona_m', 'esito', 'esito_rango', 'quota_m',
        'durata_min', 'persone', 'punteggio_previsto', 'affidabilita', 'versione_modello', 'note'],
       observations.map((o) => [
-        o.userId, o.id, o.date, o.zoneCode, o.zoneName, abundanceLabel(o.abundance),
+        o.userId, o.id, o.date, o.zoneCode, o.zoneName,
+        o.zoneCode === null ? null : (elevations.get(o.zoneCode) ?? null), abundanceLabel(o.abundance),
         isAbundance(o.abundance) ? ABUNDANCE_RANK[o.abundance] : null, o.elevationM,
         o.durationMinutes, o.searchers, o.mpiAtEntry, o.confidenceAtEntry, o.algorithmVersion,
         o.notes,
@@ -255,7 +294,7 @@ export function AdminScreen() {
           <Table
             headers={['zona', 'uscite', 'con ritrovamento']}
             rows={stats.topZones.map((z) => [
-              zoneNames.get(z.zoneCode) ?? z.zoneCode,
+              zoneCell(z.zoneCode, zoneNames.get(z.zoneCode) ?? null, elevations),
               String(z.outings),
               String(z.withFinds),
             ])}
@@ -288,7 +327,11 @@ export function AdminScreen() {
           Scarica CSV
         </button>
         {/* Ricarica senza passare da «Carico…»: il messaggio dell'eliminazione resta a schermo. */}
-        <ObservationsTable observations={observations} onDeleted={() => { setAttempt((n) => n + 1) }} />
+        <ObservationsTable
+          observations={observations}
+          elevations={elevations}
+          onDeleted={() => { setAttempt((n) => n + 1) }}
+        />
       </Section>
     </Shell>
   )
@@ -376,9 +419,11 @@ async function deleteObservations(items: readonly { userId: string; id: string }
  */
 function ObservationsTable({
   observations,
+  elevations,
   onDeleted,
 }: {
   observations: readonly Observation[]
+  elevations: ReadonlyMap<string, number>
   onDeleted: () => void
 }) {
   const [userFilter, setUserFilter] = useState<string>('')
@@ -549,7 +594,7 @@ function ObservationsTable({
                   </td>
                   <td className="px-2 py-1.5 font-mono">{shortId(o.userId)}</td>
                   <td className="px-2 py-1.5">{o.date}</td>
-                  <td className="px-2 py-1.5">{o.zoneName ?? o.zoneCode ?? '—'}</td>
+                  <td className="px-2 py-1.5">{zoneCell(o.zoneCode, o.zoneName, elevations)}</td>
                   <td className="px-2 py-1.5">{abundanceLabel(o.abundance)}</td>
                   <td className="px-2 py-1.5 tabular">{o.mpiAtEntry === null ? '—' : o.mpiAtEntry.toFixed(0)}</td>
                   <td className="px-2 py-1.5 tabular">{o.durationMinutes === null ? '—' : String(o.durationMinutes)}</td>

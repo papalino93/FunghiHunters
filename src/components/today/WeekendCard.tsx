@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { bandNameFor } from '@/lib/recommend/verdict'
 import type { WeekendDay } from '@/lib/recommend/weekend'
 import { formatDate, mpiBandColor, mpiBandInk } from '@/lib/ui/scale'
@@ -48,7 +49,12 @@ export function WeekendCard({
                     >
                       {mpi.toFixed(0)}
                     </span>
-                    <span className="min-w-0 flex-1 truncate">{zone.name}</span>
+                    <span className="min-w-0 flex-1 truncate">
+                      {zone.name}
+                      {elevationText(zone.elevationM) !== null && (
+                        <span className="text-xs text-ink-faint"> · {elevationText(zone.elevationM)}</span>
+                      )}
+                    </span>
                     <span className="shrink-0 text-xs text-ink-faint">{bandNameFor(mpi)}</span>
                   </Link>
                 </li>

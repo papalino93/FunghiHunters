@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useEffect, useId, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 
@@ -12,7 +13,8 @@ import { searchZones, type SearchableZone } from '@/lib/zones/search'
  * mappa della Toscana e scrive «Abetone» deve trovarlo, ma chi scrive «Abetone» sulla mappa
  * della Toscana non deve pagare 450 KB a ogni lettera. Una lettura per sessione di pagina.
  */
-type NationalEntry = Pick<ItaliaIndexEntry, 'code' | 'name' | 'region' | 'regionSlug' | 'mpi'>
+type NationalEntry = Pick<ItaliaIndexEntry, 'code' | 'name' | 'region' | 'regionSlug' | 'mpi'> &
+  Partial<Pick<ItaliaIndexEntry, 'elevationM'>>
 let nationalCache: Promise<readonly NationalEntry[] | null> | null = null
 
 function loadNational(): Promise<readonly NationalEntry[] | null> {
@@ -120,7 +122,12 @@ export function MapSearch({ zones, regionName, regionSlug, onPick, onClose }: Ma
                            focus-visible:ring-accent"
               >
                 <ScoreDot score={zone.score} />
-                <span className="min-w-0 flex-1 truncate">{zone.name}</span>
+                <span className="min-w-0 flex-1 truncate">
+                  {zone.name}
+                  {elevationText(zone.elevationM) !== null && (
+                    <span className="text-xs text-ink-faint"> · {elevationText(zone.elevationM)}</span>
+                  )}
+                </span>
                 <Score score={zone.score} />
               </button>
             </li>
@@ -135,7 +142,11 @@ export function MapSearch({ zones, regionName, regionSlug, onPick, onClose }: Ma
               >
                 <ScoreDot score={entry.score} />
                 <span className="min-w-0 flex-1 truncate">
-                  {entry.name} <span className="text-ink-faint">· {entry.region}</span>
+                  {entry.name}{' '}
+                  <span className="text-ink-faint">
+                    · {elevationText(entry.elevationM) !== null && <>{elevationText(entry.elevationM)} · </>}
+                    {entry.region}
+                  </span>
                 </span>
                 <Score score={entry.score} />
               </Link>

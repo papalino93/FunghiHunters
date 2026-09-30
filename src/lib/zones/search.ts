@@ -14,6 +14,8 @@
 export interface SearchableZone {
   readonly code: string
   readonly name: string
+  /** Quota, mostrata accanto al nome nei risultati. */
+  readonly elevationM?: number | null
   /** Punteggio del giorno mostrato, per ordinare i pari merito. */
   readonly score: number
 }

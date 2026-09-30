@@ -37,15 +37,19 @@ export interface ResolvedZoneData {
   readonly label: string
   readonly referenceDate: string
   readonly reliability: ZoneReliability
+  /** Quota, da mostrare accanto al nome. `null` se la fonte non la porta. */
+  readonly elevationM: number | null
 }
 
 export interface SnapshotSource {
-  readonly zones: readonly Pick<SnapshotZone, 'code' | 'mpi' | 'label' | 'dataQuality' | 'stations'>[]
+  readonly zones: readonly (Pick<SnapshotZone, 'code' | 'mpi' | 'label' | 'dataQuality' | 'stations'> &
+    Partial<Pick<SnapshotZone, 'elevationM'>>)[]
   readonly referenceDate: string
 }
 
 export interface IndexSource {
-  readonly zones: readonly Pick<ItaliaIndexEntry, 'code' | 'mpi' | 'label' | 'confidence'>[]
+  readonly zones: readonly (Pick<ItaliaIndexEntry, 'code' | 'mpi' | 'label' | 'confidence'> &
+    Partial<Pick<ItaliaIndexEntry, 'elevationM'>>)[]
   readonly referenceDate: string
 }
 
@@ -65,6 +69,7 @@ export function resolveFollowedZone(
         dataQuality: inSnapshot.dataQuality,
         hasStations: inSnapshot.stations.length > 0,
       },
+      elevationM: inSnapshot.elevationM ?? null,
     }
   }
 
@@ -75,6 +80,7 @@ export function resolveFollowedZone(
       label: inIndex.label,
       referenceDate: index.referenceDate,
       reliability: { kind: 'confidence', confidence: inIndex.confidence },
+      elevationM: inIndex.elevationM ?? null,
     }
   }
 
