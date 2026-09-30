@@ -47,6 +47,7 @@ describe('resolveFollowedZone', () => {
       label: 'discrete',
       referenceDate: '2026-09-22',
       reliability: { kind: 'quality', dataQuality: 81, hasStations: true },
+      elevationM: null,
     })
   })
 
@@ -65,6 +66,7 @@ describe('resolveFollowedZone', () => {
       label: 'poco favorevoli',
       referenceDate: '2026-09-21',
       reliability: { kind: 'confidence', confidence: 63 },
+      elevationM: null,
     })
   })
 

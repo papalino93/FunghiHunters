@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import dynamic from 'next/dynamic'
 import { useSearchParams } from 'next/navigation'
@@ -135,7 +136,12 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
   )
 
   const searchable = useMemo(
-    () => snapshot.zones.map((z) => ({ code: z.code, name: z.name, score: scores[z.code]?.mpi ?? z.mpi })),
+    () => snapshot.zones.map((z) => ({
+        code: z.code,
+        name: z.name,
+        elevationM: z.elevationM,
+        score: scores[z.code]?.mpi ?? z.mpi,
+      })),
     [snapshot.zones, scores],
   )
 
@@ -281,6 +287,9 @@ export function AppShell({ snapshot, regionName, regionSlug, regionChoices }: Ap
                         aria-hidden="true"
                       />
                       {zone.name}
+                      {elevationText(zone.elevationM) !== null && (
+                        <span className="text-ink-faint">{elevationText(zone.elevationM)}</span>
+                      )}
                       {/* Il denominatore anche qui: le pastiglie e i segnaposti devono dire la
                           stessa cosa, altrimenti il numero sulla mappa resta senza scala. */}
                       <span className="tabular font-semibold">

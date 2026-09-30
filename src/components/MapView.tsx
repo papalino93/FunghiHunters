@@ -259,7 +259,7 @@ export function MapView({
       )
       // Sul desktop il nome della zona serve al passaggio del mouse: sul telefono lo danno le
       // pastiglie della classifica in alto, che mostrano lo stesso numero accanto al nome.
-      element.title = `${zone.name} — indice ${score.mpi.toFixed(0)}/100`
+      element.title = `${zone.name}, ${String(Math.round(zone.elevationM))} m — indice ${score.mpi.toFixed(0)}/100`
       element.className =
         'block cursor-pointer border-0 bg-transparent p-0 transition-transform duration-150 ' +
         'focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl'

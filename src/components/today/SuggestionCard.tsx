@@ -1,5 +1,6 @@
 'use client'
 
+import { zoneDetail } from '@/lib/ui/zone-label'
 import Link from 'next/link'
 
 import { rememberLastZonePlace } from '@/lib/zones/lastViewed'
@@ -74,6 +75,10 @@ export function SuggestionCard({
               {zone.name}
             </Link>
           </h3>
+          {/* Accanto al nome: «Mugello» a 900 m e «Borgo San Lorenzo» a 294 m sono posti diversi. */}
+          {zoneDetail(zone) !== null && (
+            <span className="min-w-0 truncate text-xs text-ink-faint">{zoneDetail(zone)}</span>
+          )}
           {following && (
             <span className="shrink-0 rounded bg-accent/15 px-1.5 py-0.5 text-xs font-medium text-accent">
               seguita
@@ -83,10 +88,9 @@ export function SuggestionCard({
         <span className="flex shrink-0 items-center gap-2 text-xs text-ink-faint">
           {distanceKm !== null && (
             <span title="Distanza in linea d'aria, non stradale">
-              {distanceKm.toFixed(0)} km in linea d&apos;aria ·{' '}
+              {distanceKm.toFixed(0)} km in linea d&apos;aria
             </span>
           )}
-          {zone.elevationM} m
           {onToggleFollow !== undefined && (
             <span className="relative z-10">
               <FollowButton following={following} onToggle={onToggleFollow} compact />

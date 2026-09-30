@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useState } from 'react'
 
 import type { SnapshotFactor, SnapshotSource, SnapshotZone } from '@/lib/snapshot/types'
@@ -80,14 +81,18 @@ export function ZoneSheet({
       <header className="shrink-0 border-b border-edge px-4 pb-3 pt-3">
         <div className="flex items-start gap-3">
           <div className="min-w-0 flex-1">
-            <h2 className="truncate text-base font-semibold leading-tight text-ink">{zone.name}</h2>
+            <h2 className="truncate text-base font-semibold leading-tight text-ink">
+              {zone.name}
+              {elevationText(zone.elevationM) !== null && (
+                <span className="font-normal text-ink-dim"> · {elevationText(zone.elevationM)}</span>
+              )}
+            </h2>
             {/* Due righe, non una troncata: a 390 px il tipo di bosco — il dato che dice dove
                 cercare — spariva sempre dietro i puntini. */}
             <p className="line-clamp-2 text-xs text-ink-dim">
               {zone.municipality !== null && zone.municipality !== undefined
                 ? `${zone.municipality} (${zone.province})`
-                : zone.reference} ·{' '}
-              {zone.elevationM} m · {zone.forest.join(', ')}
+                : zone.reference} · {zone.forest.join(', ')}
             </p>
           </div>
 

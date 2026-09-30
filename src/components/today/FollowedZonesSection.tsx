@@ -1,5 +1,6 @@
 'use client'
 
+import { elevationText } from '@/lib/ui/zone-label'
 import { useState } from 'react'
 import Link from 'next/link'
 
@@ -86,7 +87,12 @@ export function FollowedZonesSection({
                 className="flex min-h-11 min-w-0 flex-1 items-center rounded-lg
                            focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
               >
-                <span className="block truncate text-sm font-medium text-ink">{zone.zoneName}</span>
+                <span className="block truncate text-sm font-medium text-ink">
+                  {zone.zoneName}
+                  {elevationText(data?.elevationM) !== null && (
+                    <span className="text-xs font-normal text-ink-faint"> · {elevationText(data?.elevationM)}</span>
+                  )}
+                </span>
               </Link>
               <FollowButton
                 following
