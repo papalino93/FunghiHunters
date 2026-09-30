@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { useAuth } from '@/lib/auth/context'
 import { getBrowserClient } from '@/lib/supabase/client'
@@ -287,19 +287,8 @@ export function AdminScreen() {
         >
           Scarica CSV
         </button>
-        <Table
-          headers={['utente', 'data', 'zona', 'esito', 'punteggio', 'min', 'pers.', 'note']}
-          rows={observations.map((o) => [
-            shortId(o.userId),
-            o.date,
-            o.zoneName ?? o.zoneCode ?? '—',
-            abundanceLabel(o.abundance),
-            o.mpiAtEntry === null ? '—' : o.mpiAtEntry.toFixed(0),
-            o.durationMinutes === null ? '—' : String(o.durationMinutes),
-            o.searchers === null ? '—' : String(o.searchers),
-            o.notes ?? '',
-          ])}
-        />
+        {/* Ricarica senza passare da «Carico…»: il messaggio dell'eliminazione resta a schermo. */}
+        <ObservationsTable observations={observations} onDeleted={() => { setAttempt((n) => n + 1) }} />
       </Section>
     </Shell>
   )
@@ -355,6 +344,223 @@ function Table({ headers, rows }: { headers: readonly string[]; rows: ReadonlyAr
           ))}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+/** Chiave di una riga: lo stesso id di uscita può esistere, in teoria, per due utenti diversi. */
+function rowKey(o: Pick<Observation, 'userId' | 'id'>): string {
+  return `${o.userId}/${o.id}`
+}
+
+async function deleteObservations(items: readonly { userId: string; id: string }[]): Promise<number> {
+  const session = (await getBrowserClient()?.auth.getSession())?.data.session
+  if (session === undefined || session === null) throw new Error('Sessione scaduta: rifai l’accesso.')
+  const response = await fetch('/api/admin/observations', {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ items }),
+  })
+  const body = (await response.json().catch(() => null)) as { deleted?: number; error?: string } | null
+  if (!response.ok) throw new Error(body?.error ?? `Eliminazione non riuscita (${response.status}).`)
+  return body?.deleted ?? 0
+}
+
+/**
+ * L'elenco di tutte le uscite, con la possibilità di eliminarle.
+ *
+ * Pensato per le raffiche di prova («20 registrazioni di test» falserebbero la verifica del
+ * punteggio): si filtra per utente, si seleziona tutto quello che si vede, e si conferma. La
+ * conferma è un secondo pulsante, non un `confirm()` del browser, che su iPhone nell'app
+ * installata a volte non compare.
+ */
+function ObservationsTable({
+  observations,
+  onDeleted,
+}: {
+  observations: readonly Observation[]
+  onDeleted: () => void
+}) {
+  const [userFilter, setUserFilter] = useState<string>('')
+  const [selected, setSelected] = useState<ReadonlySet<string>>(() => new Set())
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [message, setMessage] = useState<string | null>(null)
+
+  const users = useMemo(() => {
+    const counts = new Map<string, number>()
+    for (const o of observations) counts.set(o.userId, (counts.get(o.userId) ?? 0) + 1)
+    return [...counts.entries()].sort((a, b) => b[1] - a[1])
+  }, [observations])
+
+  const visible = userFilter === '' ? observations : observations.filter((o) => o.userId === userFilter)
+  const visibleKeys = visible.map(rowKey)
+  const allVisibleSelected = visibleKeys.length > 0 && visibleKeys.every((k) => selected.has(k))
+  const chosen = observations.filter((o) => selected.has(rowKey(o)))
+
+  const toggle = (key: string): void => {
+    setConfirming(false)
+    setSelected((current) => {
+      const next = new Set(current)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  const toggleAllVisible = (): void => {
+    setConfirming(false)
+    setSelected((current) => {
+      const next = new Set(current)
+      for (const key of visibleKeys) {
+        if (allVisibleSelected) next.delete(key)
+        else next.add(key)
+      }
+      return next
+    })
+  }
+
+  const remove = async (): Promise<void> => {
+    setBusy(true)
+    setMessage(null)
+    try {
+      let deleted = 0
+      // A blocchi di 200, il massimo che la rotta accetta per richiesta.
+      for (let i = 0; i < chosen.length; i += 200) {
+        deleted += await deleteObservations(chosen.slice(i, i + 200).map((o) => ({ userId: o.userId, id: o.id })))
+      }
+      setSelected(new Set())
+      setConfirming(false)
+      setMessage(`${String(deleted)} ${deleted === 1 ? 'uscita eliminata' : 'uscite eliminate'}.`)
+      onDeleted()
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : 'Eliminazione non riuscita.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div>
+      <div className="mb-2 flex flex-wrap items-center gap-2">
+        <label className="text-xs text-ink-dim" htmlFor="admin-user-filter">
+          Utente
+        </label>
+        <select
+          id="admin-user-filter"
+          value={userFilter}
+          onChange={(e) => {
+            setUserFilter(e.target.value)
+            setConfirming(false)
+          }}
+          className="min-h-11 rounded-lg border border-edge bg-surface-2 px-2 text-sm text-ink
+                     focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+        >
+          <option value="">tutti ({observations.length})</option>
+          {users.map(([id, count]) => (
+            <option key={id} value={id}>
+              {shortId(id)} ({count})
+            </option>
+          ))}
+        </select>
+
+        {chosen.length > 0 &&
+          (confirming ? (
+            <span className="flex flex-wrap items-center gap-2">
+              <span className="text-xs text-danger">
+                Eliminare {chosen.length} {chosen.length === 1 ? 'uscita' : 'uscite'}? Sparisce
+                anche dal diario di chi l’ha scritta.
+              </span>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => void remove()}
+                className="min-h-11 rounded-lg border border-danger/50 bg-danger/15 px-3 text-sm font-semibold
+                           text-danger disabled:opacity-50 focus:outline-none focus-visible:ring-2
+                           focus-visible:ring-danger"
+              >
+                {busy ? 'Elimino…' : 'Sì, elimina'}
+              </button>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => { setConfirming(false) }}
+                className="min-h-11 rounded-lg px-3 text-sm text-ink-dim hover:text-ink focus:outline-none
+                           focus-visible:ring-2 focus-visible:ring-accent"
+              >
+                Annulla
+              </button>
+            </span>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setConfirming(true) }}
+              className="min-h-11 rounded-lg border border-danger/40 bg-danger/10 px-3 text-sm font-medium
+                         text-danger transition-colors hover:bg-danger/20 focus:outline-none
+                         focus-visible:ring-2 focus-visible:ring-danger"
+            >
+              Elimina selezionate ({chosen.length})
+            </button>
+          ))}
+      </div>
+      {message !== null && (
+        <p role="status" className="mb-2 rounded-lg bg-surface-2 px-3 py-2 text-xs text-ink-dim">
+          {message}
+        </p>
+      )}
+
+      <div className="overflow-x-auto">
+        <table className="w-full min-w-[44rem] border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-edge text-left text-ink-faint">
+              <th scope="col" className="w-10 px-2 py-1.5">
+                <input
+                  type="checkbox"
+                  aria-label="Seleziona tutte le uscite mostrate"
+                  checked={allVisibleSelected}
+                  onChange={toggleAllVisible}
+                  className="h-5 w-5 accent-[var(--accent)]"
+                />
+              </th>
+              {['utente', 'data', 'zona', 'esito', 'punteggio', 'min', 'pers.', 'note'].map((h) => (
+                <th key={h} scope="col" className="px-2 py-1.5 font-medium uppercase tracking-wide">
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {visible.map((o) => {
+              const key = rowKey(o)
+              const isSelected = selected.has(key)
+              return (
+                <tr
+                  key={key}
+                  className={`border-b border-edge/50 text-ink-dim ${isSelected ? 'bg-danger/5' : ''}`}
+                >
+                  <td className="px-2 py-1">
+                    <input
+                      type="checkbox"
+                      aria-label={`Seleziona l'uscita del ${o.date} a ${o.zoneName ?? o.zoneCode ?? '—'}`}
+                      checked={isSelected}
+                      onChange={() => { toggle(key) }}
+                      className="h-5 w-5 accent-[var(--accent)]"
+                    />
+                  </td>
+                  <td className="px-2 py-1.5 font-mono">{shortId(o.userId)}</td>
+                  <td className="px-2 py-1.5">{o.date}</td>
+                  <td className="px-2 py-1.5">{o.zoneName ?? o.zoneCode ?? '—'}</td>
+                  <td className="px-2 py-1.5">{abundanceLabel(o.abundance)}</td>
+                  <td className="px-2 py-1.5 tabular">{o.mpiAtEntry === null ? '—' : o.mpiAtEntry.toFixed(0)}</td>
+                  <td className="px-2 py-1.5 tabular">{o.durationMinutes === null ? '—' : String(o.durationMinutes)}</td>
+                  <td className="px-2 py-1.5 tabular">{o.searchers === null ? '—' : String(o.searchers)}</td>
+                  <td className="px-2 py-1.5">{o.notes ?? ''}</td>
+                </tr>
+              )
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }
