@@ -1,6 +1,9 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { useEffect, useMemo, useState } from 'react'
+
+import type { PickedPoint } from '@/components/diary/LocationPicker'
 
 import { today as localToday } from '@/lib/domain/time'
 import { lastZoneOr } from '@/lib/zones/lastViewed'
@@ -26,6 +29,15 @@ import {
   type TreeSpecies,
 } from '@/lib/diary/types'
 import { useAuth } from '@/lib/auth/context'
+
+/** La mappa pesa: si scarica solo quando si apre la ricerca del posto. */
+const LocationPicker = dynamic(
+  () => import('@/components/diary/LocationPicker').then((m) => m.LocationPicker),
+  {
+    ssr: false,
+    loading: () => <div className="h-64 w-full animate-pulse rounded-lg bg-surface-2" aria-hidden="true" />,
+  },
+)
 
 const TREE_LABELS: Readonly<Record<TreeSpecies, string>> = {
   faggio: 'faggio',
@@ -107,6 +119,10 @@ export function EntryForm({
     latitude: number
     longitude: number
   } | null>(null)
+  /** Da dove viene il punto preciso: il GPS sul posto, o la mappa (per un'uscita registrata dopo). */
+  const [pointFrom, setPointFrom] = useState<'gps' | 'map'>('gps')
+  const [placeLabel, setPlaceLabel] = useState<string | null>(null)
+  const [pickerOpen, setPickerOpen] = useState(false)
   /** La zona scelta dal GPS e la sua distanza, finché l'utente non ne sceglie un'altra a mano. */
   const [autoZone, setAutoZone] = useState<{ code: string; km: number } | null>(null)
 
@@ -159,6 +175,8 @@ export function EntryForm({
       (result) => {
         const position = { latitude: result.coords.latitude, longitude: result.coords.longitude }
         setCapturedPosition(position)
+        setPointFrom('gps')
+        setPlaceLabel(null)
         setGpsState('idle')
         /*
          * Il «Dove» si compila da solo con la zona conosciuta più vicina: chi registra un'uscita
@@ -208,6 +226,24 @@ export function EntryForm({
     // Solo all'apertura: `requestLocation` cambia a ogni render ma fa sempre la stessa cosa.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  /*
+   * Un punto scelto sulla mappa vale quanto uno del GPS: è il posto preciso dove si è cercato, e
+   * si salva allo stesso modo (`positionSource: 'gps'`, che nel diario vuol dire «punto preciso»).
+   * Come col GPS, in un'uscita nuova la zona diventa da sola quella più vicina.
+   */
+  const pickPoint = (point: PickedPoint): void => {
+    const position = { latitude: point.latitude, longitude: point.longitude }
+    setCapturedPosition(position)
+    setPointFrom('map')
+    if (point.label !== null) setPlaceLabel(point.label)
+    if (editing) return
+    const [nearest] = zonesByDistance(snapshot.zones, position.latitude, position.longitude)
+    if (nearest !== undefined) {
+      setZoneCode(nearest.zone.code)
+      setAutoZone({ code: nearest.zone.code, km: nearest.km })
+    }
+  }
 
   const toggleTree = (species: TreeSpecies): void => {
     setTrees((current) =>
@@ -317,10 +353,17 @@ export function EntryForm({
           ) : capturedPosition !== null ? (
             <div className="flex items-center justify-between gap-3 rounded-lg bg-surface-2 px-2.5 py-2">
               <p className="text-xs leading-snug text-ink-dim">
-                Posizione GPS salvata: {capturedPosition.latitude.toFixed(5)},{' '}
-                {capturedPosition.longitude.toFixed(5)}
+                {pointFrom === 'map' ? 'Punto scelto sulla mappa' : 'Posizione GPS salvata'}
+                {placeLabel !== null && (
+                  <>
+                    : <strong className="font-semibold text-ink">{placeLabel}</strong>
+                  </>
+                )}
+                <span className="block tabular">
+                  {capturedPosition.latitude.toFixed(5)}, {capturedPosition.longitude.toFixed(5)}
+                </span>
                 <span className="mt-0.5 block text-xs text-ink-faint">
-                  Basterà questa per ritrovare il punto in futuro.
+                  Basterà questo per ritrovare il punto in futuro.
                 </span>
               </p>
               <button
@@ -328,6 +371,8 @@ export function EntryForm({
                 onClick={() => {
                   setCapturedPosition(null)
                   setAutoZone(null)
+                  setPlaceLabel(null)
+                  setPickerOpen(false)
                 }}
                 className="min-h-11 shrink-0 rounded-lg px-2 text-xs font-medium text-ink-dim
                            transition-colors hover:text-ink focus:outline-none
@@ -368,10 +413,52 @@ export function EntryForm({
                 </p>
               )}
               <p className="mt-1.5 text-xs leading-snug text-ink-faint">
-                Senza posizione GPS si salva solo il riferimento generico della zona: utile per la
-                calibrazione, ma non per ritrovare il punto esatto.
+                Senza un punto preciso si salva solo il riferimento generico della zona: utile per
+                la calibrazione, ma non per ritrovare il punto esatto.
               </p>
             </>
+          )}
+          {/*
+            * Per le uscite registrate dopo, a casa: il GPS lì darebbe il divano. Si cerca il posto
+            * per nome o lo si tocca sulla mappa.
+            */}
+          {pickerOpen ? (
+            <div className="mt-2">
+              <LocationPicker
+                initial={
+                  capturedPosition !== null
+                    ? { ...capturedPosition, label: placeLabel }
+                    : keptGps && initial !== undefined && initial.latitude !== null && initial.longitude !== null
+                      ? { latitude: initial.latitude, longitude: initial.longitude, label: null }
+                      : null
+                }
+                center={
+                  zone !== undefined && zone.latitude !== null && zone.longitude !== null
+                    ? { latitude: zone.latitude, longitude: zone.longitude }
+                    : null
+                }
+                onChange={pickPoint}
+              />
+              <button
+                type="button"
+                onClick={() => { setPickerOpen(false) }}
+                className="mt-1 min-h-11 text-xs font-medium text-ink-dim underline underline-offset-2 hover:text-ink"
+              >
+                Chiudi la mappa
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => { setPickerOpen(true) }}
+              className="mt-2 min-h-11 w-full rounded-lg border border-edge bg-surface-2 px-3 text-sm
+                         font-medium text-ink transition-colors hover:bg-surface-3
+                         focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
+            >
+              {capturedPosition !== null || keptGps
+                ? 'Correggi il punto sulla mappa'
+                : 'Cerca il posto o sceglilo sulla mappa'}
+            </button>
           )}
         </fieldset>
 

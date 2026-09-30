@@ -125,8 +125,11 @@ export interface DiaryEntry {
   /**
    * Coordinate, conservate secondo `privacy`. `null` quando non le hai volute salvare.
    *
-   * `positionSource` dice cosa sono davvero: `'gps'` è il punto dove hai effettivamente cercato,
-   * catturato sul momento — quello che serve per ritrovare una fungaia. `'zone'` è solo il punto
+   * `positionSource` dice cosa sono davvero: `'gps'` è il punto dove hai effettivamente cercato
+   * — quello che serve per ritrovare una fungaia —, catturato sul momento dal GPS oppure scelto
+   * dopo sulla mappa (dal 30/09/2026, `LocationPicker`). Il nome è rimasto `'gps'` perché il
+   * database accetta solo `'gps'` e `'zone'`: per il modello conta che sia un punto preciso, non
+   * da quale strumento arrivi. `'zone'` è solo il punto
    * di riferimento della zona del modello (un centro storico, non un posto), usato quando non hai
    * voluto o potuto dare il permesso di posizione: è lo stesso comportamento di prima, non
    * rimosso, ma ora distinguibile da un punto vero. `null` quando non c'è nessuna coordinata.

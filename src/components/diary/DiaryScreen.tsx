@@ -430,9 +430,18 @@ function EntryRow({
               <> · {entry.searchers} {entry.searchers === 1 ? 'persona' : 'persone'}</>
             )}
           </p>
-          {entry.positionSource === 'gps' && (
+          {entry.positionSource === 'gps' && entry.latitude !== null && entry.longitude !== null && (
             <p className="mt-0.5 text-xs text-ink-faint">
-              posizione GPS salvata, puoi ritrovare il punto
+              punto preciso salvato{entry.privacy === 'area' && ' (area di circa 2 km)'} ·{' '}
+              {/* Google Maps: su iPhone e su Android apre l'app se c'è, altrimenti il sito. */}
+              <a
+                href={`https://www.google.com/maps/search/?api=1&query=${String(entry.latitude)},${String(entry.longitude)}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="relative text-accent underline underline-offset-2 after:absolute after:-inset-y-3 after:inset-x-0 after:content-['']"
+              >
+                apri nella mappa
+              </a>
             </p>
           )}
           {entry.trees.length > 0 && (
