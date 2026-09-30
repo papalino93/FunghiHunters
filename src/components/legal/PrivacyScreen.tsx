@@ -119,6 +119,10 @@ export function PrivacyScreen() {
           <li>Google: solo se scegli di accedere con Google.</li>
           <li>CARTO: le tessere della mappa, che il browser scarica direttamente.</li>
           <li>Open-Meteo e OpenStreetMap/Nominatim: meteo e nomi dei luoghi, chiamati dal nostro server.</li>
+          <li>
+            Photon (komoot, dati OpenStreetMap): la ricerca di un posto per nome nel diario. Riceve
+            dal nostro server solo le parole cercate, non chi le cerca.
+          </li>
           <li>Buy Me a Coffee: il pulsante per sostenere il progetto, caricato dal loro sito.</li>
         </ul>
         <p className="mt-2">
