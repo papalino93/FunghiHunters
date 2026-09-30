@@ -171,6 +171,19 @@ export function WelcomeHero({ zoneCount }: WelcomeHeroProps) {
           </Link>{' '}
           per ritrovare il diario su un altro dispositivo
         </p>
+        {/* Il benvenuto lo vede chi arriva la prima volta: il momento giusto per dirlo. */}
+        <p className="mt-2 text-center text-xs leading-relaxed text-ink-faint">
+          <Link
+            href="/installa"
+            onClick={dismiss}
+            className="relative font-medium text-accent underline underline-offset-2 hover:text-ink
+                       focus:outline-none focus-visible:ring-2 focus-visible:ring-accent
+                       after:absolute after:inset-x-0 after:-inset-y-4 after:content-['']"
+          >
+            Installa l&apos;app sul telefono
+          </Link>{' '}
+          (iPhone e Android): si apre anche senza rete
+        </p>
       </div>
     </section>
   )

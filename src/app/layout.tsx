@@ -6,6 +6,7 @@ import { AuthCallbackNotice } from '@/components/AuthCallbackNotice'
 import { BottomNav } from '@/components/BottomNav'
 import { JsonLd } from '@/components/JsonLd'
 import { InstallPrompt } from '@/components/InstallPrompt'
+import { InstallSheet } from '@/components/install/InstallSheet'
 import { ServiceWorker } from '@/components/ServiceWorker'
 import { SiteAnalytics } from '@/components/SiteAnalytics'
 import { AuthProvider } from '@/lib/auth/context'
@@ -17,6 +18,7 @@ import {
   TITLE_SUFFIX,
 } from '@/lib/seo/metadata'
 import { verificationMetadata } from '@/lib/seo/services'
+import { INSTALL_BOOT_SCRIPT } from '@/lib/pwa/boot'
 import { APP_VERSION, BUILD_TIME } from '@/lib/ui/version'
 import { WELCOME_BOOT_SCRIPT } from '@/lib/ui/welcome'
 import './globals.css'
@@ -105,6 +107,8 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
          * body, e non un `next/script` (che parte dopo). Vedi `lib/ui/welcome.ts`.
          */}
         <script dangerouslySetInnerHTML={{ __html: WELCOME_BOOT_SCRIPT }} />
+        {/* Chrome manda l'invito all'installazione una volta sola, spesso prima di React: vedi `lib/pwa/boot.ts`. */}
+        <script dangerouslySetInnerHTML={{ __html: INSTALL_BOOT_SCRIPT }} />
         <JsonLd
           data={{
             '@context': 'https://schema.org',
@@ -132,6 +136,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
           </main>
           <InstallPrompt />
           <BottomNav />
+          <InstallSheet />
         </AuthProvider>
         <ServiceWorker />
         <SiteAnalytics />

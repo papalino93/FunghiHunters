@@ -1,29 +1,22 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { useMemo, useState } from 'react'
 
-import { useIsHydrated } from '@/lib/ui/useIsHydrated'
+import { InAppNotice, InstallSteps } from '@/components/install/InstallSteps'
+import { promptInstall, useInstallState } from '@/lib/pwa/install-store'
+import { isIosPlatform, isMobilePlatform } from '@/lib/pwa/platform'
 
 const DISMISS_KEY = 'fungicast:install-dismissed'
 /**
- * Dopo la ×, l'invito torna fra un mese e non mai più. Chiuderlo significa quasi sempre "non
+ * Dopo la ×, l'invito torna fra una settimana e non mai più. Chiuderlo significa quasi sempre "non
  * adesso": chi apre l'app dal telefono in bosco è esattamente chi ne ha bisogno installata (si
- * apre anche senza rete), e un rifiuto di settembre non deve valere per la stagione dopo. Un mese
- * resta abbastanza raro da non diventare insistenza.
+ * apre anche senza rete), e un rifiuto di settembre non deve valere per il resto della stagione.
+ * Era un mese: installarla è la cosa più utile che si possa fare con l'app, e un mese in
+ * autunno è mezza stagione.
  */
-const SNOOZE_MS = 30 * 24 * 60 * 60 * 1000
-
-/**
- * L'evento che Chrome (Android e desktop) manda quando l'app è installabile.
- * Non è negli standard DOM di TypeScript perché non è uno standard: è un'estensione di
- * Chromium, ed è il motivo per cui su iPhone non arriva mai e serve la via manuale.
- */
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>
-  readonly userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>
-}
-
-type Platform = 'ios-safari' | 'ios-other' | 'android' | null
+const SNOOZE_MS = 7 * 24 * 60 * 60 * 1000
 
 function readSnoozed(now: number): boolean {
   try {
@@ -36,25 +29,6 @@ function readSnoozed(now: number): boolean {
     // Storage bloccato: mostrare di nuovo l'invito è meglio che sopprimerlo per sempre.
     return false
   }
-}
-
-/** Già installata: l'app parte in `standalone`, senza la barra del browser. */
-function isStandalone(): boolean {
-  if (window.matchMedia('(display-mode: standalone)').matches) return true
-  // Safari su iOS non implementa `display-mode: standalone`: usa una proprietà sua.
-  return (window.navigator as { standalone?: boolean }).standalone === true
-}
-
-/** Solo telefoni e tablet: da un computer "installare l'app" non è ciò che serve in bosco. */
-function platformOf(): Platform {
-  const ua = navigator.userAgent
-  const ios = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1)
-  if (ios) {
-    // Chrome, Firefox ed Edge su iPhone hanno una propria sigla; senza, è Safari.
-    return /CriOS|FxiOS|EdgiOS|OPiOS/.test(ua) ? 'ios-other' : 'ios-safari'
-  }
-  if (/Android/.test(ua)) return 'android'
-  return null
 }
 
 function nowMs(): number {
@@ -74,30 +48,15 @@ function nowMs(): number {
  * si decida) l'unica cosa onesta è dire a parole dove toccare, per il browser che si ha davanti.
  */
 export function InstallPrompt() {
-  const hydrated = useIsHydrated()
-  const [deferred, setDeferred] = useState<BeforeInstallPromptEvent | null>(null)
+  const state = useInstallState()
+  const pathname = usePathname()
   const [closed, setClosed] = useState(false)
   const [howTo, setHowTo] = useState(false)
-  const snoozed = useMemo(() => (hydrated ? readSnoozed(nowMs()) : true), [hydrated])
-  const installed = useMemo(() => (hydrated ? isStandalone() : true), [hydrated])
-  const platform = useMemo(() => (hydrated ? platformOf() : null), [hydrated])
+  const snoozed = useMemo(() => (state.ready ? readSnoozed(nowMs()) : true), [state.ready])
 
-  useEffect(() => {
-    const onPrompt = (event: Event): void => {
-      // Senza `preventDefault` Chrome mostra la sua barra, e l'invito verrebbe detto due volte.
-      event.preventDefault()
-      setDeferred(event as BeforeInstallPromptEvent)
-    }
-    const onInstalled = (): void => { setDeferred(null); setClosed(true) }
-    window.addEventListener('beforeinstallprompt', onPrompt)
-    window.addEventListener('appinstalled', onInstalled)
-    return () => {
-      window.removeEventListener('beforeinstallprompt', onPrompt)
-      window.removeEventListener('appinstalled', onInstalled)
-    }
-  }, [])
-
-  if (!hydrated || installed || closed || snoozed || platform === null) return null
+  if (!state.ready || state.installed || closed || snoozed || !isMobilePlatform(state.platform)) return null
+  // Sulla pagina che spiega come si fa, la barra che rimanda lì sarebbe un doppione.
+  if (pathname === '/installa') return null
 
   const dismiss = (): void => {
     try {
@@ -109,15 +68,15 @@ export function InstallPrompt() {
   }
 
   const install = (): void => {
-    if (deferred === null) {
+    if (!state.canPrompt) {
       setHowTo((v) => !v)
       return
     }
-    void deferred.prompt()
-    // La scelta la fa il sistema operativo: qui si chiude comunque, perché se accetta l'app si
-    // installa e se rifiuta ripresentare subito la stessa richiesta sarebbe insistere.
-    setDeferred(null)
-    dismiss()
+    // La scelta la fa il sistema operativo. Se accetta, `appinstalled` nasconde la barra; se
+    // rifiuta, la barra resta con le istruzioni a mano, senza riproporre subito la finestra.
+    void promptInstall().then((outcome) => {
+      if (outcome !== 'accepted') setHowTo(true)
+    })
   }
 
   return (
@@ -136,12 +95,12 @@ export function InstallPrompt() {
         <button
           type="button"
           onClick={install}
-          aria-expanded={deferred === null ? howTo : undefined}
+          aria-expanded={state.canPrompt ? undefined : howTo}
           className="min-h-11 shrink-0 rounded-lg border border-accent bg-accent/15 px-3 text-sm
                      font-semibold text-ink transition-colors hover:bg-accent/25
                      focus:outline-none focus-visible:ring-2 focus-visible:ring-accent"
         >
-          {deferred !== null ? 'Installa' : 'Come si fa'}
+          {state.canPrompt ? 'Installa' : 'Come si fa'}
         </button>
         <button
           type="button"
@@ -157,30 +116,17 @@ export function InstallPrompt() {
         </button>
       </div>
 
-      {deferred === null && howTo && (
-        <p className="mx-auto mt-2 max-w-2xl rounded-lg bg-surface-2 px-3 py-2 text-sm leading-snug text-ink-dim">
-          {platform === 'ios-safari' && (
-            <>
-              Tocca <strong className="text-ink">Condividi</strong> (il quadrato con la freccia verso
-              l&apos;alto, in basso), poi <strong className="text-ink">Aggiungi alla schermata Home</strong>.
-            </>
-          )}
-          {platform === 'ios-other' && (
-            <>
-              Tocca <strong className="text-ink">Condividi</strong> (in alto a destra, accanto
-              all&apos;indirizzo), poi <strong className="text-ink">Aggiungi alla schermata Home</strong>.
-              Se non la trovi, apri questa pagina in Safari.
-            </>
-          )}
-          {platform === 'android' && (
-            <>
-              Tocca il menu del browser (<strong className="text-ink">⋮</strong> in alto a destra, o
-              <strong className="text-ink"> ≡</strong> in basso), poi{' '}
-              <strong className="text-ink">Installa app</strong> o{' '}
-              <strong className="text-ink">Aggiungi a schermata Home</strong>.
-            </>
-          )}
-        </p>
+      {howTo && (
+        <div className="mx-auto mt-2 max-w-2xl space-y-2 rounded-lg bg-surface-2 px-3 py-2.5">
+          {state.inApp && <InAppNotice ios={isIosPlatform(state.platform)} />}
+          <InstallSteps platform={state.platform} compact />
+          <Link
+            href="/installa"
+            className="inline-flex min-h-11 items-center text-sm text-accent underline underline-offset-2"
+          >
+            Guida passo passo, per tutti i telefoni
+          </Link>
+        </div>
       )}
     </aside>
   )
