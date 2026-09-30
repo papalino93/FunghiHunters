@@ -1,5 +1,6 @@
 import Link from 'next/link'
 
+import { InstallSteps } from '@/components/install/InstallSteps'
 import { ANALYTICS_ENABLED } from '@/lib/seo/services'
 
 /**
@@ -18,6 +19,7 @@ import { ANALYTICS_ENABLED } from '@/lib/seo/services'
 const SEZIONI = [
   { id: 'cosa-fa', titolo: 'Cosa fa, e cosa non fa' },
   { id: 'regole', titolo: 'Regole di utilizzo' },
+  { id: 'installa', titolo: 'Installare l’app sul telefono' },
   { id: 'uso', titolo: 'Come si usa, schermata per schermata' },
   { id: 'diario-guida', titolo: 'Il diario e i punti salvati' },
   { id: 'dati', titolo: 'I tuoi dati e la riservatezza' },
@@ -113,6 +115,30 @@ export function GuideScreen() {
           Copertura telefonica assente, temporali, buio che arriva prima del previsto, terreno
           scivoloso. Dì a qualcuno dove vai, e usa i <em>punti salvati</em> per ritrovare l&apos;auto.
         </Regola>
+      </Sezione>
+
+      <Sezione id="installa" titolo="Installare l’app sul telefono">
+        <p>
+          Mettila nella schermata Home: si apre dall&apos;icona come un&apos;app, a tutto schermo, e
+          anche senza rete in bosco. Niente store, un minuto. Istruzioni per ogni browser in{' '}
+          <Link href="/installa" className="text-accent underline underline-offset-2">
+            Installa l&apos;app
+          </Link>
+          .
+        </p>
+        <div className="rounded-lg border border-edge bg-surface-1 px-3 py-2.5">
+          <h3 className="mb-2 text-sm font-medium text-ink">iPhone, con Safari</h3>
+          <InstallSteps platform="ios-safari" compact />
+          <p className="mt-2 text-sm">
+            <Link href="/installa#iphone-aiuto" className="text-accent underline underline-offset-2">
+              iPhone: se qualcosa non va
+            </Link>
+          </p>
+        </div>
+        <div className="rounded-lg border border-edge bg-surface-1 px-3 py-2.5">
+          <h3 className="mb-2 text-sm font-medium text-ink">Android, con Chrome</h3>
+          <InstallSteps platform="android-chrome" compact />
+        </div>
       </Sezione>
 
       <Sezione id="uso" titolo="Come si usa, schermata per schermata">
@@ -264,7 +290,8 @@ export function GuideScreen() {
         </Faq>
         <Faq domanda="Funziona senza rete, nel bosco?">
           Sì, per quello che è già stato caricato: l&apos;app si installa come applicazione sul
-          telefono e conserva l&apos;ultimo calcolo. Il diario si scrive anche in modalità aereo, e
+          telefono (<Link href="/installa" className="text-accent underline underline-offset-2">ecco
+          come</Link>) e conserva l&apos;ultimo calcolo. Il diario si scrive anche in modalità aereo, e
           si sincronizza da solo quando torna la connessione. Quello che non può fare senza rete è
           aggiornare i dati meteo.
         </Faq>

@@ -9,6 +9,7 @@ import { getBrowserClient } from '@/lib/supabase/client'
 import { useDiarySync } from '@/lib/sync/useDiarySync'
 import { useIsHydrated } from '@/lib/ui/useIsHydrated'
 import { versionLabel } from '@/lib/ui/version'
+import { InstallCard } from '@/components/install/InstallCard'
 import { RegionPicker } from '@/components/RegionPicker'
 import type { RegionChoice } from '@/lib/region/preference'
 
@@ -91,6 +92,8 @@ function Shell({
           Accedi solo se vuoi ritrovare il diario e le zone che segui su un altro telefono. I punti fissi del diario restano sempre e solo su questo.
         </p>
       </header>
+      {/* Prima di tutto il resto: è la cosa più utile che si possa fare da questa schermata. */}
+      <InstallCard className="mb-4" />
       {/*
         * Sopra il pannello di accesso, non dentro: la regione di riferimento vale anche senza
         * account, e metterla fra le cose che si sbloccano accedendo direbbe il contrario. Chi si
