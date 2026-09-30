@@ -31,8 +31,14 @@ describe('peso di un giorno di pioggia', () => {
 })
 
 describe('innesco', () => {
-  it('in produzione (rampa spenta) non cambia niente: 19,5 mm non innescano', () => {
+  it('in produzione (1.7.0) la rampa è accesa: 19,5 mm innescano quasi per intero', () => {
+    expect(ALGORITHM_V1.trigger.rampMm?.value).toBe(10)
     const t = computeTrigger(features([{ daysAgo: 12, mm: 19.5 }]), ALGORITHM_V1)
+    expect(t.closeness).toBeCloseTo(0.95)
+  })
+
+  it('senza rampa resta la soglia secca: 19,5 mm non innescano', () => {
+    const t = computeTrigger(features([{ daysAgo: 12, mm: 19.5 }]), configTriggerRamp(0))
     expect(t.closeness).toBe(0)
   })
 

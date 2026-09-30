@@ -16,6 +16,20 @@ export interface ModelRelease {
 
 export const MODEL_CHANGELOG: readonly ModelRelease[] = [
   {
+    version: '1.7.0-porcino',
+    date: '2026-09-30',
+    title: 'Niente più salti fra zone vicine per mezzo millimetro di pioggia',
+    what:
+      'La pioggia intensa che innesca la nascita conta in modo graduale: per intero da 20 mm in un ' +
+      'giorno, per niente sotto i 10 mm, in proporzione in mezzo. Prima valeva tutto o niente a 20 mm.',
+    why:
+      'Il 17 settembre il pluviometro di Trappola (Pratomagno) ha misurato 19,5 mm e quello di ' +
+      'Vallombrosa (Montemignaio) 47,1: con la soglia secca il Pratomagno restava a 23 e Montemignaio ' +
+      'saliva a 95. In Toscana 52 coppie di zone vicine differivano così di oltre 40 punti. Sui 264 ' +
+      'ritrovamenti reali del banco di prova il modello distingue i giorni buoni come prima (AUC ' +
+      '0,755) e sbaglia un po\' meno le probabilità.',
+  },
+  {
     version: '1.6.1-porcino',
     date: '2026-09-25',
     title: 'La pioggia vista meglio, e tutta la Toscana con le stazioni',
