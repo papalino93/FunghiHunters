@@ -134,3 +134,94 @@ export async function GET(request: Request): Promise<NextResponse> {
     })),
   }, { headers: NO_STORE })
 }
+
+/** Uscite eliminabili in una richiesta: abbastanza per ripulire una raffica di prove. */
+const MAX_DELETE = 200
+
+interface DeleteItem {
+  readonly userId: string
+  readonly id: string
+}
+
+function parseDeleteBody(body: unknown): DeleteItem[] | null {
+  if (typeof body !== 'object' || body === null) return null
+  const items = (body as { items?: unknown }).items
+  if (!Array.isArray(items) || items.length === 0 || items.length > MAX_DELETE) return null
+  const out: DeleteItem[] = []
+  for (const item of items) {
+    if (typeof item !== 'object' || item === null) return null
+    const { userId, id } = item as { userId?: unknown; id?: unknown }
+    if (typeof userId !== 'string' || typeof id !== 'string' || userId === '' || id === '') return null
+    if (userId.length > 64 || id.length > 128) return null
+    out.push({ userId, id })
+  }
+  return out
+}
+
+/**
+ * Elimina uscite di qualunque utente: le registrazioni di prova, le raffiche doppie, quello che
+ * falserebbe la calibrazione.
+ *
+ * **Non cancella la riga: la marca** (`deleted_at`), esattamente come fa il telefono quando
+ * l'utente elimina un'uscita. È il solo modo perché la cancellazione arrivi anche al dispositivo
+ * di chi l'aveva scritta: la sincronizzazione vede la marca più recente e toglie l'uscita dal suo
+ * diario. Una riga sparita del tutto, invece, il telefono la rimanderebbe su alla prima occasione.
+ *
+ * Stesse difese della lettura: 404 per chi non è l'amministratore, e **niente registro, niente
+ * cancellazione** — la riga in `admin_access_log` si scrive prima di toccare qualunque dato.
+ */
+export async function DELETE(request: Request): Promise<NextResponse> {
+  const check = await requireAdmin(request)
+  if (!check.ok) return adminNotFound()
+
+  const admin = getAdminClient()
+  if (admin === null) return adminNotFound()
+
+  const items = parseDeleteBody(await request.json().catch(() => null))
+  if (items === null) {
+    return NextResponse.json(
+      { error: `Indica da 1 a ${String(MAX_DELETE)} uscite, ognuna con utente e id.` },
+      { status: 400, headers: NO_STORE },
+    )
+  }
+
+  const { error: logError } = await admin.from('admin_access_log').insert({
+    admin_user_id: check.adminUserId,
+    action: 'observations.delete',
+    rows_returned: items.length,
+    user_agent: request.headers.get('user-agent'),
+    ip_address: request.headers.get('x-forwarded-for'),
+  })
+  if (logError !== null) {
+    console.error('[admin] registro accessi non scritto, cancellazione negata:', logError.message)
+    return NextResponse.json(
+      { error: 'Registro degli accessi non disponibile: nessuna uscita è stata eliminata.' },
+      { status: 503, headers: NO_STORE },
+    )
+  }
+
+  const byUser = new Map<string, string[]>()
+  for (const item of items) byUser.set(item.userId, [...(byUser.get(item.userId) ?? []), item.id])
+
+  // Stesso formato delle date scritte dai telefoni: la sincronizzazione le confronta.
+  const now = new Date().toISOString()
+  let deleted = 0
+  for (const [userId, ids] of byUser) {
+    const { data, error } = await admin
+      .from('user_observations')
+      .update({ deleted_at: now, updated_at: now })
+      .eq('user_id', userId)
+      .in('client_id', ids)
+      .is('deleted_at', null)
+      .select('client_id')
+    if (error !== null) {
+      return NextResponse.json(
+        { error: `Eliminazione interrotta: ${error.message}`, deleted },
+        { status: 500, headers: NO_STORE },
+      )
+    }
+    deleted += (data ?? []).length
+  }
+
+  return NextResponse.json({ deleted }, { headers: NO_STORE })
+}

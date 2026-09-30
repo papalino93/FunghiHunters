@@ -90,6 +90,12 @@ export function PrivacyScreen() {
             modificare. Se il registro non si può scrivere, il pannello non mostra niente.
           </li>
           <li>
+            <strong className="text-ink">Uscite eliminate dal titolare:</strong> dal pannello il
+            titolare può eliminare uscite evidentemente di prova o anomale, che falserebbero la
+            verifica del punteggio. Anche questo resta nel registro, e l&apos;uscita sparisce anche
+            dal tuo diario alla sincronizzazione successiva.
+          </li>
+          <li>
             <strong className="text-ink">Accesso:</strong> con un link via email o con Google. Con
             Google, Google sa che hai fatto l&apos;accesso a FungiCast; noi riceviamo solo email e
             nome dell&apos;account.
