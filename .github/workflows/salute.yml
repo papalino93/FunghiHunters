@@ -1,0 +1,37 @@
+name: Salute del database
+
+# Una richiesta al giorno al database, attraverso il sito (`/api/salute`).
+#
+# Supabase mette in pausa i progetti gratuiti dopo una settimana senza attività: con pochi
+# utenti che sincronizzano il diario, fuori stagione capita, e allora accesso, diario
+# sincronizzato e pannello si fermano finché non li si riattiva a mano. Questa corsa tiene il
+# database attivo ed è anche un controllo vero: se il database non risponde diventa rossa, e
+# GitHub manda l'avviso.
+#
+# Nessuna chiave qui: la richiesta al database la fa il sito, con le variabili che ha già su
+# Vercel. Due orari diversi, perché il cron di GitHub a volte salta o ritarda di ore.
+on:
+  schedule:
+    - cron: '17 7 * * *'
+    - cron: '47 19 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  salute:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Chiama /api/salute
+        run: |
+          for attempt in 1 2 3 4 5; do
+            body=$(curl -sS --max-time 30 -w '\n%{http_code}' https://funghihunters.vercel.app/api/salute || true)
+            code=$(printf '%s' "$body" | tail -n1)
+            echo "Tentativo $attempt: HTTP $code $(printf '%s' "$body" | head -n1)"
+            if [ "$code" = "200" ]; then exit 0; fi
+            sleep $((attempt * 30))
+          done
+          echo "::error::Il database non risponde: controlla il progetto su Supabase (potrebbe essere in pausa)."
+          exit 1
