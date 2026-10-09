@@ -9,11 +9,12 @@ name: Salute del database
 # GitHub manda l'avviso.
 #
 # Nessuna chiave qui: la richiesta al database la fa il sito, con le variabili che ha già su
-# Vercel. Due orari diversi, perché il cron di GitHub a volte salta o ritarda di ore.
+# Vercel. Ogni sei ore e non una volta al giorno: il cron di GitHub salta o ritarda anche di
+# ore (il 9/10/2026 la corsa delle 7:17 non era ancora partita a metà mattina), e la pausa di
+# Supabase non deve dipendere da un solo giro riuscito.
 on:
   schedule:
-    - cron: '17 7 * * *'
-    - cron: '47 19 * * *'
+    - cron: '17 */6 * * *'
   workflow_dispatch:
 
 permissions:
