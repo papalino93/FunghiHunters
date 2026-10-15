@@ -1,6 +1,6 @@
 {
  "schemaVersion": "1",
- "generatedAt": "2026-10-15T01:25:11.464Z",
+ "generatedAt": "2026-10-15T15:50:18.104Z",
  "algorithmVersion": "1.7.0-porcino",
  "referenceDate": "2026-10-15",
  "zones": [
@@ -26,7 +26,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni sfavorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": -1.7,
+   "development": -2.2,
    "series": [
     {
      "date": "2026-10-01",
@@ -219,9 +219,9 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 12.4,
-     "tMaxC": 20.7,
-     "windMs": 2.2222222222222223
+     "tMinC": 12.3,
+     "tMaxC": 20.4,
+     "windMs": 2.3333333333333335
     },
     {
      "date": "2026-10-16",
@@ -232,9 +232,9 @@
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 12,
+     "tMinC": 11.5,
      "tMaxC": 18.5,
-     "windMs": 3.0555555555555554
+     "windMs": 3.1111111111111107
     },
     {
      "date": "2026-10-17",
@@ -245,74 +245,74 @@
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 11.4,
-     "tMaxC": 17.9,
-     "windMs": 1.5833333333333333
+     "tMinC": 11,
+     "tMaxC": 18.4,
+     "windMs": 1.6388888888888888
     },
     {
      "date": "2026-10-18",
-     "mpi": 8.6,
-     "mpiRaw": 8.6,
+     "mpi": 7.4,
+     "mpiRaw": 7.4,
      "confidence": 39.7,
      "dataQuality": 76.8,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 3.6,
-     "tMinC": 11.9,
-     "tMaxC": 15.6,
-     "windMs": 3.9166666666666665
+     "rainMm": 1.2,
+     "tMinC": 12.1,
+     "tMaxC": 15.9,
+     "windMs": 4.388888888888889
     },
     {
      "date": "2026-10-19",
-     "mpi": 8.4,
-     "mpiRaw": 8.4,
+     "mpi": 7.5,
+     "mpiRaw": 7.5,
      "confidence": 33,
      "dataQuality": 76.8,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 11.8,
-     "tMaxC": 18.6,
-     "windMs": 3.138888888888889
+     "rainMm": 0.3,
+     "tMinC": 11.9,
+     "tMaxC": 16,
+     "windMs": 3.0277777777777777
     },
     {
      "date": "2026-10-20",
-     "mpi": 8.3,
-     "mpiRaw": 8.3,
+     "mpi": 10.2,
+     "mpiRaw": 10.2,
      "confidence": 27.4,
      "dataQuality": 76.8,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 1.2,
-     "tMinC": 11.7,
-     "tMaxC": 16.2,
-     "windMs": 1.8333333333333333
+     "rainMm": 6.4,
+     "tMinC": 11.4,
+     "tMaxC": 16,
+     "windMs": 3.083333333333333
     },
     {
      "date": "2026-10-21",
-     "mpi": 11.2,
-     "mpiRaw": 11.2,
+     "mpi": 9.5,
+     "mpiRaw": 9.5,
      "confidence": 23,
      "dataQuality": 76.8,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 7.5,
-     "tMinC": 12.4,
-     "tMaxC": 15.7,
-     "windMs": 1.8333333333333333
+     "rainMm": 1.1,
+     "tMinC": 11.2,
+     "tMaxC": 16.2,
+     "windMs": 3.2777777777777777
     },
     {
      "date": "2026-10-22",
-     "mpi": 10.1,
-     "mpiRaw": 10.1,
+     "mpi": 11,
+     "mpiRaw": 11,
      "confidence": 19.2,
      "dataQuality": 76.8,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 11.5,
-     "tMaxC": 18.1,
-     "windMs": 1.5833333333333333
+     "rainMm": 4.65,
+     "tMinC": 10.7,
+     "tMaxC": 15.4,
+     "windMs": 3.0277777777777777
     }
    ],
    "weather": {
@@ -323,16 +323,16 @@
     "rain26d": 27.40807153676658,
     "effectiveWaterMm": 19,
     "initialDeficitMm": 33.6,
-    "et0_7d": 14.11,
-    "et0_14d": 27.660000000000004,
-    "tMean20d": 15.392104251297607,
+    "et0_7d": 14.07,
+    "et0_14d": 27.62,
+    "tMean20d": 15.382104251297608,
     "tMinWindow": 7.230919088329136,
     "tMaxWindow": 24.772270966634245,
-    "soilTemperatureMean": 13.132142857142856,
-    "soilMoisture": 0.24050000000000002,
-    "vpdMean7d": 0.4336309523809524,
-    "windMean7d": 3.1587301587301586,
-    "humidityMean7d": 73.13095238095238
+    "soilTemperatureMean": 13.135119047619046,
+    "soilMoisture": 0.2436666666666666,
+    "vpdMean7d": 0.4257142857142857,
+    "windMean7d": 3.1746031746031744,
+    "humidityMean7d": 73.47619047619048
    },
    "positiveFactors": [],
    "negativeFactors": [
@@ -403,7 +403,7 @@
      "key": "penalty.heatShock",
      "label": "Impennata di caldo",
      "contribution": 0,
-     "value": "massima salita di 4.5 °C sopra la media del periodo, soglia 8 °C",
+     "value": "massima salita di 4.6 °C sopra la media del periodo, soglia 8 °C",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     },
@@ -557,11 +557,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-21",
-    "peakMpi": 11.2,
+    "peakDate": "2026-10-22",
+    "peakMpi": 11,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Le condizioni restano sfavorevoli per tutto l'orizzonte disponibile. Il limite principale resta acqua disponibile nel suolo. Parliamo però di una previsione a 6 giorni, quindi con incertezza rilevante."
+    "narrative": "Le condizioni restano sfavorevoli per tutto l'orizzonte disponibile. Il limite principale resta acqua disponibile nel suolo. Parliamo però di una previsione a 7 giorni, quindi con incertezza rilevante."
    },
    "observedDays": 60,
    "windowDays": 61,
@@ -647,7 +647,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni discretamente favorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 5.3,
+   "development": 6.2,
    "series": [
     {
      "date": "2026-10-01",
@@ -840,9 +840,9 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 9.3,
-     "tMaxC": 19.9,
-     "windMs": 2.3333333333333335
+     "tMinC": 9.9,
+     "tMaxC": 19.7,
+     "windMs": 2.4722222222222223
     },
     {
      "date": "2026-10-16",
@@ -853,87 +853,87 @@
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 9.9,
-     "tMaxC": 19,
+     "tMinC": 9.8,
+     "tMaxC": 18.7,
      "windMs": 1.6666666666666665
     },
     {
      "date": "2026-10-17",
-     "mpi": 54.3,
-     "mpiRaw": 54.3,
+     "mpi": 54.2,
+     "mpiRaw": 54.2,
      "confidence": 46.8,
      "dataQuality": 74.3,
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 10.3,
-     "tMaxC": 17.3,
-     "windMs": 2
+     "tMinC": 9.8,
+     "tMaxC": 18,
+     "windMs": 1.8888888888888888
     },
     {
      "date": "2026-10-18",
-     "mpi": 56,
-     "mpiRaw": 56,
+     "mpi": 57,
+     "mpiRaw": 57,
      "confidence": 38.8,
      "dataQuality": 74.3,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 1.5,
-     "tMinC": 9.8,
-     "tMaxC": 17,
-     "windMs": 2.1944444444444446
+     "rainMm": 3.9,
+     "tMinC": 10.8,
+     "tMaxC": 16.1,
+     "windMs": 2.111111111111111
     },
     {
      "date": "2026-10-19",
-     "mpi": 54.9,
-     "mpiRaw": 54.9,
+     "mpi": 57.7,
+     "mpiRaw": 57.7,
      "confidence": 32.4,
      "dataQuality": 74.3,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 10.6,
-     "tMaxC": 18.9,
-     "windMs": 1.777777777777778
+     "rainMm": 4.4,
+     "tMinC": 11.8,
+     "tMaxC": 16.3,
+     "windMs": 1.8055555555555556
     },
     {
      "date": "2026-10-20",
-     "mpi": 55.8,
-     "mpiRaw": 55.8,
+     "mpi": 58.8,
+     "mpiRaw": 58.8,
      "confidence": 27,
      "dataQuality": 74.3,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 0.2,
-     "tMinC": 9,
-     "tMaxC": 17.9,
-     "windMs": 1.75
+     "rainMm": 1.2,
+     "tMinC": 11.3,
+     "tMaxC": 17.6,
+     "windMs": 2
     },
     {
      "date": "2026-10-21",
-     "mpi": 56.4,
-     "mpiRaw": 56.4,
+     "mpi": 58.3,
+     "mpiRaw": 58.3,
      "confidence": 22.6,
      "dataQuality": 74.3,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 4.9,
-     "tMinC": 10.9,
-     "tMaxC": 15.2,
-     "windMs": 1.3333333333333333
+     "rainMm": 1.5,
+     "tMinC": 11.4,
+     "tMaxC": 16,
+     "windMs": 2.694444444444444
     },
     {
      "date": "2026-10-22",
-     "mpi": 52.6,
-     "mpiRaw": 52.6,
+     "mpi": 55.4,
+     "mpiRaw": 55.4,
      "confidence": 19,
      "dataQuality": 74.3,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 6.8,
-     "tMaxC": 18.1,
-     "windMs": 1.5833333333333333
+     "rainMm": 3.3,
+     "tMinC": 9.6,
+     "tMaxC": 14.4,
+     "windMs": 2.7777777777777777
     }
    ],
    "weather": {
@@ -944,16 +944,16 @@
     "rain26d": 59.292826833564575,
     "effectiveWaterMm": 45.6,
     "initialDeficitMm": 22.7,
-    "et0_7d": 13.61,
-    "et0_14d": 28.659999999999997,
-    "tMean20d": 15.025392705959453,
+    "et0_7d": 13.509999999999998,
+    "et0_14d": 28.56,
+    "tMean20d": 15.035392705959453,
     "tMinWindow": 7.402904688868428,
     "tMaxWindow": 23.197945158220683,
-    "soilTemperatureMean": 12.889285714285714,
-    "soilMoisture": 0.24154166666666657,
-    "vpdMean7d": 0.29119047619047617,
-    "windMean7d": 3.0952380952380953,
-    "humidityMean7d": 81.32142857142857
+    "soilTemperatureMean": 12.908333333333331,
+    "soilMoisture": 0.24208333333333332,
+    "vpdMean7d": 0.28380952380952384,
+    "windMean7d": 3.115079365079365,
+    "humidityMean7d": 81.70238095238095
    },
    "positiveFactors": [
     {
@@ -978,7 +978,7 @@
     {
      "key": "phenology",
      "label": "Stagione e quota",
-     "contribution": -19.6,
+     "contribution": -19.7,
      "value": "regime autunnale d’alta quota",
      "provenance": "sourced",
      "source": "Letteratura divulgativa e micologica italiana concorde sulla fascia altimetrica: la faggeta fra 900 e 1400 m e' l'habitat classico del porcino autunnale, mentre i porcini estivi si trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di 200-300 m",
@@ -987,7 +987,7 @@
     {
      "key": "habitat",
      "label": "Il bosco della zona",
-     "contribution": -2.1,
+     "contribution": -2.2,
      "value": "bosco sul 97% dell'area attorno al punto; faggeta 55%, altre latifoglie 18%, querceto 11%",
      "provenance": "calibrate"
     }
@@ -1018,7 +1018,7 @@
      "key": "penalty.vpd",
      "label": "Aria secca (VPD)",
      "contribution": 0,
-     "value": "VPD medio 7 giorni 0.29 kPa",
+     "value": "VPD medio 7 giorni 0.28 kPa",
      "provenance": "calibrate"
     },
     {
@@ -1179,11 +1179,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-21",
-    "peakMpi": 56.4,
+    "peakDate": "2026-10-20",
+    "peakMpi": 58.8,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Il potenziale sale fino a mercoledì, quando le condizioni diventano discretamente favorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. Parliamo però di una previsione a 6 giorni, quindi con incertezza rilevante."
+    "narrative": "Il potenziale sale fino a martedì, quando le condizioni diventano discretamente favorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. L'incertezza cresce con i giorni: il picco è una previsione a 5 giorni."
    },
    "observedDays": 60,
    "windowDays": 61,
@@ -1245,7 +1245,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni favorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 4.4,
+   "development": 4.6,
    "series": [
     {
      "date": "2026-10-01",
@@ -1438,8 +1438,8 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 10.9,
-     "tMaxC": 17.8,
+     "tMinC": 11,
+     "tMaxC": 17.6,
      "windMs": 2.8055555555555554
     },
     {
@@ -1451,87 +1451,87 @@
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 11.3,
+     "tMinC": 11.1,
      "tMaxC": 17.8,
-     "windMs": 1.7222222222222223
+     "windMs": 1.777777777777778
     },
     {
      "date": "2026-10-17",
-     "mpi": 75.2,
-     "mpiRaw": 75.2,
+     "mpi": 75.1,
+     "mpiRaw": 75.1,
      "confidence": 46,
      "dataQuality": 73,
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 10.7,
-     "tMaxC": 15.6,
-     "windMs": 1.3333333333333333
+     "tMinC": 10.5,
+     "tMaxC": 16.2,
+     "windMs": 1.7222222222222223
     },
     {
      "date": "2026-10-18",
-     "mpi": 80.9,
-     "mpiRaw": 80.9,
+     "mpi": 81.1,
+     "mpiRaw": 81.1,
      "confidence": 38.1,
      "dataQuality": 73,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 2.4,
-     "tMinC": 10.5,
-     "tMaxC": 15.4,
-     "windMs": 2.5
+     "rainMm": 2.7,
+     "tMinC": 10.9,
+     "tMaxC": 15,
+     "windMs": 2.5833333333333335
     },
     {
      "date": "2026-10-19",
-     "mpi": 83.5,
-     "mpiRaw": 83.5,
+     "mpi": 84.4,
+     "mpiRaw": 84.4,
      "confidence": 31.8,
      "dataQuality": 73,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 10.8,
-     "tMaxC": 17.3,
-     "windMs": 2.138888888888889
+     "rainMm": 1.7,
+     "tMinC": 11.5,
+     "tMaxC": 15.1,
+     "windMs": 1.8611111111111112
     },
     {
      "date": "2026-10-20",
-     "mpi": 82.9,
-     "mpiRaw": 82.9,
+     "mpi": 85.3,
+     "mpiRaw": 85.3,
      "confidence": 26.5,
      "dataQuality": 73,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 0.8,
-     "tMinC": 9.2,
-     "tMaxC": 16.9,
-     "windMs": 2.0833333333333335
+     "rainMm": 4.4,
+     "tMinC": 10.5,
+     "tMaxC": 15.8,
+     "windMs": 2.0277777777777777
     },
     {
      "date": "2026-10-21",
-     "mpi": 78.9,
-     "mpiRaw": 78.9,
+     "mpi": 80.7,
+     "mpiRaw": 80.7,
      "confidence": 22.2,
      "dataQuality": 73,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 6.7,
-     "tMinC": 10.1,
-     "tMaxC": 13.5,
-     "windMs": 1.6388888888888888
+     "rainMm": 3.7,
+     "tMinC": 9.7,
+     "tMaxC": 13.6,
+     "windMs": 2.75
     },
     {
      "date": "2026-10-22",
-     "mpi": 69.1,
-     "mpiRaw": 69.1,
+     "mpi": 71.5,
+     "mpiRaw": 71.5,
      "confidence": 18.7,
      "dataQuality": 73,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 7.5,
-     "tMaxC": 16.1,
-     "windMs": 1.4444444444444444
+     "rainMm": 2.85,
+     "tMinC": 7.3,
+     "tMaxC": 14.3,
+     "windMs": 2.25
     }
    ],
    "weather": {
@@ -1542,16 +1542,16 @@
     "rain26d": 64.52693442365253,
     "effectiveWaterMm": 48.6,
     "initialDeficitMm": 12,
-    "et0_7d": 14.790000000000001,
-    "et0_14d": 28.769999999999996,
-    "tMean20d": 14.987891304887176,
+    "et0_7d": 14.73,
+    "et0_14d": 28.709999999999997,
+    "tMean20d": 14.985391304887177,
     "tMinWindow": 6.9716816297693605,
     "tMaxWindow": 21.612606924443895,
-    "soilTemperatureMean": 11.352380952380953,
-    "soilMoisture": 0.23645833333333346,
-    "vpdMean7d": 0.3910119047619047,
+    "soilTemperatureMean": 11.359523809523811,
+    "soilMoisture": 0.23541666666666672,
+    "vpdMean7d": 0.38726190476190475,
     "windMean7d": 3.4246031746031744,
-    "humidityMean7d": 73.80357142857143
+    "humidityMean7d": 73.94642857142857
    },
    "positiveFactors": [
     {
@@ -1585,14 +1585,14 @@
     {
      "key": "habitat",
      "label": "Il bosco della zona",
-     "contribution": -4.3,
+     "contribution": -4.4,
      "value": "bosco sul 92% dell'area attorno al punto; faggeta 50%, altre latifoglie 33%, querceto 7%",
      "provenance": "calibrate"
     },
     {
      "key": "thermal",
      "label": "Temperatura",
-     "contribution": -3.3,
+     "contribution": -3.4,
      "value": "15.0 °C di media su 20 giorni, contro un ottimo di 15.0 °C",
      "provenance": "calibrate"
     }
@@ -1777,11 +1777,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-19",
-    "peakMpi": 83.5,
+    "peakDate": "2026-10-20",
+    "peakMpi": 85.3,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Il potenziale sale fino a lunedì, quando le condizioni diventano molto favorevoli, per circa 8 giorni. L'incertezza cresce con i giorni: il picco è una previsione a 4 giorni."
+    "narrative": "Il potenziale sale fino a martedì, quando le condizioni diventano molto favorevoli, per circa 8 giorni. L'incertezza cresce con i giorni: il picco è una previsione a 5 giorni."
    },
    "observedDays": 60,
    "windowDays": 61,
@@ -1885,7 +1885,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni discretamente favorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 13.4,
+   "development": 14.4,
    "series": [
     {
      "date": "2026-10-01",
@@ -2078,100 +2078,100 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 12.4,
-     "tMaxC": 18.2,
+     "tMinC": 12.5,
+     "tMaxC": 17.9,
      "windMs": 3.1111111111111107
     },
     {
      "date": "2026-10-16",
-     "mpi": 62.4,
-     "mpiRaw": 62.4,
+     "mpi": 62.6,
+     "mpiRaw": 62.6,
      "confidence": 57.7,
      "dataQuality": 76,
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 11.9,
-     "tMaxC": 16.9,
-     "windMs": 2.4444444444444446
+     "tMinC": 11.5,
+     "tMaxC": 17.2,
+     "windMs": 2.5277777777777777
     },
     {
      "date": "2026-10-17",
-     "mpi": 69.8,
-     "mpiRaw": 69.8,
+     "mpi": 70.2,
+     "mpiRaw": 70.2,
      "confidence": 47.8,
      "dataQuality": 76,
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 10.7,
-     "tMaxC": 16,
-     "windMs": 2.0277777777777777
+     "tMinC": 10.3,
+     "tMaxC": 15.9,
+     "windMs": 2.2222222222222223
     },
     {
      "date": "2026-10-18",
-     "mpi": 77.2,
-     "mpiRaw": 77.2,
+     "mpi": 78.7,
+     "mpiRaw": 78.7,
      "confidence": 39.6,
      "dataQuality": 76,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 4,
-     "tMinC": 10.3,
-     "tMaxC": 15,
-     "windMs": 2.4722222222222223
+     "rainMm": 7.2,
+     "tMinC": 10.1,
+     "tMaxC": 13.8,
+     "windMs": 2.4444444444444446
     },
     {
      "date": "2026-10-19",
-     "mpi": 80.8,
-     "mpiRaw": 80.8,
+     "mpi": 82.6,
+     "mpiRaw": 82.6,
      "confidence": 32.9,
      "dataQuality": 76,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0.2,
-     "tMinC": 12,
-     "tMaxC": 15.8,
+     "rainMm": 0.6,
+     "tMinC": 10.6,
+     "tMaxC": 15.5,
      "windMs": 2.305555555555556
     },
     {
      "date": "2026-10-20",
-     "mpi": 80.3,
-     "mpiRaw": 80.3,
+     "mpi": 83.6,
+     "mpiRaw": 83.6,
      "confidence": 27.5,
      "dataQuality": 76,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 0.5,
-     "tMinC": 11.1,
-     "tMaxC": 16.3,
-     "windMs": 1.8888888888888888
+     "rainMm": 3.8,
+     "tMinC": 11.5,
+     "tMaxC": 15.9,
+     "windMs": 2.305555555555556
     },
     {
      "date": "2026-10-21",
-     "mpi": 77,
-     "mpiRaw": 77,
+     "mpi": 79.2,
+     "mpiRaw": 79.2,
      "confidence": 23,
      "dataQuality": 76,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 7.6,
-     "tMinC": 11.2,
-     "tMaxC": 14.5,
-     "windMs": 1.3888888888888888
+     "rainMm": 8.2,
+     "tMinC": 10.2,
+     "tMaxC": 14.4,
+     "windMs": 3
     },
     {
      "date": "2026-10-22",
-     "mpi": 68.9,
-     "mpiRaw": 68.9,
+     "mpi": 71.5,
+     "mpiRaw": 71.5,
      "confidence": 19.4,
      "dataQuality": 76,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 1.6,
-     "tMinC": 8.7,
-     "tMaxC": 14.9,
-     "windMs": 2.3333333333333335
+     "rainMm": 5.55,
+     "tMinC": 7.9,
+     "tMaxC": 13.7,
+     "windMs": 3.194444444444444
     }
    ],
    "weather": {
@@ -2180,18 +2180,18 @@
     "rain7d": 2.262698978633401,
     "rain14d": 64.59107368802138,
     "rain26d": 64.71493903735677,
-    "effectiveWaterMm": 47.9,
+    "effectiveWaterMm": 48,
     "initialDeficitMm": 29.2,
-    "et0_7d": 15.22,
-    "et0_14d": 31.700000000000003,
-    "tMean20d": 14.65996990502229,
+    "et0_7d": 15.120000000000001,
+    "et0_14d": 31.6,
+    "tMean20d": 14.65496990502229,
     "tMinWindow": 6.18414611280371,
     "tMaxWindow": 23.131611168182324,
-    "soilTemperatureMean": 10.371428571428572,
-    "soilMoisture": 0.19383333333333333,
-    "vpdMean7d": 0.3980952380952381,
+    "soilTemperatureMean": 10.376785714285715,
+    "soilMoisture": 0.19320833333333332,
+    "vpdMean7d": 0.39011904761904764,
     "windMean7d": 3.4365079365079367,
-    "humidityMean7d": 73.01785714285714
+    "humidityMean7d": 73.43452380952381
    },
    "positiveFactors": [
     {
@@ -2216,7 +2216,7 @@
     {
      "key": "phenology",
      "label": "Stagione e quota",
-     "contribution": -7.2,
+     "contribution": -7.3,
      "value": "regime autunnale d’alta quota",
      "provenance": "sourced",
      "source": "Letteratura divulgativa e micologica italiana concorde sulla fascia altimetrica: la faggeta fra 900 e 1400 m e' l'habitat classico del porcino autunnale, mentre i porcini estivi si trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di 200-300 m",
@@ -2256,7 +2256,7 @@
      "key": "penalty.vpd",
      "label": "Aria secca (VPD)",
      "contribution": 0,
-     "value": "VPD medio 7 giorni 0.40 kPa",
+     "value": "VPD medio 7 giorni 0.39 kPa",
      "provenance": "calibrate"
     },
     {
@@ -2417,11 +2417,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-19",
-    "peakMpi": 80.8,
+    "peakDate": "2026-10-20",
+    "peakMpi": 83.6,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Il potenziale sale fino a lunedì, quando le condizioni diventano molto favorevoli, per circa 8 giorni. L'incertezza cresce con i giorni: il picco è una previsione a 4 giorni."
+    "narrative": "Il potenziale sale fino a martedì, quando le condizioni diventano molto favorevoli, per circa 8 giorni. L'incertezza cresce con i giorni: il picco è una previsione a 5 giorni."
    },
    "observedDays": 60,
    "windowDays": 61,
@@ -2536,14 +2536,14 @@
    ],
    "forestFraction": 0.915,
    "stationNotes": "Stesso schema della Garfagnana: Casotti di Cutigliano è a 200 m ma 407 m più in basso, mentre Melo è a 3.7 km e alla stessa quota esatta.",
-   "mpi": 64.6,
-   "mpiRaw": 64.6,
+   "mpi": 64.7,
+   "mpiRaw": 64.7,
    "confidence": 72.6,
    "dataQuality": 79,
    "forecastCertainty": 92.4,
    "label": "condizioni favorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 12.1,
+   "development": 13.1,
    "series": [
     {
      "date": "2026-10-01",
@@ -2729,107 +2729,107 @@
     },
     {
      "date": "2026-10-15",
-     "mpi": 64.6,
-     "mpiRaw": 64.6,
+     "mpi": 64.7,
+     "mpiRaw": 64.7,
      "confidence": 72.6,
      "dataQuality": 79,
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 9.9,
-     "tMaxC": 18.1,
-     "windMs": 2.833333333333333
+     "tMinC": 8.8,
+     "tMaxC": 17.8,
+     "windMs": 3.0277777777777777
     },
     {
      "date": "2026-10-16",
-     "mpi": 67.2,
-     "mpiRaw": 67.2,
+     "mpi": 67.5,
+     "mpiRaw": 67.5,
      "confidence": 59.9,
      "dataQuality": 79,
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 10.2,
-     "tMaxC": 17.5,
-     "windMs": 2.138888888888889
+     "tMinC": 9.7,
+     "tMaxC": 17.8,
+     "windMs": 2.111111111111111
     },
     {
      "date": "2026-10-17",
-     "mpi": 72.7,
-     "mpiRaw": 72.7,
+     "mpi": 73,
+     "mpiRaw": 73,
      "confidence": 49.5,
      "dataQuality": 79,
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 10.3,
-     "tMaxC": 15.4,
-     "windMs": 1.75
+     "tMinC": 10.7,
+     "tMaxC": 16,
+     "windMs": 2.138888888888889
     },
     {
      "date": "2026-10-18",
-     "mpi": 79.4,
-     "mpiRaw": 79.4,
+     "mpi": 80.9,
+     "mpiRaw": 80.9,
      "confidence": 41,
      "dataQuality": 79,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 4.8,
+     "rainMm": 8.7,
      "tMinC": 10.4,
-     "tMaxC": 14.7,
-     "windMs": 2.055555555555556
+     "tMaxC": 13.8,
+     "windMs": 2.5
     },
     {
      "date": "2026-10-19",
-     "mpi": 82,
-     "mpiRaw": 82,
+     "mpi": 83.7,
+     "mpiRaw": 83.7,
      "confidence": 34.1,
      "dataQuality": 79,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0.6,
-     "tMinC": 11.7,
-     "tMaxC": 16,
-     "windMs": 1.9166666666666667
+     "rainMm": 1.4,
+     "tMinC": 10.9,
+     "tMaxC": 15.2,
+     "windMs": 2.0833333333333335
     },
     {
      "date": "2026-10-20",
-     "mpi": 81.2,
-     "mpiRaw": 81.2,
+     "mpi": 83.3,
+     "mpiRaw": 83.3,
      "confidence": 28.4,
      "dataQuality": 79,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 1.7,
-     "tMinC": 9.8,
-     "tMaxC": 16.5,
-     "windMs": 1.972222222222222
+     "rainMm": 2.5,
+     "tMinC": 10.4,
+     "tMaxC": 15.6,
+     "windMs": 2
     },
     {
      "date": "2026-10-21",
-     "mpi": 77,
-     "mpiRaw": 77,
+     "mpi": 78.7,
+     "mpiRaw": 78.7,
      "confidence": 23.7,
      "dataQuality": 79,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 3.7,
-     "tMinC": 11.3,
-     "tMaxC": 14.5,
-     "windMs": 1.3611111111111112
+     "rainMm": 5,
+     "tMinC": 10,
+     "tMaxC": 14.2,
+     "windMs": 2.5833333333333335
     },
     {
      "date": "2026-10-22",
-     "mpi": 68.5,
-     "mpiRaw": 68.5,
+     "mpi": 71.2,
+     "mpiRaw": 71.2,
      "confidence": 19.8,
      "dataQuality": 79,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0.6,
-     "tMinC": 8.7,
-     "tMaxC": 16.2,
-     "windMs": 2.4444444444444446
+     "rainMm": 6.3,
+     "tMinC": 7.9,
+     "tMaxC": 13.1,
+     "windMs": 3.194444444444444
     }
    ],
    "weather": {
@@ -2838,24 +2838,24 @@
     "rain7d": 1.3482602560665342,
     "rain14d": 75.8485927833645,
     "rain26d": 75.94894898700474,
-    "effectiveWaterMm": 57.4,
+    "effectiveWaterMm": 57.5,
     "initialDeficitMm": 31.4,
-    "et0_7d": 14.129999999999999,
-    "et0_14d": 29.75,
-    "tMean20d": 13.979253715589858,
+    "et0_7d": 14.06,
+    "et0_14d": 29.68,
+    "tMean20d": 13.944253715589857,
     "tMinWindow": 5.236490148927113,
     "tMaxWindow": 23.33965790832765,
-    "soilTemperatureMean": 11.507738095238095,
-    "soilMoisture": 0.1705833333333333,
-    "vpdMean7d": 0.36500000000000005,
-    "windMean7d": 2.984126984126984,
-    "humidityMean7d": 74.41666666666666
+    "soilTemperatureMean": 11.533928571428572,
+    "soilMoisture": 0.1663333333333333,
+    "vpdMean7d": 0.36178571428571427,
+    "windMean7d": 3.0119047619047623,
+    "humidityMean7d": 74.4940476190476
    },
    "positiveFactors": [
     {
      "key": "trigger",
      "label": "Innesco dalla pioggia",
-     "contribution": 8.9,
+     "contribution": 9,
      "value": "pioggia di 57 mm 7 giorni fa; il massimo atteso è al giorno 12",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
@@ -2865,8 +2865,8 @@
     {
      "key": "water",
      "label": "Acqua disponibile nel suolo",
-     "contribution": -26.5,
-     "value": "57 mm efficaci su 76 mm caduti in 26 giorni; il terreno partiva secco, quindi il fabbisogno sale a 86 mm; conta di più la pioggia di 7 giorni fa, nei giorni in cui ci si aspetta la fruttificazione",
+     "contribution": -26.3,
+     "value": "58 mm efficaci su 76 mm caduti in 26 giorni; il terreno partiva secco, quindi il fabbisogno sale a 86 mm; conta di più la pioggia di 7 giorni fa, nei giorni in cui ci si aspetta la fruttificazione",
      "provenance": "sourced",
      "source": "Brejon Lamartiniere E., Hoffman J.I. (2026), Predicting porcini: a decade of sporocarp monitoring reveals the meteorological triggers of Boletus edulis fruiting in central European beech forests. bioRxiv 10.64898/2025.12.12.693895 (preprint, non sottoposto a peer review)",
      "transferabilityCaution": "Studio su una faggeta tedesca, non ancora revisionato: usato solo per l'autunno in quota."
@@ -2874,7 +2874,7 @@
     {
      "key": "phenology",
      "label": "Stagione e quota",
-     "contribution": -8.2,
+     "contribution": -8.1,
      "value": "regime autunnale d’alta quota",
      "provenance": "sourced",
      "source": "Letteratura divulgativa e micologica italiana concorde sulla fascia altimetrica: la faggeta fra 900 e 1400 m e' l'habitat classico del porcino autunnale, mentre i porcini estivi si trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di 200-300 m",
@@ -2884,13 +2884,13 @@
      "key": "thermal",
      "label": "Temperatura",
      "contribution": -4.8,
-     "value": "14.0 °C di media su 20 giorni, contro un ottimo di 15.0 °C",
+     "value": "13.9 °C di media su 20 giorni, contro un ottimo di 15.0 °C",
      "provenance": "calibrate"
     },
     {
      "key": "habitat",
      "label": "Il bosco della zona",
-     "contribution": -3.5,
+     "contribution": -3.4,
      "value": "bosco sul 92% dell'area attorno al punto; faggeta 57%, altre latifoglie 31%, querceto 7%",
      "provenance": "calibrate"
     }
@@ -2914,7 +2914,7 @@
      "key": "penalty.vpd",
      "label": "Aria secca (VPD)",
      "contribution": 0,
-     "value": "VPD medio 7 giorni 0.37 kPa",
+     "value": "VPD medio 7 giorni 0.36 kPa",
      "provenance": "calibrate"
     },
     {
@@ -3076,7 +3076,7 @@
    ],
    "bestWindow": {
     "peakDate": "2026-10-19",
-    "peakMpi": 82,
+    "peakMpi": 83.7,
     "start": "2026-10-15",
     "end": "2026-10-22",
     "narrative": "Il potenziale sale fino a lunedì, quando le condizioni diventano molto favorevoli, per circa 8 giorni. L'incertezza cresce con i giorni: il picco è una previsione a 4 giorni."
@@ -3135,7 +3135,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni poco favorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 5.9,
+   "development": 8,
    "series": [
     {
      "date": "2026-10-01",
@@ -3328,22 +3328,22 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 10,
-     "tMaxC": 18.2,
+     "tMinC": 9.9,
+     "tMaxC": 17.8,
      "windMs": 2.611111111111111
     },
     {
      "date": "2026-10-16",
-     "mpi": 24.2,
-     "mpiRaw": 24.2,
+     "mpi": 24.3,
+     "mpiRaw": 24.3,
      "confidence": 58.3,
      "dataQuality": 76.9,
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 9.9,
-     "tMaxC": 18.3,
-     "windMs": 1.75
+     "tMinC": 9.5,
+     "tMaxC": 17.6,
+     "windMs": 2.3333333333333335
     },
     {
      "date": "2026-10-17",
@@ -3354,74 +3354,74 @@
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 9.4,
-     "tMaxC": 15.4,
-     "windMs": 1.3888888888888888
+     "tMinC": 9.7,
+     "tMaxC": 16.8,
+     "windMs": 1.8611111111111112
     },
     {
      "date": "2026-10-18",
-     "mpi": 28.9,
-     "mpiRaw": 28.9,
+     "mpi": 32.3,
+     "mpiRaw": 32.3,
      "confidence": 39.9,
      "dataQuality": 76.9,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 3.6,
-     "tMinC": 10.3,
-     "tMaxC": 16.5,
-     "windMs": 2.055555555555556
+     "rainMm": 10,
+     "tMinC": 11.2,
+     "tMaxC": 15.5,
+     "windMs": 3.1111111111111107
     },
     {
      "date": "2026-10-19",
-     "mpi": 28.2,
-     "mpiRaw": 28.2,
+     "mpi": 33.2,
+     "mpiRaw": 33.2,
      "confidence": 33.2,
      "dataQuality": 76.9,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 10.9,
+     "rainMm": 3.6,
+     "tMinC": 11.2,
      "tMaxC": 16.5,
-     "windMs": 1.777777777777778
+     "windMs": 1.8333333333333333
     },
     {
      "date": "2026-10-20",
-     "mpi": 27.8,
-     "mpiRaw": 27.8,
+     "mpi": 32.4,
+     "mpiRaw": 32.4,
      "confidence": 27.6,
      "dataQuality": 76.9,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 3.4,
-     "tMinC": 9.2,
+     "rainMm": 2.6,
+     "tMinC": 9.9,
      "tMaxC": 15.6,
-     "windMs": 2.2777777777777777
+     "windMs": 1.4444444444444444
     },
     {
      "date": "2026-10-21",
-     "mpi": 26.3,
-     "mpiRaw": 26.3,
+     "mpi": 32.4,
+     "mpiRaw": 32.4,
      "confidence": 23.1,
      "dataQuality": 76.9,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 3.5,
-     "tMinC": 10.5,
-     "tMaxC": 14.7,
-     "windMs": 1.2777777777777777
+     "rainMm": 6.4,
+     "tMinC": 11.2,
+     "tMaxC": 14.5,
+     "windMs": 3
     },
     {
      "date": "2026-10-22",
-     "mpi": 22.5,
-     "mpiRaw": 22.5,
+     "mpi": 32.3,
+     "mpiRaw": 32.3,
      "confidence": 19.3,
      "dataQuality": 76.9,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0,
-     "tMinC": 8.9,
-     "tMaxC": 16.2,
-     "windMs": 3.611111111111111
+     "rainMm": 7.05,
+     "tMinC": 8.3,
+     "tMaxC": 12,
+     "windMs": 3.5277777777777777
     }
    ],
    "weather": {
@@ -3432,24 +3432,24 @@
     "rain26d": 28.485889398945172,
     "effectiveWaterMm": 21.5,
     "initialDeficitMm": 30.2,
-    "et0_7d": 13.27,
-    "et0_14d": 28.86,
-    "tMean20d": 15.216701455812602,
+    "et0_7d": 13.11,
+    "et0_14d": 28.700000000000003,
+    "tMean20d": 15.204201455812603,
     "tMinWindow": 7.836939858971343,
     "tMaxWindow": 22.3184085713209,
-    "soilTemperatureMean": 12.711309523809524,
-    "soilMoisture": 0.21541666666666673,
-    "vpdMean7d": 0.2804761904761905,
+    "soilTemperatureMean": 12.733333333333334,
+    "soilMoisture": 0.21687499999999996,
+    "vpdMean7d": 0.2725595238095238,
     "windMean7d": 4,
-    "humidityMean7d": 81.33928571428571
+    "humidityMean7d": 81.73214285714286
    },
    "positiveFactors": [],
    "negativeFactors": [
     {
      "key": "water",
      "label": "Acqua disponibile nel suolo",
-     "contribution": -64.5,
-     "value": "21 mm efficaci su 28 mm caduti in 26 giorni; il terreno partiva secco, quindi il fabbisogno sale a 85 mm",
+     "contribution": -64.6,
+     "value": "22 mm efficaci su 28 mm caduti in 26 giorni; il terreno partiva secco, quindi il fabbisogno sale a 85 mm",
      "provenance": "sourced",
      "source": "Brejon Lamartiniere E., Hoffman J.I. (2026), Predicting porcini: a decade of sporocarp monitoring reveals the meteorological triggers of Boletus edulis fruiting in central European beech forests. bioRxiv 10.64898/2025.12.12.693895 (preprint, non sottoposto a peer review)",
      "transferabilityCaution": "Studio su una faggeta tedesca, non ancora revisionato: usato solo per l'autunno in quota."
@@ -3457,7 +3457,7 @@
     {
      "key": "phenology",
      "label": "Stagione e quota",
-     "contribution": -2.8,
+     "contribution": -2.9,
      "value": "regime autunnale d’alta quota",
      "provenance": "sourced",
      "source": "Letteratura divulgativa e micologica italiana concorde sulla fascia altimetrica: la faggeta fra 900 e 1400 m e' l'habitat classico del porcino autunnale, mentre i porcini estivi si trovavano fra 500 e 700 m e negli ultimi decenni sono saliti di 200-300 m",
@@ -3468,7 +3468,7 @@
     {
      "key": "thermal",
      "label": "Temperatura",
-     "contribution": -0.2,
+     "contribution": -0.3,
      "value": "15.2 °C di media su 20 giorni, contro un ottimo di 15.0 °C",
      "provenance": "calibrate"
     },
@@ -3505,7 +3505,7 @@
      "key": "penalty.vpd",
      "label": "Aria secca (VPD)",
      "contribution": 0,
-     "value": "VPD medio 7 giorni 0.28 kPa",
+     "value": "VPD medio 7 giorni 0.27 kPa",
      "provenance": "calibrate"
     },
     {
@@ -3666,11 +3666,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-18",
-    "peakMpi": 28.9,
+    "peakDate": "2026-10-19",
+    "peakMpi": 33.2,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Il potenziale sale fino a domenica, quando le condizioni diventano poco favorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. L'incertezza cresce con i giorni: il picco è una previsione a 3 giorni."
+    "narrative": "Il potenziale sale fino a lunedì, quando le condizioni diventano poco favorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. L'incertezza cresce con i giorni: il picco è una previsione a 4 giorni."
    },
    "observedDays": 60,
    "windowDays": 61,
@@ -3732,7 +3732,7 @@
    "forecastCertainty": 92.4,
    "label": "condizioni sfavorevoli",
    "limitingFactor": "Acqua disponibile nel suolo",
-   "development": 2.4,
+   "development": 1.9,
    "series": [
     {
      "date": "2026-10-01",
@@ -3925,9 +3925,9 @@
      "forecastCertainty": 92.4,
      "provenance": "MODELLED",
      "rainMm": 0,
-     "tMinC": 13.1,
-     "tMaxC": 21.4,
-     "windMs": 2.111111111111111
+     "tMinC": 12.8,
+     "tMaxC": 20.8,
+     "windMs": 2.4166666666666665
     },
     {
      "date": "2026-10-16",
@@ -3938,87 +3938,87 @@
      "forecastCertainty": 76.5,
      "provenance": "FORECAST",
      "rainMm": 0,
-     "tMinC": 12.4,
+     "tMinC": 12.6,
      "tMaxC": 20,
-     "windMs": 2.972222222222222
+     "windMs": 2.944444444444444
     },
     {
      "date": "2026-10-17",
-     "mpi": 15.4,
-     "mpiRaw": 15.4,
+     "mpi": 15.2,
+     "mpiRaw": 15.2,
      "confidence": 47.8,
      "dataQuality": 76.2,
      "forecastCertainty": 63.6,
      "provenance": "FORECAST",
-     "rainMm": 0.6,
-     "tMinC": 13.2,
-     "tMaxC": 19.8,
-     "windMs": 1.6666666666666665
+     "rainMm": 0,
+     "tMinC": 12.9,
+     "tMaxC": 19.7,
+     "windMs": 2.2777777777777777
     },
     {
      "date": "2026-10-18",
-     "mpi": 19,
-     "mpiRaw": 19,
+     "mpi": 17.8,
+     "mpiRaw": 17.8,
      "confidence": 39.6,
      "dataQuality": 76.2,
      "forecastCertainty": 53,
      "provenance": "FORECAST",
-     "rainMm": 7,
-     "tMinC": 14.2,
-     "tMaxC": 17.5,
-     "windMs": 4.305555555555555
+     "rainMm": 4.9,
+     "tMinC": 14.4,
+     "tMaxC": 17.3,
+     "windMs": 4.861111111111111
     },
     {
      "date": "2026-10-19",
-     "mpi": 19.4,
-     "mpiRaw": 19.4,
+     "mpi": 18.8,
+     "mpiRaw": 18.8,
      "confidence": 32.9,
      "dataQuality": 76.2,
      "forecastCertainty": 44.2,
      "provenance": "FORECAST",
-     "rainMm": 0.5,
-     "tMinC": 13.9,
-     "tMaxC": 19.6,
-     "windMs": 2.6666666666666665
+     "rainMm": 1.2,
+     "tMinC": 14.2,
+     "tMaxC": 17.1,
+     "windMs": 2.4444444444444446
     },
     {
      "date": "2026-10-20",
-     "mpi": 19.1,
-     "mpiRaw": 19.1,
+     "mpi": 21,
+     "mpiRaw": 21,
      "confidence": 27.5,
      "dataQuality": 76.2,
      "forecastCertainty": 37.1,
      "provenance": "FORECAST",
-     "rainMm": 0.9,
-     "tMinC": 13.6,
-     "tMaxC": 17.4,
-     "windMs": 2
+     "rainMm": 6.4,
+     "tMinC": 13,
+     "tMaxC": 17.3,
+     "windMs": 2.972222222222222
     },
     {
      "date": "2026-10-21",
-     "mpi": 19.3,
-     "mpiRaw": 19.3,
+     "mpi": 21,
+     "mpiRaw": 21,
      "confidence": 22.9,
      "dataQuality": 76.2,
      "forecastCertainty": 31.2,
      "provenance": "FORECAST",
-     "rainMm": 3.3,
-     "tMinC": 13.9,
-     "tMaxC": 17.6,
-     "windMs": 1.4444444444444444
+     "rainMm": 2.6,
+     "tMinC": 12,
+     "tMaxC": 17.7,
+     "windMs": 4.638888888888888
     },
     {
      "date": "2026-10-22",
-     "mpi": 17.8,
-     "mpiRaw": 17.8,
+     "mpi": 23.4,
+     "mpiRaw": 23.4,
      "confidence": 19.3,
      "dataQuality": 76.2,
      "forecastCertainty": 26.3,
      "provenance": "FORECAST",
-     "rainMm": 0.6,
-     "tMinC": 13.3,
-     "tMaxC": 20.4,
-     "windMs": 1.972222222222222
+     "rainMm": 8.55,
+     "tMinC": 12,
+     "tMaxC": 18.6,
+     "windMs": 1.6944444444444442
     }
    ],
    "weather": {
@@ -4027,25 +4027,25 @@
     "rain7d": 7.531669919824537,
     "rain14d": 32.81745889180417,
     "rain26d": 36.96668784033734,
-    "effectiveWaterMm": 25.4,
+    "effectiveWaterMm": 25.5,
     "initialDeficitMm": 34.5,
-    "et0_7d": 15.05,
-    "et0_14d": 28.69,
-    "tMean20d": 17.248397620764646,
+    "et0_7d": 15.020000000000001,
+    "et0_14d": 28.660000000000004,
+    "tMean20d": 17.22589762076465,
     "tMinWindow": 8.856508007722677,
     "tMaxWindow": 24.960859606375593,
-    "soilTemperatureMean": 15.799404761904762,
-    "soilMoisture": 0.17529166666666662,
-    "vpdMean7d": 0.49589285714285714,
-    "windMean7d": 2.9563492063492065,
-    "humidityMean7d": 72.41071428571428
+    "soilTemperatureMean": 15.82202380952381,
+    "soilMoisture": 0.17795833333333333,
+    "vpdMean7d": 0.48934523809523817,
+    "windMean7d": 3.0000000000000004,
+    "humidityMean7d": 72.61309523809523
    },
    "positiveFactors": [],
    "negativeFactors": [
     {
      "key": "water",
      "label": "Acqua disponibile nel suolo",
-     "contribution": -51.8,
+     "contribution": -51.9,
      "value": "25 mm efficaci su 37 mm caduti in 26 giorni; il terreno partiva secco, quindi il fabbisogno sale a 90 mm",
      "provenance": "sourced",
      "source": "Brejon Lamartiniere E., Hoffman J.I. (2026), Predicting porcini: a decade of sporocarp monitoring reveals the meteorological triggers of Boletus edulis fruiting in central European beech forests. bioRxiv 10.64898/2025.12.12.693895 (preprint, non sottoposto a peer review)",
@@ -4102,14 +4102,14 @@
      "key": "penalty.vpd",
      "label": "Aria secca (VPD)",
      "contribution": 0,
-     "value": "VPD medio 7 giorni 0.50 kPa",
+     "value": "VPD medio 7 giorni 0.49 kPa",
      "provenance": "calibrate"
     },
     {
      "key": "penalty.heatShock",
      "label": "Impennata di caldo",
      "contribution": 0,
-     "value": "massima salita di 3.5 °C sopra la media del periodo, soglia 8 °C",
+     "value": "massima salita di 3.6 °C sopra la media del periodo, soglia 8 °C",
      "provenance": "sourced",
      "source": "Salerni E., Paoli L., Perini C. (2023), Combined impact of forest management and climate change on Boletus edulis productivity. Italian Journal of Mycology 52(1): 76-88. https://doi.org/10.6092/issn.2531-7342/16464 - monitoraggio 2000-2002 in rimboschimenti di Abies alba sul Monte Amiata, Abbadia San Salvatore (SI), 1050 m s.l.m."
     },
@@ -4263,11 +4263,11 @@
     }
    ],
    "bestWindow": {
-    "peakDate": "2026-10-19",
-    "peakMpi": 19.4,
+    "peakDate": "2026-10-22",
+    "peakMpi": 23.4,
     "start": "2026-10-15",
     "end": "2026-10-22",
-    "narrative": "Il potenziale sale fino a lunedì, quando le condizioni diventano sfavorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. L'incertezza cresce con i giorni: il picco è una previsione a 4 giorni."
+    "narrative": "Il potenziale sale fino a fra 7 giorni, quando le condizioni diventano poco favorevoli, per circa 8 giorni. Il limite principale resta acqua disponibile nel suolo. Parliamo però di una previsione a 7 giorni, quindi con incertezza rilevante."
    },
    "observedDays": 60,
    "windowDays": 61,
