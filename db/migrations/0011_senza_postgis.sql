@@ -33,6 +33,23 @@
 -- toccano piu'.
 
 -- ----------------------------------------------------------------------------
+-- Parte 0: copia di sicurezza delle uscite
+-- ----------------------------------------------------------------------------
+--
+-- Nello schema `backup`, che PostgREST non espone: nessuna chiave pubblica la raggiunge. Le
+-- coordinate vi finiscono gia' come testo, cosi' la copia non dipende da PostGIS e non ne impedisce
+-- la rimozione. Si puo' cancellare (`drop schema backup cascade`) quando tutto e' verificato.
+
+create schema if not exists backup;
+revoke all on schema backup from anon, authenticated;
+create table if not exists backup.user_observations_20261028 as
+  select o.*, st_asewkt(o.geom_exact) as geom_exact_ewkt, st_asewkt(o.geom_public) as geom_public_ewkt
+  from public.user_observations o;
+alter table backup.user_observations_20261028
+  drop column if exists geom_exact,
+  drop column if exists geom_public;
+
+-- ----------------------------------------------------------------------------
 -- Parte 1: coordinate in testo
 -- ----------------------------------------------------------------------------
 
