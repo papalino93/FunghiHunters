@@ -40,7 +40,9 @@ jobs:
     # Lo snapshot toscano dura pochi minuti; quello nazionale deve rallentare apposta per non
     # sfondare i limiti orari del piano gratuito di Open-Meteo, e con 1200 zone e la pioggia
     # ICON-2I arriva a quasi due ore. La Toscana completa con le stazioni SIR aggiunge mezz'ora.
-    timeout-minutes: 240
+    # A novembre 2026 la corsa completa ha preso 100-131 minuti: 170 lasciano margine senza
+    # lasciare una corsa bloccata a consumare minuti per quattro ore.
+    timeout-minutes: 170
 
     steps:
       - uses: actions/checkout@v5
