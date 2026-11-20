@@ -16,7 +16,37 @@ permissions:
   contents: read
 
 jobs:
+  # Gratis solo da pubblico: le Actions dei repository pubblici non consumano minuti, quelle dei
+  # privati si' (2.000 al mese su GitHub Free, condivisi con tutti gli altri repository). Questo
+  # workflow ne consuma centinaia; se il repository diventasse privato, a novembre 2026 sarebbe
+  # bastato a bloccare tutti i repository dell'account. Il controllo dura pochi secondi; se il
+  # repository e' privato il lavoro vero viene saltato, e un lavoro saltato non costa niente.
+  pubblico:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    permissions:
+      contents: read
+    outputs:
+      ok: ${{ steps.visibilita.outputs.ok }}
+    steps:
+      - id: visibilita
+        env:
+          PRIVATO: ${{ github.event.repository.private }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Gli eventi a orario non sempre portano il repository nel payload: in quel caso si chiede.
+          if [ -z "$PRIVATO" ]; then PRIVATO=$(gh api "repos/$REPO" --jq .private); fi
+          if [ "$PRIVATO" = "false" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "ok=false" >> "$GITHUB_OUTPUT"
+            echo "::warning::Repository privato: corsa saltata per non consumare minuti a pagamento."
+          fi
+
   probe:
+    needs: pubblico
+    if: needs.pubblico.outputs.ok == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
 
