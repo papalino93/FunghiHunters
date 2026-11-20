@@ -23,7 +23,8 @@ permissions:
 jobs:
   salute:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    # Una corsa normale dura 8 secondi; i 5 tentativi con le pause ne prendono al massimo 6.
+    timeout-minutes: 7
     steps:
       - name: Chiama /api/salute
         run: |
